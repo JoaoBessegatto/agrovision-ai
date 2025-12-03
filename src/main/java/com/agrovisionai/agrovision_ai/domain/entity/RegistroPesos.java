@@ -1,0 +1,26 @@
+package com.agrovisionai.agrovision_ai.domain.entity;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "registro_pesos")
+@Getter
+@Setter
+@NoArgsConstructor
+public class RegistroPesos {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private Long id;
+
+    @ManyToOne
+    private Animal animal;
+
+    private LocalDate data;
+    private double pesoKg;
+}
