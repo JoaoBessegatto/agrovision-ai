@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "produtor")
@@ -17,7 +18,7 @@ import java.util.List;
 public class Produtor {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private Long id;
+    private UUID id;
 
     @Column(nullable = false)
     private String nomeCompleto;

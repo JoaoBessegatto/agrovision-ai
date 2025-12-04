@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "animal")
 @Getter
@@ -13,7 +15,7 @@ import lombok.Setter;
 public class Animal {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private Long Id;
+    private UUID Id;
 
     private String identificacao; // brinco / chip / tag
     private String raca;

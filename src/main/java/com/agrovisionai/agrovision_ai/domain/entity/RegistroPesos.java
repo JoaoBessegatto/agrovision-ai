@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "registro_pesos")
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 public class RegistroPesos {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private Long id;
+    private UUID id;
 
     @ManyToOne
     private Animal animal;

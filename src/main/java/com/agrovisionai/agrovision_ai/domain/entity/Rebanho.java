@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "rebanho")
@@ -15,7 +16,7 @@ import java.util.List;
 public class Rebanho {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private Long id;
+    private UUID id;
     private String nome;
     private String descricao;
 
