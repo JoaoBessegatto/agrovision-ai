@@ -1,0 +1,42 @@
+package com.agrovisionai.agrovision_ai.service;
+
+import com.agrovisionai.agrovision_ai.domain.dto.FazendaRequestDTO;
+import com.agrovisionai.agrovision_ai.domain.dto.FazendaResponseDTO;
+import com.agrovisionai.agrovision_ai.domain.entity.Fazenda;
+import com.agrovisionai.agrovision_ai.domain.entity.Produtor;
+import com.agrovisionai.agrovision_ai.domain.enums.TipoExploracao;
+import com.agrovisionai.agrovision_ai.repository.FazendaRepository;
+import com.agrovisionai.agrovision_ai.repository.ProdutorRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.UUID;
+
+@Service
+public class FazendaService {
+    @Autowired
+    FazendaRepository fazendaRepository;
+
+    @Autowired
+    ProdutorRepository produtorRepository;
+
+    public FazendaResponseDTO salvar(FazendaRequestDTO dto, UUID produtorid){
+        Produtor produtor = produtorRepository.findById(produtorid)
+                .orElseThrow(() -> new RuntimeException("Produtor não encontrado"));
+
+        Fazenda fazenda = new Fazenda();
+        fazenda.setNome(dto.nome());
+        fazenda.setCidade(dto.cidade());
+        fazenda.setEstado(dto.estado());
+        fazenda.setLatitude(dto.latitude());
+        fazenda.setLongitude(dto.longitude());
+        fazenda.setAreaTotalHa(dto.areaTotalHa());
+        fazenda.setExploracao(TipoExploracao.valueOf(dto.exploracao()));
+        fazenda.setGeopoligono(dto.geopoligono());
+        fazenda.setProdutor(produtor);
+
+        Fazenda FazendaSalva = fazendaRepository.save(fazenda);
+
+        return new FazendaResponseDTO(FazendaSalva);
+    }
+}
