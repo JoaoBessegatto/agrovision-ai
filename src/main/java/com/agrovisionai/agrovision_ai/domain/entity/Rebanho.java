@@ -16,10 +16,15 @@ import java.util.UUID;
 public class Rebanho {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "CHAR(36)")
     private UUID id;
     private String nome;
     private String descricao;
 
     @OneToMany(mappedBy = "rebanho")
     private List<Animal> animais;
+
+    @ManyToOne
+    @JoinColumn(name = "fazenda_id", nullable = false)
+    private Fazenda fazenda;
 }

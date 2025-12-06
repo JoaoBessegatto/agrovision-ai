@@ -15,9 +15,10 @@ import java.util.UUID;
 public class Animal {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "CHAR(36)")
     private UUID Id;
 
-    private String identificacao; // brinco / chip / tag
+    private String identificacao;
     private String raca;
     private String sexo;
     private Integer idadeMeses;

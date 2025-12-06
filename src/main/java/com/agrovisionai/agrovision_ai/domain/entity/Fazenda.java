@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -17,6 +18,7 @@ public class Fazenda {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "CHAR(36)")
     private UUID id;
 
     @Column(nullable = false)
@@ -44,4 +46,9 @@ public class Fazenda {
     @ManyToOne
     @JoinColumn(name = "produtor_id")
     private Produtor produtor;
+
+    @OneToMany(mappedBy = "fazenda", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Rebanho> rebanhos;
+
+
 }

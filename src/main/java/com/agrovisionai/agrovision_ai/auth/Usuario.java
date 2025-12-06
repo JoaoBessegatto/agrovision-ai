@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
+
 @Entity
 @Getter
 @Setter
@@ -20,7 +22,8 @@ import java.util.List;
 public class Usuario implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private Long Id;
+    @Column(columnDefinition = "CHAR(36)")
+    private UUID Id;
     private String name;
     private String email;
     private String password;
