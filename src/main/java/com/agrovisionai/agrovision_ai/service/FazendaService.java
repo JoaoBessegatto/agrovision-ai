@@ -1,5 +1,7 @@
 package com.agrovisionai.agrovision_ai.service;
 
+import com.agrovisionai.agrovision_ai.auth.Role;
+import com.agrovisionai.agrovision_ai.auth.Usuario;
 import com.agrovisionai.agrovision_ai.domain.dto.request.FazendaRequestDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.FazendaResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.entity.Fazenda;
@@ -8,21 +10,34 @@ import com.agrovisionai.agrovision_ai.domain.enums.TipoExploracao;
 import com.agrovisionai.agrovision_ai.repository.FazendaRepository;
 import com.agrovisionai.agrovision_ai.repository.ProdutorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 @Service
 public class FazendaService {
-    @Autowired
-    FazendaRepository fazendaRepository;
+    private final FazendaRepository fazendaRepository;
+    private final ProdutorRepository produtorRepository;
 
-    @Autowired
-    ProdutorRepository produtorRepository;
+    public FazendaService(FazendaRepository fazendaRepository, ProdutorRepository produtorRepository) {
+        this.fazendaRepository = fazendaRepository;
+        this.produtorRepository = produtorRepository;
+    }
 
-    public FazendaResponseDTO salvar(FazendaRequestDTO dto, UUID produtorid){
-        Produtor produtor = produtorRepository.findById(produtorid)
-                .orElseThrow(() -> new RuntimeException("Produtor não encontrado"));
+    public FazendaResponseDTO salvar(FazendaRequestDTO dto){
+        Usuario usuarioLogado = (Usuario) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        if(usuarioLogado.getRole() != Role.PRODUTOR){
+            throw new RuntimeException("Usuário autenticado não é PRODUTOR");
+        }
+
+        Produtor produtor = produtorRepository.findByUsuario(usuarioLogado)
+                .orElseThrow(() -> new RuntimeException("Produtor não encontrado para o usuário autenticado"));
+
 
         Fazenda fazenda = new Fazenda();
         fazenda.setNome(dto.nome());

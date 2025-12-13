@@ -5,6 +5,7 @@ import com.agrovisionai.agrovision_ai.domain.dto.response.FazendaResponseDTO;
 import com.agrovisionai.agrovision_ai.service.FazendaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +17,9 @@ public class ControllerFazenda {
     @Autowired
     FazendaService fazendaService;
 
-    @PostMapping("/{produtorId}")
-    public ResponseEntity<FazendaResponseDTO>cadastrar(@PathVariable UUID produtorId, @Valid @RequestBody FazendaRequestDTO dto){
-        FazendaResponseDTO fazendaResponse = fazendaService.salvar(dto,produtorId);
-        return ResponseEntity.ok().body(fazendaResponse);
+    @PostMapping()
+    public ResponseEntity<FazendaResponseDTO>cadastrar(@RequestBody @Valid FazendaRequestDTO dto){
+        FazendaResponseDTO fazendaResponse = fazendaService.salvar(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(fazendaResponse);
     }
 }
