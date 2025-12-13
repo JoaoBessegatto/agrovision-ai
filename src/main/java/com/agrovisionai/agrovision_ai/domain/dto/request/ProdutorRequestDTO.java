@@ -9,7 +9,6 @@ public record ProdutorRequestDTO(
     String nomeCompleto,
     String cpfOrCnpj,
     LocalDate dataNascimento,
-    String telefone,
-    UUID usuarioId
+    String telefone
 ) {
 }

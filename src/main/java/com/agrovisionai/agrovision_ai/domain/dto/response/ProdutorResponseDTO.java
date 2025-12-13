@@ -6,14 +6,14 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public record ProdutorResponseDTO(
-        UUID id,
+        String cpfOrCnpj,
         String nomeCompleto,
         LocalDate dataNascimento,
         String telefone
         ) {
     public ProdutorResponseDTO(Produtor produtor){
         this(
-                produtor.getId(),
+                produtor.getCpfOrCnpj(),
                 produtor.getNomeCompleto(),
                 produtor.getDataNascimento(),
                 produtor.getTelefone()
