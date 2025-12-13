@@ -1,8 +1,10 @@
-package com.agrovisionai.agrovision_ai.domain.dto;
+package com.agrovisionai.agrovision_ai.domain.dto.request;
 
+
+import java.util.UUID;
 
 public record FazendaRequestDTO(
-        String id,
+        UUID id,
         String nome,
         String cidade,
         String estado,

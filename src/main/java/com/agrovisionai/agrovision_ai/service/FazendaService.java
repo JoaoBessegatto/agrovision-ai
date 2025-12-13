@@ -1,7 +1,7 @@
 package com.agrovisionai.agrovision_ai.service;
 
-import com.agrovisionai.agrovision_ai.domain.dto.FazendaRequestDTO;
-import com.agrovisionai.agrovision_ai.domain.dto.FazendaResponseDTO;
+import com.agrovisionai.agrovision_ai.domain.dto.request.FazendaRequestDTO;
+import com.agrovisionai.agrovision_ai.domain.dto.response.FazendaResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.entity.Fazenda;
 import com.agrovisionai.agrovision_ai.domain.entity.Produtor;
 import com.agrovisionai.agrovision_ai.domain.enums.TipoExploracao;

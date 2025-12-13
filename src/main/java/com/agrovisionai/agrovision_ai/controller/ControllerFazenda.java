@@ -1,7 +1,7 @@
 package com.agrovisionai.agrovision_ai.controller;
 
-import com.agrovisionai.agrovision_ai.domain.dto.FazendaRequestDTO;
-import com.agrovisionai.agrovision_ai.domain.dto.FazendaResponseDTO;
+import com.agrovisionai.agrovision_ai.domain.dto.request.FazendaRequestDTO;
+import com.agrovisionai.agrovision_ai.domain.dto.response.FazendaResponseDTO;
 import com.agrovisionai.agrovision_ai.service.FazendaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

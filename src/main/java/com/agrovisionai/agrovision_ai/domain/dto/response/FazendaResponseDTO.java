@@ -1,4 +1,4 @@
-package com.agrovisionai.agrovision_ai.domain.dto;
+package com.agrovisionai.agrovision_ai.domain.dto.response;
 
 import com.agrovisionai.agrovision_ai.domain.entity.Fazenda;
 
