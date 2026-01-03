@@ -44,6 +44,6 @@ public class Produtor {
     @OneToOne
     private Usuario usuario;
 
-    @OneToMany(mappedBy = "produtor")
+    @OneToMany(mappedBy = "produtor", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Fazenda> fazendas;
 }

@@ -9,8 +9,6 @@ import com.agrovisionai.agrovision_ai.domain.entity.Produtor;
 import com.agrovisionai.agrovision_ai.domain.enums.TipoExploracao;
 import com.agrovisionai.agrovision_ai.repository.FazendaRepository;
 import com.agrovisionai.agrovision_ai.repository.ProdutorRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 

@@ -44,7 +44,7 @@ public class SecurityConfig  {
         http
                 .csrf(AbstractHttpConfigurer::disable )
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers( "/api/auth/login", "/api/auth/cadastrar").permitAll()
+                        .requestMatchers( "/api/auth/login", "/api/auth/cadastrar", "/api/auth/cadastrar-admin").permitAll()
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
