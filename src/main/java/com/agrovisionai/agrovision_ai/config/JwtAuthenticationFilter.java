@@ -4,6 +4,7 @@ package com.agrovisionai.agrovision_ai.config;
 
 import java.io.IOException;
 
+import com.agrovisionai.agrovision_ai.auth.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -52,14 +53,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+            Usuario usuario = (Usuario) this.userDetailsService.loadUserByUsername(userEmail);
 
-            if (jwtService.isTokenValid(jwt, userDetails)) {
+
+            if (jwtService.isTokenValid(jwt, usuario)) {
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
-                                userDetails,
+                                usuario,
                                 null,
-                                userDetails.getAuthorities()
+                                usuario.getAuthorities()
                         );
 
                 authToken.setDetails(

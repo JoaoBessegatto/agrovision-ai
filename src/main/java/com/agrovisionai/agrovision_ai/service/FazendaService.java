@@ -1,5 +1,6 @@
 package com.agrovisionai.agrovision_ai.service;
 
+import com.agrovisionai.agrovision_ai.auth.CurrentUserProvider;
 import com.agrovisionai.agrovision_ai.auth.Role;
 import com.agrovisionai.agrovision_ai.auth.Usuario;
 import com.agrovisionai.agrovision_ai.domain.dto.request.FazendaRequestDTO;
@@ -19,17 +20,17 @@ import java.util.UUID;
 public class FazendaService {
     private final FazendaRepository fazendaRepository;
     private final ProdutorRepository produtorRepository;
+    private final CurrentUserProvider currentUserProvider;
 
-    public FazendaService(FazendaRepository fazendaRepository, ProdutorRepository produtorRepository) {
+    public FazendaService(FazendaRepository fazendaRepository, ProdutorRepository produtorRepository, CurrentUserProvider currentUserProvider) {
         this.fazendaRepository = fazendaRepository;
         this.produtorRepository = produtorRepository;
+        this.currentUserProvider = currentUserProvider;
     }
 
     public FazendaResponseDTO salvar(FazendaRequestDTO dto){
-        Usuario usuarioLogado = (Usuario) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
+        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
+
         if(usuarioLogado.getRole() != Role.PRODUTOR){
             throw new RuntimeException("Usuário autenticado não é PRODUTOR");
         }
@@ -54,10 +55,8 @@ public class FazendaService {
         return new FazendaResponseDTO(FazendaSalva);
     }
     public FazendaResponseDTO atualizar(FazendaRequestDTO dto){
-        Usuario usuarioLogado = (Usuario) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
+        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
+
         if(usuarioLogado.getRole() != Role.PRODUTOR){
             throw new RuntimeException("Usuario autenticado não é Produtor");
         }
@@ -81,10 +80,8 @@ public class FazendaService {
         return new FazendaResponseDTO(fazendaAtualizada);
     }
     public boolean deletar(UUID fazendaId){
-        Usuario usuarioLogado = (Usuario) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
+        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
+
         if(usuarioLogado.getRole() != Role.PRODUTOR){
             throw new RuntimeException("O usuario precisa ser Produtor");
         }
@@ -98,10 +95,8 @@ public class FazendaService {
         return true;
     }
     public List<FazendaResponseDTO>getAll(){
-        Usuario usuarioLogado = (Usuario) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
+        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
+
         if(usuarioLogado.getRole() != Role.ADMIN){
             throw new RuntimeException("O Usuario não tem permicão de ADMIN");
         }
@@ -112,10 +107,8 @@ public class FazendaService {
                 .toList();
     }
     public FazendaResponseDTO get(UUID fazendaId){
-        Usuario usuarioLogado = (Usuario) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
+        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
+
         if(usuarioLogado.getRole() != Role.PRODUTOR){
             throw new RuntimeException("Usuario logado precisa ser Produtor");
         }

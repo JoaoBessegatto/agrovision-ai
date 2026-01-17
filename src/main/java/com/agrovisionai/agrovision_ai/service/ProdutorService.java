@@ -1,14 +1,12 @@
 package com.agrovisionai.agrovision_ai.service;
 
+import com.agrovisionai.agrovision_ai.auth.CurrentUserProvider;
 import com.agrovisionai.agrovision_ai.auth.Role;
 import com.agrovisionai.agrovision_ai.auth.Usuario;
-import com.agrovisionai.agrovision_ai.auth.UsuarioRepository;
 import com.agrovisionai.agrovision_ai.domain.dto.request.ProdutorRequestDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.ProdutorResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.entity.Produtor;
 import com.agrovisionai.agrovision_ai.repository.ProdutorRepository;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,17 +17,16 @@ import java.util.List;
 public class ProdutorService {
 
     private final ProdutorRepository produtorRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final CurrentUserProvider currentUserProvider;
 
     public ProdutorService(ProdutorRepository produtorRepository,
-                           UsuarioRepository usuarioRepository) {
+                           CurrentUserProvider currentUserProvider) {
         this.produtorRepository = produtorRepository;
-        this.usuarioRepository = usuarioRepository;
+        this.currentUserProvider = currentUserProvider;
     }
 
     public ProdutorResponseDTO cadastrar(ProdutorRequestDTO dto){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Usuario usuarioLogado = (Usuario) auth.getPrincipal();
+        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
         if(usuarioLogado.getRole() != Role.PRODUTOR){
             throw new RuntimeException("O Usuário não possui Role Produtor");
@@ -50,8 +47,7 @@ public class ProdutorService {
         return new ProdutorResponseDTO(produtorSave);
     }
     public ProdutorResponseDTO atualizar(ProdutorRequestDTO dto){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Usuario usuarioLogado = (Usuario) auth.getPrincipal();
+        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
         if(usuarioLogado.getRole() != Role.PRODUTOR){
             throw new RuntimeException("O Usuario não possui permição para atualizar");
@@ -70,8 +66,7 @@ public class ProdutorService {
         return new ProdutorResponseDTO(produtorAtualizado);
     }
     public boolean deletar (){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Usuario usuarioLogado = (Usuario) auth.getPrincipal();
+        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
         if (usuarioLogado.getRole() != Role.PRODUTOR) {
             throw new RuntimeException("Usuário não possui permissão para deletar produtor");
@@ -85,8 +80,7 @@ public class ProdutorService {
     }
     @Transactional(readOnly = true)
     public List<ProdutorResponseDTO> findAll(){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Usuario usuarioLogado = (Usuario) auth.getPrincipal();
+        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
         if(usuarioLogado.getRole() != Role.ADMIN){
             throw new RuntimeException("Somente ADMIN podem fazer essa requisição");
@@ -99,8 +93,7 @@ public class ProdutorService {
 
     @Transactional(readOnly = true)
     public ProdutorResponseDTO findMe(){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Usuario usuarioLogado = (Usuario) auth.getPrincipal();
+        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
         Produtor produtor = produtorRepository.findByUsuario(usuarioLogado)
                 .orElseThrow(() -> new RuntimeException("Produtor não encontrado"));
