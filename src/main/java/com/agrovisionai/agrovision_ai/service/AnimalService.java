@@ -6,6 +6,9 @@ import com.agrovisionai.agrovision_ai.domain.dto.request.AnimalRequestDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.AnimalResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.entity.Animal;
 import com.agrovisionai.agrovision_ai.domain.entity.Rebanho;
+import com.agrovisionai.agrovision_ai.exception.BusinessException;
+import com.agrovisionai.agrovision_ai.exception.ResouceNotFoundException;
+import com.agrovisionai.agrovision_ai.exception.UnauthorizedException;
 import com.agrovisionai.agrovision_ai.repository.AnimalRepository;
 import com.agrovisionai.agrovision_ai.repository.RebanhoRepository;
 import org.springframework.stereotype.Service;
@@ -28,12 +31,12 @@ public class AnimalService {
         Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
         Rebanho rebanho = rebanhoRepository.findById(dto.rebanhoId())
-                .orElseThrow(() -> new RuntimeException("Rebanho não encontrado"));
+                .orElseThrow(() -> new ResouceNotFoundException("Rebanho não encontrado"));
 
         validarPermissao(usuarioLogado, rebanho);
 
         if(animalRepository.existsByIndentificacao(dto.identificacao())){
-            throw new RuntimeException("Ja existe um animal com essa identificação");
+            throw new BusinessException("Ja existe um animal com essa identificação");
         }
         Animal animal = new Animal(
                 dto.identificacao(),
@@ -49,12 +52,12 @@ public class AnimalService {
         Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
         Rebanho rebanho = rebanhoRepository.findById(rebanhoId)
-                        .orElseThrow(() -> new RuntimeException("Rebanho não encontrado"));
+                        .orElseThrow(() -> new ResouceNotFoundException("Rebanho não encontrado"));
 
         validarPermissao(usuarioLogado, rebanho);
 
         Animal animal = animalRepository.findById(animalId)
-                .orElseThrow(() -> new RuntimeException("Animal não encontrado"));
+                .orElseThrow(() -> new ResouceNotFoundException("Animal não encontrado"));
 
         animal.mudarRebanho(rebanho);
     }
@@ -63,7 +66,7 @@ public class AnimalService {
     private void validarPermissao(Usuario usuario, Rebanho rebanho) {
         if (!rebanho.getFazenda().getProdutor().getUsuario().getId()
                 .equals(usuario.getId())) {
-            throw new RuntimeException("Usuário não tem permissão para cadastrar animal neste rebanho");
+            throw new UnauthorizedException("Usuário não tem permissão para cadastrar animal neste rebanho");
         }
     }
 

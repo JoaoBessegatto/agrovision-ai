@@ -8,6 +8,9 @@ import com.agrovisionai.agrovision_ai.domain.dto.response.FazendaResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.entity.Fazenda;
 import com.agrovisionai.agrovision_ai.domain.entity.Produtor;
 import com.agrovisionai.agrovision_ai.domain.enums.TipoExploracao;
+import com.agrovisionai.agrovision_ai.exception.BusinessException;
+import com.agrovisionai.agrovision_ai.exception.ResouceNotFoundException;
+import com.agrovisionai.agrovision_ai.exception.UnauthorizedException;
 import com.agrovisionai.agrovision_ai.repository.FazendaRepository;
 import com.agrovisionai.agrovision_ai.repository.ProdutorRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,11 +35,11 @@ public class FazendaService {
         Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
         if(usuarioLogado.getRole() != Role.PRODUTOR){
-            throw new RuntimeException("Usuário autenticado não é PRODUTOR");
+            throw new UnauthorizedException("Usuário autenticado não é PRODUTOR");
         }
 
         Produtor produtor = produtorRepository.findByUsuario(usuarioLogado)
-                .orElseThrow(() -> new RuntimeException("Produtor não encontrado para o usuário autenticado"));
+                .orElseThrow(() -> new ResouceNotFoundException("Produtor não encontrado para o usuário autenticado"));
 
 
         Fazenda fazenda = new Fazenda();
@@ -58,14 +61,14 @@ public class FazendaService {
         Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
         if(usuarioLogado.getRole() != Role.PRODUTOR){
-            throw new RuntimeException("Usuario autenticado não é Produtor");
+            throw new UnauthorizedException("Usuario autenticado não é Produtor");
         }
 
         Produtor produtor = produtorRepository.findByUsuario(usuarioLogado)
-                .orElseThrow(() -> new RuntimeException("O Usuario precisa ter cadastro de produtor"));
+                .orElseThrow(() -> new BusinessException("O Usuario precisa ter cadastro de produtor"));
 
         Fazenda fazenda = fazendaRepository.findByIdAndProdutor(dto.id(),produtor)
-                .orElseThrow(() -> new RuntimeException("Fazenda não encontrada para esse produtor"));
+                .orElseThrow(() -> new ResouceNotFoundException("Fazenda não encontrada para esse produtor"));
 
         fazenda.setNome(dto.nome());
         fazenda.setCidade(dto.cidade());
@@ -83,13 +86,13 @@ public class FazendaService {
         Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
         if(usuarioLogado.getRole() != Role.PRODUTOR){
-            throw new RuntimeException("O usuario precisa ser Produtor");
+            throw new UnauthorizedException("O usuario precisa ser Produtor");
         }
         Produtor produtor = produtorRepository.findByUsuario(usuarioLogado)
-                .orElseThrow(()-> new RuntimeException("Não foi possivel achar cadastro de Produtor para esse usuario logado"));
+                .orElseThrow(()-> new ResouceNotFoundException("Não foi possivel achar cadastro de Produtor para esse usuario logado"));
 
         Fazenda fazenda = fazendaRepository.findByIdAndProdutor(fazendaId,produtor)
-                .orElseThrow(()-> new RuntimeException("Fazenda não encontrada para esse produtor logado"));
+                .orElseThrow(()-> new ResouceNotFoundException("Fazenda não encontrada para esse produtor logado"));
 
         fazendaRepository.delete(fazenda);
         return true;
@@ -98,7 +101,7 @@ public class FazendaService {
         Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
         if(usuarioLogado.getRole() != Role.ADMIN){
-            throw new RuntimeException("O Usuario não tem permicão de ADMIN");
+            throw new UnauthorizedException("O Usuario não tem permicão de ADMIN");
         }
 
         return fazendaRepository.findAll()
@@ -110,12 +113,12 @@ public class FazendaService {
         Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
         if(usuarioLogado.getRole() != Role.PRODUTOR){
-            throw new RuntimeException("Usuario logado precisa ser Produtor");
+            throw new UnauthorizedException("Usuario logado precisa ser Produtor");
         }
         Produtor produtor = produtorRepository.findByUsuario(usuarioLogado)
-                .orElseThrow(()-> new RuntimeException("Usuario precisa ter cadastro de Produtor"));
+                .orElseThrow(()-> new UnauthorizedException("Usuario precisa ter cadastro de Produtor"));
         Fazenda fazenda = fazendaRepository.findByIdAndProdutor(fazendaId,produtor)
-                .orElseThrow(()-> new RuntimeException("Fazenda não encontrada para esse produtor"));
+                .orElseThrow(()-> new ResouceNotFoundException("Fazenda não encontrada para esse produtor"));
 
         return new FazendaResponseDTO(fazenda);
     }

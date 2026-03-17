@@ -6,6 +6,9 @@ import com.agrovisionai.agrovision_ai.auth.Usuario;
 import com.agrovisionai.agrovision_ai.domain.dto.request.ProdutorRequestDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.ProdutorResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.entity.Produtor;
+import com.agrovisionai.agrovision_ai.exception.BusinessException;
+import com.agrovisionai.agrovision_ai.exception.ResouceNotFoundException;
+import com.agrovisionai.agrovision_ai.exception.UnauthorizedException;
 import com.agrovisionai.agrovision_ai.repository.ProdutorRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,11 +32,11 @@ public class ProdutorService {
         Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
         if(usuarioLogado.getRole() != Role.PRODUTOR){
-            throw new RuntimeException("O Usuário não possui Role Produtor");
+            throw new UnauthorizedException("O Usuário não possui Role Produtor");
         }
 
         if(produtorRepository.existsByUsuario(usuarioLogado)){
-            throw new RuntimeException("Este usuário ja esta vinculado a um produtor");
+            throw new BusinessException("Este usuário ja esta vinculado a um produtor");
         }
 
         Produtor produtor = new Produtor();
@@ -50,11 +53,11 @@ public class ProdutorService {
         Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
         if(usuarioLogado.getRole() != Role.PRODUTOR){
-            throw new RuntimeException("O Usuario não possui permição para atualizar");
+            throw new UnauthorizedException("O Usuario não possui permição para atualizar");
         }
 
         Produtor produtor = produtorRepository.findByUsuario(usuarioLogado)
-                .orElseThrow(() -> new RuntimeException("Produtor não encontrado para este usuário"));
+                .orElseThrow(() -> new ResouceNotFoundException("Produtor não encontrado para este usuário"));
 
         produtor.setNomeCompleto(dto.nomeCompleto());
         produtor.setCpfOrCnpj(dto.cpfOrCnpj());
@@ -69,11 +72,11 @@ public class ProdutorService {
         Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
         if (usuarioLogado.getRole() != Role.PRODUTOR) {
-            throw new RuntimeException("Usuário não possui permissão para deletar produtor");
+            throw new UnauthorizedException("Usuário não possui permissão para deletar produtor");
         }
 
         Produtor produtor = produtorRepository.findByUsuario(usuarioLogado)
-                .orElseThrow(() -> new RuntimeException("Produtor não encontrado"));
+                .orElseThrow(() -> new ResouceNotFoundException("Produtor não encontrado"));
 
         produtorRepository.delete(produtor);
         return true;
@@ -83,7 +86,7 @@ public class ProdutorService {
         Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
         if(usuarioLogado.getRole() != Role.ADMIN){
-            throw new RuntimeException("Somente ADMIN podem fazer essa requisição");
+            throw new UnauthorizedException("Somente ADMIN podem fazer essa requisição");
         }
         return produtorRepository.findAll()
                 .stream()
@@ -96,7 +99,7 @@ public class ProdutorService {
         Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
         Produtor produtor = produtorRepository.findByUsuario(usuarioLogado)
-                .orElseThrow(() -> new RuntimeException("Produtor não encontrado"));
+                .orElseThrow(() -> new ResouceNotFoundException("Produtor não encontrado"));
 
         return new ProdutorResponseDTO(produtor);
     }

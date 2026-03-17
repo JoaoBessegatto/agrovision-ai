@@ -7,6 +7,9 @@ import com.agrovisionai.agrovision_ai.domain.dto.request.FuncionarioRequestDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.FuncionarioResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.entity.Fazenda;
 import com.agrovisionai.agrovision_ai.domain.entity.Funcionario;
+import com.agrovisionai.agrovision_ai.exception.BusinessException;
+import com.agrovisionai.agrovision_ai.exception.ResouceNotFoundException;
+import com.agrovisionai.agrovision_ai.exception.UnauthorizedException;
 import com.agrovisionai.agrovision_ai.repository.FazendaRepository;
 import com.agrovisionai.agrovision_ai.repository.FuncionarioRepository;
 import org.springframework.stereotype.Service;
@@ -31,15 +34,15 @@ public class FuncionarioService {
         Usuario usuarioLogado = currentUserProvidern.getUsuarioAtual();
 
         Fazenda fazenda = fazendaRepository.findById(dto.fazendaId())
-                .orElseThrow(() -> new RuntimeException("Fazenda não encontrada"));
+                .orElseThrow(() -> new ResouceNotFoundException("Fazenda não encontrada"));
 
         validarPermissaoProdutor(usuarioLogado,fazenda);
 
         Usuario usuarioFuncionario = usuarioRepository.findById(dto.usuarioId())
-                .orElseThrow(() -> new RuntimeException("Usuario nÃo encontrado"));
+                .orElseThrow(() -> new ResouceNotFoundException("Usuario nÃo encontrado"));
 
         if(funcionarioRepository.existsByUsuarioIdAndFazendaId(usuarioFuncionario.getId(),fazenda.getId())){
-            throw new RuntimeException("Ja Existe esse funcionario nessa fazenda");
+            throw new BusinessException("Ja Existe esse funcionario nessa fazenda");
         }
         Funcionario funcionario = new Funcionario(
                 usuarioFuncionario,
@@ -52,7 +55,7 @@ public class FuncionarioService {
     private void validarPermissaoProdutor(Usuario usuario, Fazenda fazenda) {
         if (!fazenda.getProdutor().getUsuario().getId()
                 .equals(usuario.getId())) {
-            throw new RuntimeException("Apenas o produtor pode cadastrar funcionários");
+            throw new UnauthorizedException("Apenas o produtor pode cadastrar funcionários");
         }
     }
 }

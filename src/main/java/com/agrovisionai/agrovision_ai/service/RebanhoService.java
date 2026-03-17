@@ -5,6 +5,8 @@ import com.agrovisionai.agrovision_ai.auth.Usuario;
 import com.agrovisionai.agrovision_ai.domain.dto.response.RebanhoResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.entity.Fazenda;
 import com.agrovisionai.agrovision_ai.domain.entity.Rebanho;
+import com.agrovisionai.agrovision_ai.exception.ResouceNotFoundException;
+import com.agrovisionai.agrovision_ai.exception.UnauthorizedException;
 import com.agrovisionai.agrovision_ai.repository.FazendaRepository;
 import com.agrovisionai.agrovision_ai.repository.RebanhoRepository;
 import org.springframework.stereotype.Service;
@@ -28,7 +30,7 @@ public class RebanhoService {
         Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
         Fazenda fazenda = fazendaRepository.findById(dto.fazendaId())
-                .orElseThrow(() -> new RuntimeException("Fazenda não encontrada"));
+                .orElseThrow(() -> new ResouceNotFoundException("Fazenda não encontrada"));
         validarPermissao(usuarioLogado,fazenda);
 
         Rebanho rebanho = new Rebanho(dto.nome(), dto.descricao(), fazenda);
@@ -57,7 +59,7 @@ public class RebanhoService {
     private void validarPermissao(Usuario usuario, Fazenda fazenda) {
         if (!fazenda.getProdutor().getUsuario().getId()
                 .equals(usuario.getId())) {
-            throw new RuntimeException("Acesso negado");
+            throw new UnauthorizedException("Acesso negado");
         }
     }
 }
