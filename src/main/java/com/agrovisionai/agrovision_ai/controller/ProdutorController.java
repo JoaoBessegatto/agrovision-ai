@@ -2,10 +2,8 @@ package com.agrovisionai.agrovision_ai.controller;
 
 import com.agrovisionai.agrovision_ai.domain.dto.request.ProdutorRequestDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.ProdutorResponseDTO;
-import com.agrovisionai.agrovision_ai.domain.entity.Produtor;
 import com.agrovisionai.agrovision_ai.service.ProdutorService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,10 +13,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/produtor")
-public class ControllerProdutor {
+public class ProdutorController {
     private final ProdutorService produtorService;
 
-    public ControllerProdutor(ProdutorService produtorService) {
+    public ProdutorController(ProdutorService produtorService) {
         this.produtorService = produtorService;
     }
 

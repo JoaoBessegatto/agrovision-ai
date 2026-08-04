@@ -10,5 +10,6 @@ public record AnimalRequestDTO(
         String raca,
         SexoAnimal sexo,
         LocalDate dataNascimento,
-        UUID rebanhoId
+        UUID rebanhoId,
+        Double pesoAtual
 ) {}

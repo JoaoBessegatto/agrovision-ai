@@ -59,7 +59,7 @@ public class RebanhoService {
     private void validarPermissao(Usuario usuario, Fazenda fazenda) {
         if (!fazenda.getProdutor().getUsuario().getId()
                 .equals(usuario.getId())) {
-            throw new UnauthorizedException("Acesso negado");
+            throw new UnauthorizedException( "Acesso negado");
         }
     }
 }

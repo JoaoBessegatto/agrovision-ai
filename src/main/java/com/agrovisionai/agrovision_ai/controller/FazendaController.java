@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("api/fazenda")
-public class ControllerFazenda {
+public class FazendaController {
     @Autowired
     FazendaService fazendaService;
 

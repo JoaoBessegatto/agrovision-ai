@@ -3,6 +3,7 @@ package com.agrovisionai.agrovision_ai.domain.entity;
 
 import com.agrovisionai.agrovision_ai.domain.enums.SexoAnimal;
 import com.agrovisionai.agrovision_ai.domain.enums.SituacaoAnimal;
+import com.agrovisionai.agrovision_ai.exception.BusinessException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -46,11 +47,15 @@ public class Animal {
     @ManyToOne(optional = false)
     private Rebanho rebanho;
 
+    @Column(nullable = false)
+    private Double pesoAtual;
+
     public Animal(
             String identificacao,
             String raca,
             SexoAnimal sexo,
             LocalDate dataNascimento,
+            Double pesoAtual,
             Rebanho rebanho
     ) {
         validarCriacao(identificacao, raca, sexo, dataNascimento, rebanho);
@@ -60,6 +65,7 @@ public class Animal {
         this.sexo = sexo;
         this.dataNascimento = dataNascimento;
         this.rebanho = rebanho;
+        this.pesoAtual = pesoAtual;
         this.situacao = SituacaoAnimal.ATIVO;
     }
 
@@ -71,18 +77,28 @@ public class Animal {
             Rebanho rebanho
     ) {
         if (identificacao == null || identificacao.isBlank()) {
-            throw new RuntimeException("Identificação do animal é obrigatória");
+            throw new BusinessException("Identificação do animal é obrigatória");
         }
         if (dataNascimento.isAfter(LocalDate.now())) {
-            throw new RuntimeException("Data de nascimento inválida");
+            throw new BusinessException("Data de nascimento inválida");
         }
         if (rebanho == null) {
-            throw new RuntimeException("Animal deve pertencer a um rebanho");
+            throw new BusinessException("Animal deve pertencer a um rebanho");
         }
+    }
+    public void atualizarPeso(Double novoPeso) {
+        if (novoPeso == null || novoPeso <= 0) {
+            throw new BusinessException("Peso inválido.");
+        }
+
+        this.pesoAtual = novoPeso;
     }
 
     public void inativar() {
         this.situacao = SituacaoAnimal.INATIVO;
+    }
+    public void ativar(){
+        this.situacao = SituacaoAnimal.ATIVO;
     }
 
     public int getIdadeMeses() {
@@ -92,7 +108,7 @@ public class Animal {
 
     public void mudarRebanho(Rebanho novoRebanho){
         if(novoRebanho == null){
-            throw new RuntimeException("Rebanho invalido");
+            throw new BusinessException("Rebanho invalido");
         }
         if(this.rebanho.equals(novoRebanho)){
             return;
