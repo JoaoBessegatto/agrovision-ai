@@ -21,11 +21,10 @@ public interface AnimalRepository extends JpaRepository<Animal, UUID> {
 
     List<Animal> findBySituacao(SituacaoAnimal situacao);
 
-    List<Animal> findBySexo(SexoAnimal sexo);
+    long countByRebanhoFazendaId(UUID fazendaId);
 
-    List<Animal> findByRacaIgnoreCase(String raca);
-
-    List<Animal> findByRebanhoIdAndSituacao(UUID rebanhoId,SituacaoAnimal situacao);
-
-    List<Animal> findByRebanhoFazendaIdAndSituacao(UUID fazendaId, SituacaoAnimal situacao);
+    long countByRebanhoFazendaIdAndSituacao(
+            UUID fazendaId,
+            SituacaoAnimal situacao
+    );
 }

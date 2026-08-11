@@ -12,5 +12,5 @@ import java.util.UUID;
 public interface FazendaRepository extends JpaRepository<Fazenda, UUID> {
 
     Optional<Fazenda> findByIdAndProdutor(UUID id, Produtor produtor);
-
+    Optional<Fazenda> findByProdutorUsuarioId(UUID usuarioId);
 }

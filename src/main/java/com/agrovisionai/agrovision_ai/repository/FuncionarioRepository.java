@@ -12,4 +12,5 @@ public interface FuncionarioRepository extends JpaRepository<Funcionario, UUID> 
     Optional<Funcionario> findByUsuarioIdAndFazendaId(UUID usuarioID, UUID fazendaId);
     List<Funcionario> findByFazendaId(UUID fazendaId);
 
+    long countByFazendaId(UUID fazendaId);
 }

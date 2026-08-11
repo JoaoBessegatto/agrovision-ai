@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/animais")
+@RequestMapping("api/animais")
 public class AnimalController {
 
     private final AnimalService animalService;

@@ -9,4 +9,5 @@ import java.util.UUID;
 
 public interface RebanhoRepository extends JpaRepository<Rebanho, UUID> {
     List<Rebanho> findByFazendaId(UUID fazendaId);
+    long countByFazendaId(UUID fazendaId);
 }
