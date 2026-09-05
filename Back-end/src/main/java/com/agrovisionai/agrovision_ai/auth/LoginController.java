@@ -12,7 +12,6 @@ import static com.agrovisionai.agrovision_ai.auth.Role.PRODUTOR;
 
 @RestController
 @RequestMapping("api/auth")
-@CrossOrigin("*")
 public class LoginController {
     @Autowired
     private UsuarioRepository usuarioRepository;

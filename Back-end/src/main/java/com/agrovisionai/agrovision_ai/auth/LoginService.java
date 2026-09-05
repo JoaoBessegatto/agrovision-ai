@@ -1,6 +1,7 @@
 package com.agrovisionai.agrovision_ai.auth;
 
 import com.agrovisionai.agrovision_ai.config.JwtServiceGenerator;
+import com.agrovisionai.agrovision_ai.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,8 +39,7 @@ public class LoginService {
                     usuario.getRole().name()
             );
         }catch (AuthenticationException e){
-            throw new RuntimeException("Usuário ou senha inválidos.");
-            // tratar melhor esse erro depois com class personalizada
+            throw new UnauthorizedException("Usuário ou senha inválidos.");
         }
     }
 }
