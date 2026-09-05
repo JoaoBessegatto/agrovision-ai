@@ -1,1 +1,102 @@
-<p>login works!</p>
+<div class="login-container">
+
+  <div class="login-card">
+
+    <div class="login-header">
+      <h1>AgroVision AI</h1>
+      <p>Entre na sua conta</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+      <div class="form-group">
+
+        <label for="email">E-mail</label>
+
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="Digite seu e-mail"
+          autocomplete="email"
+        >
+
+        @if (
+          loginForm.controls.email.touched &&
+          loginForm.controls.email.hasError('required')
+        ) {
+          <span class="error">
+            O e-mail é obrigatório.
+          </span>
+        }
+
+        @if (
+          loginForm.controls.email.touched &&
+          loginForm.controls.email.hasError('email')
+        ) {
+          <span class="error">
+            Digite um e-mail válido.
+          </span>
+        }
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="password">Senha</label>
+
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          placeholder="Digite sua senha"
+          autocomplete="current-password"
+        >
+
+        @if (
+          loginForm.controls.password.touched &&
+          loginForm.controls.password.hasError('required')
+        ) {
+          <span class="error">
+            A senha é obrigatória.
+          </span>
+        }
+
+        @if (
+          loginForm.controls.password.touched &&
+          loginForm.controls.password.hasError('minlength')
+        ) {
+          <span class="error">
+            A senha deve ter pelo menos 6 caracteres.
+          </span>
+        }
+
+      </div>
+
+
+      @if (errorMessage) {
+        <div class="login-error">
+          {{ errorMessage }}
+        </div>
+      }
+
+
+      <button
+        type="submit"
+        [disabled]="loading"
+      >
+
+        @if (loading) {
+          Entrando...
+        } @else {
+          Entrar
+        }
+
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
