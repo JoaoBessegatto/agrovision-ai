@@ -1,0 +1,956 @@
+// ======================================================
+// FONTS
+// ======================================================
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+
+
+// ======================================================
+// VARIÁVEIS
+// ======================================================
+
+$green-950: #0b2015;
+$green-dark: #163a2a;
+$green: #2f6b45;
+$green-light: #dfeadf;
+$green-soft: #f2f6f1;
+$gold: #c9a227;
+
+$text-dark: #16211a;
+$text: #4e5b52;
+$text-light: #78837b;
+
+$white: #ffffff;
+$cream: #f7f8f5;
+
+$border: #e2e7e1;
+$border-dark: rgba(255, 255, 255, 0.12);
+
+$font-display: 'Fraunces', 'Georgia', serif;
+$font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+$max-width: 1200px;
+
+
+// ======================================================
+// RESET LOCAL
+// ======================================================
+
+:host {
+  display: block;
+  color: $text-dark;
+  background: $white;
+  font-family: $font-body;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+a {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+h1, h2, h3, h4 {
+  font-family: $font-display;
+  color: $text-dark;
+}
+
+
+// ======================================================
+// CONTAINER
+// ======================================================
+
+.navbar-container,
+.hero-container,
+.section-container,
+.cta-container,
+.footer-container {
+  width: min(100% - 48px, $max-width);
+  margin: 0 auto;
+}
+
+
+// ======================================================
+// EYEBROW / LABELS
+// ======================================================
+
+.eyebrow {
+  display: inline-block;
+
+  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+
+  color: $green;
+}
+
+.eyebrow-light {
+  color: #a8c9ac;
+}
+
+
+// ======================================================
+// NAVBAR
+// ======================================================
+
+.navbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 20;
+
+  padding: 22px 0;
+
+  color: $white;
+}
+
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  text-decoration: none;
+  color: inherit;
+
+  .logo-icon {
+    display: flex;
+    align-items: center;
+
+    mat-icon {
+      color: $gold;
+    }
+  }
+}
+
+.logo-text {
+  font-family: $font-display;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+
+  span {
+    font-weight: 400;
+  }
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 34px;
+
+  a {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 14.5px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $white;
+    }
+  }
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+::ng-deep .navbar {
+  .btn-login.mat-mdc-button {
+    color: $white;
+  }
+
+  .btn-register.mat-mdc-unelevated-button {
+    background-color: $white;
+    color: $green-dark;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 0 18px;
+  }
+}
+
+
+// ======================================================
+// BUTTONS (custom, outside Material)
+// ======================================================
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 0 4px;
+
+  font-size: 14.5px;
+  font-weight: 600;
+  text-decoration: none;
+
+  color: $white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: $white;
+  }
+}
+
+::ng-deep .hero-actions .btn-primary.mat-mdc-unelevated-button {
+  background-color: $green;
+  color: $white;
+  font-weight: 600;
+  border-radius: 7px;
+  padding: 0 22px;
+  height: 50px;
+
+  .mat-icon {
+    margin-left: 4px;
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+  }
+}
+
+::ng-deep .cta-actions {
+  .btn-light.mat-mdc-unelevated-button {
+    background-color: $white;
+    color: $green-dark;
+    font-weight: 600;
+    border-radius: 7px;
+    padding: 0 24px;
+    height: 50px;
+  }
+
+  .btn-outline.mat-mdc-outlined-button {
+    color: $white;
+    border-color: rgba(255, 255, 255, 0.4);
+    border-radius: 7px;
+    padding: 0 24px;
+    height: 50px;
+
+    &:hover {
+      border-color: $white;
+      background: rgba(255, 255, 255, 0.06);
+    }
+  }
+}
+
+
+// ======================================================
+// HERO
+// ======================================================
+
+.hero {
+  position: relative;
+
+  min-height: 780px;
+
+  display: flex;
+  align-items: center;
+
+  background-image: url('/assets/images/nelore-hero.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  color: $white;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    100deg,
+    rgba(11, 32, 21, 0.94) 0%,
+    rgba(11, 32, 21, 0.72) 40%,
+    rgba(11, 32, 21, 0.3) 75%,
+    rgba(11, 32, 21, 0.15) 100%
+  );
+}
+
+.hero-container {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-content {
+  width: min(100%, 660px);
+  padding-top: 70px;
+}
+
+.hero-eyebrow {
+  display: inline-block;
+
+  margin-bottom: 22px;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  color: #c9ddc9;
+}
+
+.hero h1 {
+  margin: 0;
+
+  font-size: clamp(45px, 5.2vw, 65px);
+  line-height: 1.08;
+  letter-spacing: -1px;
+  font-weight: 600;
+
+  -webkit-text-stroke: 3px rgba(175, 157, 55, 0.911);
+  paint-order: stroke fill;
+
+  span {
+    display: block;
+    color: #cfe1cf;
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.85);
+    paint-order: stroke fill;
+  }
+}
+
+.hero-content > p {
+  max-width: 540px;
+
+  margin: 28px 0 0;
+
+  font-size: 16.5px;
+  line-height: 1.7;
+
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+
+  margin-top: 36px;
+}
+
+.hero-scroll {
+  position: absolute;
+  left: 50%;
+  bottom: 36px;
+  z-index: 2;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 42px;
+  height: 42px;
+
+  transform: translateX(-50%);
+
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+
+  color: $white;
+
+  transition: border-color 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    border-color: $white;
+    transform: translateX(-50%) translateY(3px);
+  }
+}
+
+
+// ======================================================
+// SEÇÕES — BASE
+// ======================================================
+
+.section {
+  padding: 120px 0;
+}
+
+.section-header {
+  max-width: 640px;
+
+  margin: 0 auto 60px;
+  text-align: center;
+
+  h2 {
+    margin: 0;
+
+    font-size: clamp(32px, 3.6vw, 44px);
+    line-height: 1.12;
+    letter-spacing: -0.5px;
+    font-weight: 600;
+
+    span {
+      color: $green;
+    }
+  }
+
+  p {
+    margin-top: 18px;
+
+    font-size: 16px;
+    line-height: 1.7;
+
+    color: $text;
+  }
+}
+
+
+// ======================================================
+// PLATAFORMA
+// ======================================================
+
+.platform-section {
+  background: $white;
+}
+
+.platform-grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+
+  gap: 70px;
+
+  align-items: center;
+}
+
+.platform-image {
+  position: relative;
+}
+
+.platform-image-frame {
+  position: relative;
+
+  min-height: 480px;
+  overflow: hidden;
+
+  border-radius: 6px;
+
+  img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.platform-image-tag {
+  position: absolute;
+
+  left: -1px;
+  bottom: 24px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  padding: 16px 22px;
+
+  background: $green-dark;
+  color: $white;
+
+  border-radius: 0 6px 6px 0;
+
+  strong {
+    font-size: 15px;
+  }
+
+  span {
+    font-size: 12.5px;
+    color: rgba(255, 255, 255, 0.65);
+  }
+}
+
+.platform-content {
+  max-width: 500px;
+
+  h2 {
+    margin: 0;
+
+    font-size: clamp(32px, 3.6vw, 42px);
+    line-height: 1.12;
+    letter-spacing: -0.5px;
+    font-weight: 600;
+
+    span {
+      color: $green;
+    }
+  }
+
+  > p {
+    margin: 20px 0 0;
+
+    color: $text;
+    font-size: 15.5px;
+    line-height: 1.75;
+  }
+}
+
+.feature-list {
+  margin-top: 36px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.feature-item {
+  display: flex;
+  gap: 16px;
+
+  .feature-icon {
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 40px;
+    height: 40px;
+
+    border-radius: 8px;
+    background: $green-soft;
+    color: $green;
+
+    font-size: 20px;
+  }
+
+  h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0;
+    color: $text;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+}
+
+
+// ======================================================
+// INTELIGÊNCIA
+// ======================================================
+
+.intelligence-section {
+  background: linear-gradient(160deg, $green-950 0%, $green-dark 100%);
+  color: $white;
+
+  .section-header {
+    h2 {
+      color: $white;
+
+      span {
+        color: #b9d9bb;
+      }
+    }
+
+    p {
+      color: rgba(255, 255, 255, 0.72);
+    }
+  }
+}
+
+.intelligence-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.intelligence-card {
+  padding: 34px 30px;
+
+  border: 1px solid $border-dark;
+  border-radius: 8px;
+
+  background: rgba(255, 255, 255, 0.03);
+
+  transition: border-color 0.2s ease, background 0.2s ease;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .card-icon {
+    color: $gold;
+    font-size: 26px;
+    height: 26px;
+    width: 26px;
+
+    margin-bottom: 22px;
+  }
+
+  h3 {
+    margin: 0 0 10px;
+    color: $white;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 14px;
+    line-height: 1.65;
+  }
+}
+
+.data-flow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-top: 70px;
+
+  padding-top: 50px;
+
+  border-top: 1px solid $border-dark;
+}
+
+.flow-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  strong {
+    font-size: 14.5px;
+    color: $white;
+  }
+
+  small {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.55);
+  }
+}
+
+.flow-number {
+  font-family: $font-display;
+  font-size: 20px;
+  font-weight: 600;
+
+  color: $gold;
+}
+
+.flow-line {
+  flex: 1;
+  height: 1px;
+
+  margin: 0 18px;
+
+  background: $border-dark;
+}
+
+
+// ======================================================
+// BENEFÍCIOS
+// ======================================================
+
+.benefits-section {
+  background: $cream;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px 32px;
+}
+
+.benefit {
+  display: flex;
+  gap: 16px;
+
+  .benefit-icon {
+    flex-shrink: 0;
+
+    color: $green;
+    font-size: 24px;
+    height: 24px;
+    width: 24px;
+
+    margin-top: 2px;
+  }
+
+  h3 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0;
+    color: $text;
+    font-size: 14px;
+    line-height: 1.65;
+  }
+}
+
+
+// ======================================================
+// CTA
+// ======================================================
+
+.cta-section {
+  position: relative;
+
+  padding: 130px 0;
+
+  background-image: url('/assets/images/nelore-aerea.jpg');
+  background-size: cover;
+  background-position: center;
+
+  color: $white;
+  text-align: center;
+}
+
+.cta-overlay {
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    180deg,
+    rgba(11, 32, 21, 0.92) 0%,
+    rgba(11, 32, 21, 0.82) 100%
+  );
+}
+
+.cta-container {
+  position: relative;
+  z-index: 2;
+
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.cta-container h2 {
+  margin: 0;
+
+  font-size: clamp(32px, 4vw, 46px);
+  line-height: 1.12;
+  letter-spacing: -0.5px;
+  font-weight: 600;
+
+  color: $white;
+}
+
+.cta-container p {
+  margin: 18px 0 0;
+
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.cta-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+
+  margin-top: 36px;
+}
+
+
+// ======================================================
+// FOOTER
+// ======================================================
+
+.footer {
+  background: $green-950;
+  color: $white;
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 60px;
+
+  padding-top: 64px;
+  padding-bottom: 64px;
+}
+
+.footer-brand {
+  max-width: 320px;
+
+  .logo {
+    margin-bottom: 18px;
+  }
+
+  p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+}
+
+.footer-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  h4 {
+    margin: 0 0 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: $white;
+  }
+
+  a,
+  button {
+    background: none;
+    border: none;
+    padding: 0;
+
+    text-align: left;
+
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 13px;
+
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $white;
+    }
+  }
+}
+
+.footer-bottom {
+  border-top: 1px solid $border-dark;
+
+  display: flex;
+  justify-content: space-between;
+
+  padding: 22px 24px;
+
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11.5px;
+
+  p {
+    margin: 0;
+  }
+}
+
+
+// ======================================================
+// RESPONSIVIDADE
+// ======================================================
+
+@media (max-width: 960px) {
+
+  .nav-menu {
+    display: none;
+  }
+
+  .platform-grid {
+    grid-template-columns: 1fr;
+    gap: 44px;
+  }
+
+  .platform-image-frame {
+    min-height: 380px;
+  }
+
+  .platform-content {
+    max-width: none;
+  }
+
+  .intelligence-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .benefits-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .data-flow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .flow-line {
+    display: none;
+  }
+}
+
+
+@media (max-width: 600px) {
+
+  .navbar-container,
+  .hero-container,
+  .section-container,
+  .cta-container,
+  .footer-container {
+    width: min(100% - 32px, $max-width);
+  }
+
+  .navbar {
+    padding: 18px 0;
+  }
+
+  ::ng-deep .navbar .btn-login.mat-mdc-button {
+    display: none;
+  }
+
+  .hero {
+    min-height: 700px;
+  }
+
+  .hero h1 {
+    font-size: 38px;
+    letter-spacing: -0.5px;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  .section {
+    padding: 80px 0;
+  }
+
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cta-section {
+    padding: 80px 0;
+  }
+
+  .footer-container {
+    flex-direction: column;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+  }
+}
