@@ -21,5 +21,11 @@ export class Landing {
   irParaCadastro(): void {
     this.router.navigate(['/cadastro']);
   }
-
+  scrollToSection(event: Event, id: string): void {
+  event.preventDefault();
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
 }

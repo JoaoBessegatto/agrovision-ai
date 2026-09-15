@@ -12,9 +12,9 @@
     </a>
 
     <nav class="nav-menu">
-      <a href="#plataforma">Plataforma</a>
-      <a href="#inteligencia">Inteligência</a>
-      <a href="#beneficios">Benefícios</a>
+      <a href="#plataforma" (click)="scrollToSection($event, 'plataforma')">Plataforma</a>
+      <a href="#inteligencia" (click)="scrollToSection($event, 'inteligencia')">Inteligência</a>
+      <a href="#beneficios" (click)="scrollToSection($event, 'beneficios')">Benefícios</a>
     </nav>
 
     <div class="nav-actions">
@@ -62,7 +62,7 @@
             <mat-icon>arrow_forward</mat-icon>
           </button>
 
-          <a class="btn-secondary" href="#plataforma">
+          <a class="btn-secondary" href="#plataforma" (click)="scrollToSection($event, 'plataforma')">
             Conhecer a plataforma
           </a>
         </div>
@@ -70,7 +70,7 @@
       </div>
     </div>
 
-    <a class="hero-scroll" href="#plataforma" aria-label="Rolar para a seção Plataforma">
+    <a class="hero-scroll" href="#plataforma" aria-label="Rolar para a seção Plataforma" (click)="scrollToSection($event, 'plataforma')">
       <mat-icon>keyboard_arrow_down</mat-icon>
     </a>
 
@@ -361,9 +361,9 @@
 
     <div class="footer-column">
       <h4>Plataforma</h4>
-      <a href="#plataforma">Recursos</a>
-      <a href="#inteligencia">Inteligência</a>
-      <a href="#beneficios">Benefícios</a>
+      <a href="#plataforma" (click)="scrollToSection($event, 'plataforma')">Recursos</a>
+      <a href="#inteligencia" (click)="scrollToSection($event, 'inteligencia')">Inteligência</a>
+      <a href="#beneficios" (click)="scrollToSection($event, 'beneficios')">Benefícios</a>
     </div>
 
     <div class="footer-column">
