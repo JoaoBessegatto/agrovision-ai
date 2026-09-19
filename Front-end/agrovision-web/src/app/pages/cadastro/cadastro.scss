@@ -1,0 +1,678 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.cadastro-page {
+  min-height: 100vh;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(400px, 45%)
+    1fr;
+
+  background: #f7f9f6;
+}
+
+
+// ==================================================
+// LADO ESQUERDO
+// ==================================================
+
+.cadastro-visual {
+  position: relative;
+
+  min-height: 100vh;
+
+  padding: 42px 55px;
+
+  display: flex;
+  flex-direction: column;
+
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      140deg,
+      rgba(16, 54, 32, 0.96),
+      rgba(25, 89, 53, 0.88)
+    ),
+    url('/assets/images/cattle-hero.jpg')
+      center / cover no-repeat;
+}
+
+
+.logo {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  width: fit-content;
+
+  color: #ffffff;
+
+  text-decoration: none;
+}
+
+
+.logo-icon {
+  font-size: 27px;
+}
+
+
+.logo-text {
+  font-size: 22px;
+
+  font-weight: 800;
+
+  letter-spacing: -0.5px;
+}
+
+
+.logo-text span {
+  color: #a9d98b;
+}
+
+
+.visual-content {
+  max-width: 530px;
+
+  margin: auto 0;
+}
+
+
+.badge {
+  display: inline-block;
+
+  padding: 8px 15px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.22);
+
+  border-radius: 30px;
+
+  background:
+    rgba(255, 255, 255, 0.1);
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 1.6px;
+}
+
+
+.visual-content h1 {
+  margin: 24px 0 20px;
+
+  font-size:
+    clamp(38px, 4.2vw, 58px);
+
+  line-height: 1.07;
+
+  letter-spacing: -2px;
+}
+
+
+.visual-content h1 strong {
+  display: block;
+
+  color: #addb91;
+}
+
+
+.visual-content > p {
+  max-width: 490px;
+
+  margin: 0;
+
+  color:
+    rgba(255, 255, 255, 0.78);
+
+  font-size: 16px;
+
+  line-height: 1.7;
+}
+
+
+.visual-features {
+  margin-top: 42px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 20px;
+}
+
+
+.visual-feature {
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+}
+
+
+.visual-feature > span {
+  width: 36px;
+
+  height: 36px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background:
+    rgba(175, 220, 145, 0.16);
+
+  color: #bde2a5;
+
+  font-weight: 700;
+}
+
+
+.visual-feature div {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+
+.visual-feature strong {
+  font-size: 14px;
+}
+
+
+.visual-feature small {
+  color:
+    rgba(255, 255, 255, 0.65);
+
+  font-size: 12px;
+}
+
+
+// ==================================================
+// FORMULÁRIO
+// ==================================================
+
+.cadastro-form-section {
+  min-height: 100vh;
+
+  padding: 55px 70px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+
+.form-container {
+  width: 100%;
+
+  max-width: 570px;
+}
+
+
+.mobile-logo {
+  display: none;
+}
+
+
+.form-header {
+  margin-bottom: 32px;
+}
+
+
+.form-label {
+  color: #39774b;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.8px;
+}
+
+
+.form-header h2 {
+  margin: 7px 0;
+
+  color: #183425;
+
+  font-size: 36px;
+
+  line-height: 1.2;
+
+  letter-spacing: -1px;
+}
+
+
+.form-header p {
+  margin: 0;
+
+  color: #718078;
+
+  line-height: 1.6;
+}
+
+
+// ==================================================
+// CAMPOS
+// ==================================================
+
+.field {
+  margin-bottom: 20px;
+}
+
+
+.field label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #32483a;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+
+.input-container {
+  height: 52px;
+
+  padding: 0 14px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+
+  background: #ffffff;
+
+  border: 1px solid #dce4dd;
+
+  border-radius: 10px;
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+
+.input-container:focus-within {
+  border-color: #39774b;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(57, 119, 75, 0.1);
+}
+
+
+.input-container.invalid {
+  border-color: #c54e4e;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(197, 78, 78, 0.07);
+}
+
+
+.input-container mat-icon {
+  flex-shrink: 0;
+
+  color: #7f9085;
+
+  font-size: 20px;
+}
+
+
+.input-container input {
+  width: 100%;
+
+  height: 100%;
+
+  border: 0;
+
+  outline: 0;
+
+  background: transparent;
+
+  color: #26382c;
+
+  font-size: 14px;
+}
+
+
+.input-container input::placeholder {
+  color: #a3ada7;
+}
+
+
+.password-toggle {
+  padding: 5px;
+
+  display: flex;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #738078;
+
+  cursor: pointer;
+}
+
+
+.password-toggle mat-icon {
+  font-size: 20px;
+}
+
+
+.error {
+  display: block;
+
+  margin-top: 6px;
+
+  color: #b94040;
+
+  font-size: 12px;
+}
+
+
+// ==================================================
+// TERMOS
+// ==================================================
+
+.terms {
+  margin-top: 8px;
+
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 9px;
+
+  color: #65756b;
+
+  font-size: 12px;
+
+  line-height: 1.5;
+
+  cursor: pointer;
+}
+
+
+.terms input {
+  margin-top: 3px;
+
+  accent-color: #39774b;
+}
+
+
+.terms a {
+  color: #39774b;
+
+  font-weight: 600;
+
+  text-decoration: none;
+}
+
+
+.terms a:hover {
+  text-decoration: underline;
+}
+
+
+.terms-error {
+  margin-top: 6px;
+}
+
+
+// ==================================================
+// BOTÃO
+// ==================================================
+
+.submit-button {
+  width: 100%;
+
+  height: 52px;
+
+  margin-top: 25px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 9px;
+
+  border: 0;
+
+  border-radius: 10px;
+
+  background: #276840;
+
+  color: #ffffff;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+
+
+.submit-button:hover:not(:disabled) {
+  background: #1e5734;
+
+  transform: translateY(-1px);
+}
+
+
+.submit-button:disabled {
+  opacity: 0.65;
+
+  cursor: not-allowed;
+}
+
+
+.submit-button mat-icon {
+  font-size: 19px;
+}
+
+
+.spinner {
+  width: 18px;
+
+  height: 18px;
+
+  border:
+    2px solid
+    rgba(255, 255, 255, 0.3);
+
+  border-top-color: #ffffff;
+
+  border-radius: 50%;
+
+  animation:
+    spin 0.7s linear infinite;
+}
+
+
+@keyframes spin {
+
+  to {
+    transform: rotate(360deg);
+  }
+
+}
+
+
+// ==================================================
+// ERRO BACKEND
+// ==================================================
+
+.alert-error {
+  margin-bottom: 22px;
+
+  padding: 13px 14px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  border:
+    1px solid #efcccc;
+
+  border-radius: 9px;
+
+  background: #fff3f3;
+
+  color: #a63e3e;
+
+  font-size: 13px;
+}
+
+
+.alert-error > span {
+  flex: 1;
+}
+
+
+.alert-error button {
+  padding: 0;
+
+  display: flex;
+
+  border: 0;
+
+  background: transparent;
+
+  color: inherit;
+
+  cursor: pointer;
+}
+
+
+.alert-error mat-icon {
+  font-size: 19px;
+}
+
+
+// ==================================================
+// LOGIN
+// ==================================================
+
+.login {
+  margin-top: 24px;
+
+  text-align: center;
+
+  color: #77837c;
+
+  font-size: 13px;
+}
+
+
+.login a {
+  margin-left: 4px;
+
+  color: #39774b;
+
+  font-weight: 700;
+
+  text-decoration: none;
+}
+
+
+.login a:hover {
+  text-decoration: underline;
+}
+
+
+// ==================================================
+// RESPONSIVO
+// ==================================================
+
+@media (max-width: 950px) {
+
+  .cadastro-page {
+    display: block;
+  }
+
+
+  .cadastro-visual {
+    display: none;
+  }
+
+
+  .cadastro-form-section {
+    padding: 40px 25px;
+  }
+
+
+  .mobile-logo {
+    margin-bottom: 40px;
+
+    display: inline-block;
+
+    color: #276840;
+
+    font-size: 20px;
+
+    font-weight: 800;
+
+    text-decoration: none;
+  }
+
+}
+
+
+@media (max-width: 500px) {
+
+  .cadastro-form-section {
+    padding:
+      28px 18px
+      40px;
+  }
+
+
+  .form-header h2 {
+    font-size: 30px;
+  }
+
+
+  .form-header {
+    margin-bottom: 26px;
+  }
+
+}

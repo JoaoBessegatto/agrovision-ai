@@ -1,1 +1,536 @@
-<p>cadastro works!</p>
+<div class="cadastro-page">
+
+  <!-- ====================================
+       LADO ESQUERDO
+  ===================================== -->
+  <section class="cadastro-visual">
+
+    <a
+      routerLink="/"
+      class="logo"
+    >
+
+      <span class="logo-icon">
+        🌱
+      </span>
+
+      <span class="logo-text">
+        Agro<span>Vision</span> AI
+      </span>
+
+    </a>
+
+
+    <div class="visual-content">
+
+      <span class="badge">
+        AGROVISION AI
+      </span>
+
+      <h1>
+        Tecnologia para uma
+        <strong>
+          pecuária mais inteligente.
+        </strong>
+      </h1>
+
+      <p>
+        Crie sua conta e tenha acesso a uma plataforma
+        desenvolvida para organizar informações,
+        acompanhar sua produção e apoiar decisões
+        na pecuária de corte.
+      </p>
+
+
+      <div class="visual-features">
+
+        <div class="visual-feature">
+
+          <span>
+            ✓
+          </span>
+
+          <div>
+
+            <strong>
+              Informações centralizadas
+            </strong>
+
+            <small>
+              Dados importantes em um único ambiente.
+            </small>
+
+          </div>
+
+        </div>
+
+
+        <div class="visual-feature">
+
+          <span>
+            ✓
+          </span>
+
+          <div>
+
+            <strong>
+              Gestão organizada
+            </strong>
+
+            <small>
+              Mais controle sobre sua operação.
+            </small>
+
+          </div>
+
+        </div>
+
+
+        <div class="visual-feature">
+
+          <span>
+            ✓
+          </span>
+
+          <div>
+
+            <strong>
+              Decisões baseadas em dados
+            </strong>
+
+            <small>
+              Transforme registros em informações úteis.
+            </small>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ====================================
+       FORMULÁRIO
+  ===================================== -->
+  <section class="cadastro-form-section">
+
+    <div class="form-container">
+
+
+      <!-- MOBILE -->
+      <a
+        routerLink="/"
+        class="mobile-logo"
+      >
+
+        🌱 AgroVision AI
+
+      </a>
+
+
+      <div class="form-header">
+
+        <span class="form-label">
+          NOVA CONTA
+        </span>
+
+        <h2>
+          Crie sua conta
+        </h2>
+
+        <p>
+          Informe seus dados para criar seu acesso
+          ao AgroVision AI.
+        </p>
+
+      </div>
+
+
+      <!-- ERRO -->
+      @if (errorMessage()) {
+
+        <div class="alert-error">
+
+          <mat-icon>
+            error_outline
+          </mat-icon>
+
+          <span>
+            {{ errorMessage() }}
+          </span>
+
+          <button
+            type="button"
+            (click)="clearError()"
+          >
+
+            <mat-icon>
+              close
+            </mat-icon>
+
+          </button>
+
+        </div>
+
+      }
+
+
+      <form
+        [formGroup]="cadastroForm"
+        (ngSubmit)="onSubmit()"
+      >
+
+
+        <!-- NOME -->
+        <div class="field">
+
+          <label for="name">
+            Nome
+          </label>
+
+          <div
+            class="input-container"
+            [class.invalid]="
+              cadastroForm.controls.name.invalid &&
+              cadastroForm.controls.name.touched
+            "
+          >
+
+            <mat-icon>
+              person_outline
+            </mat-icon>
+
+            <input
+              id="name"
+              type="text"
+              formControlName="name"
+              placeholder="Digite seu nome"
+              autocomplete="name"
+            >
+
+          </div>
+
+
+          @if (
+            cadastroForm.controls.name.touched &&
+            cadastroForm.controls.name.hasError('required')
+          ) {
+
+            <small class="error">
+              O nome é obrigatório.
+            </small>
+
+          }
+
+
+          @if (
+            cadastroForm.controls.name.touched &&
+            cadastroForm.controls.name.hasError('minlength')
+          ) {
+
+            <small class="error">
+              O nome deve possuir pelo menos 3 caracteres.
+            </small>
+
+          }
+
+        </div>
+
+
+        <!-- EMAIL -->
+        <div class="field">
+
+          <label for="email">
+            E-mail
+          </label>
+
+          <div
+            class="input-container"
+            [class.invalid]="
+              cadastroForm.controls.email.invalid &&
+              cadastroForm.controls.email.touched
+            "
+          >
+
+            <mat-icon>
+              mail_outline
+            </mat-icon>
+
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="seuemail@exemplo.com"
+              autocomplete="email"
+            >
+
+          </div>
+
+
+          @if (
+            cadastroForm.controls.email.touched &&
+            cadastroForm.controls.email.hasError('required')
+          ) {
+
+            <small class="error">
+              O e-mail é obrigatório.
+            </small>
+
+          }
+
+
+          @if (
+            cadastroForm.controls.email.touched &&
+            cadastroForm.controls.email.hasError('email')
+          ) {
+
+            <small class="error">
+              Digite um e-mail válido.
+            </small>
+
+          }
+
+        </div>
+
+
+        <!-- SENHA -->
+        <div class="field">
+
+          <label for="password">
+            Senha
+          </label>
+
+          <div
+            class="input-container"
+            [class.invalid]="
+              cadastroForm.controls.password.invalid &&
+              cadastroForm.controls.password.touched
+            "
+          >
+
+            <mat-icon>
+              lock_outline
+            </mat-icon>
+
+            <input
+              id="password"
+              [type]="
+                showPassword
+                  ? 'text'
+                  : 'password'
+              "
+              formControlName="password"
+              placeholder="Digite sua senha"
+              autocomplete="new-password"
+            >
+
+
+            <button
+              class="password-toggle"
+              type="button"
+              (click)="
+                showPassword =
+                  !showPassword
+              "
+            >
+
+              <mat-icon>
+
+                {{
+                  showPassword
+                    ? 'visibility_off'
+                    : 'visibility'
+                }}
+
+              </mat-icon>
+
+            </button>
+
+          </div>
+
+
+          @if (
+            cadastroForm.controls.password.touched &&
+            cadastroForm.controls.password.hasError('required')
+          ) {
+
+            <small class="error">
+              A senha é obrigatória.
+            </small>
+
+          }
+
+
+          @if (
+            cadastroForm.controls.password.touched &&
+            cadastroForm.controls.password.hasError('minlength')
+          ) {
+
+            <small class="error">
+              A senha deve possuir pelo menos 6 caracteres.
+            </small>
+
+          }
+
+        </div>
+
+
+        <!-- CONFIRMAR SENHA -->
+        <div class="field">
+
+          <label for="confirmPassword">
+            Confirmar senha
+          </label>
+
+          <div
+            class="input-container"
+            [class.invalid]="passwordMismatch"
+          >
+
+            <mat-icon>
+              lock_outline
+            </mat-icon>
+
+            <input
+              id="confirmPassword"
+              [type]="
+                showConfirmPassword
+                  ? 'text'
+                  : 'password'
+              "
+              formControlName="confirmPassword"
+              placeholder="Digite sua senha novamente"
+              autocomplete="new-password"
+            >
+
+
+            <button
+              class="password-toggle"
+              type="button"
+              (click)="
+                showConfirmPassword =
+                  !showConfirmPassword
+              "
+            >
+
+              <mat-icon>
+
+                {{
+                  showConfirmPassword
+                    ? 'visibility_off'
+                    : 'visibility'
+                }}
+
+              </mat-icon>
+
+            </button>
+
+          </div>
+
+
+          @if (
+            cadastroForm.controls.confirmPassword.touched &&
+            cadastroForm.controls.confirmPassword.hasError('required')
+          ) {
+
+            <small class="error">
+              Confirme sua senha.
+            </small>
+
+          }
+
+
+          @if (passwordMismatch) {
+
+            <small class="error">
+              As senhas não coincidem.
+            </small>
+
+          }
+
+        </div>
+
+
+        <!-- TERMOS -->
+        <label class="terms">
+
+          <input
+            type="checkbox"
+            formControlName="acceptTerms"
+          >
+
+          <span>
+            Li e concordo com os
+            <a href="#">
+              Termos de Uso
+            </a>
+            e a
+            <a href="#">
+              Política de Privacidade
+            </a>.
+          </span>
+
+        </label>
+
+
+        @if (
+          cadastroForm.controls.acceptTerms.touched &&
+          cadastroForm.controls.acceptTerms.invalid
+        ) {
+
+          <small class="error terms-error">
+            Você precisa aceitar os termos para continuar.
+          </small>
+
+        }
+
+
+        <!-- BOTÃO -->
+        <button
+          class="submit-button"
+          type="submit"
+          [disabled]="loading()"
+        >
+
+          @if (loading()) {
+
+            <span class="spinner"></span>
+
+            Criando conta...
+
+          } @else {
+
+            Criar minha conta
+
+            <mat-icon>
+              arrow_forward
+            </mat-icon>
+
+          }
+
+        </button>
+
+
+        <div class="login">
+
+          <span>
+            Já possui uma conta?
+          </span>
+
+          <a routerLink="/login">
+            Entrar
+          </a>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </section>
+
+</div>

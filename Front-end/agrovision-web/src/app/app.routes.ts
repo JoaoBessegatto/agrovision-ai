@@ -23,7 +23,7 @@ export const routes: Routes = [
     path: 'cadastro',
     loadComponent: () =>
       import('./pages/cadastro/cadastro')
-        .then(m => m.Cadastro)
+        .then(m => m.CadastroComponent)
   },
 
   {

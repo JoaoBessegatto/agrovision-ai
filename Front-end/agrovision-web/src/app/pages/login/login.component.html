@@ -1,6 +1,36 @@
 <div class="login-page">
 
   <!-- =========================
+       TOAST DE ERRO
+  ========================= -->
+  @if (errorMessage()) {
+    <div class="toast toast-error" role="alert">
+
+      <div class="toast-icon">
+        <mat-icon>close</mat-icon>
+      </div>
+
+      <div class="toast-body">
+        <strong>Não foi possível entrar</strong>
+        <span>{{ errorMessage() }}</span>
+      </div>
+
+      <button
+        type="button"
+        class="toast-close"
+        (click)="clearError()"
+        aria-label="Fechar aviso"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+
+      <div class="toast-progress"></div>
+
+    </div>
+  }
+
+
+  <!-- =========================
        PAINEL DE MARCA (esquerda)
   ========================= -->
   <div class="login-brand">
@@ -127,9 +157,8 @@
               <mat-icon class="input-icon">lock_outline</mat-icon>
 
               <input
-                #passwordInput
                 [id]="'password'"
-                [type]="passwordInput.type"
+                [type]="showPassword ? 'text' : 'password'"
                 formControlName="password"
                 placeholder="Digite sua senha"
                 autocomplete="current-password"
@@ -139,10 +168,10 @@
               <button
                 type="button"
                 class="toggle-password"
-                (click)="passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password'"
-                [attr.aria-label]="passwordInput.type === 'password' ? 'Mostrar senha' : 'Ocultar senha'"
+                (click)="showPassword = !showPassword"
+                [attr.aria-label]="showPassword ? 'Ocultar senha' : 'Mostrar senha'"
               >
-                <mat-icon>{{ passwordInput.type === 'password' ? 'visibility' : 'visibility_off' }}</mat-icon>
+                <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
             </div>
 
@@ -169,21 +198,13 @@
           </div>
 
 
-          @if (errorMessage) {
-            <div class="login-error">
-              <mat-icon>warning_amber</mat-icon>
-              <span>{{ errorMessage }}</span>
-            </div>
-          }
-
-
           <button
             type="submit"
             class="btn-submit"
-            [disabled]="loading"
+            [disabled]="loading()"
           >
 
-            @if (loading) {
+            @if (loading()) {
               <span class="spinner"></span>
               Entrando...
             } @else {
