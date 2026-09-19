@@ -1,64 +1,120 @@
 package com.agrovisionai.agrovision_ai.auth;
 
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import static com.agrovisionai.agrovision_ai.auth.Role.ADMIN;
-import static com.agrovisionai.agrovision_ai.auth.Role.PRODUTOR;
-
 @RestController
-@RequestMapping("api/auth")
+@RequestMapping("/api/auth")
 public class LoginController {
-    @Autowired
-    private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private LoginService loginService;
+    private final UsuarioRepository usuarioRepository;
+    private final LoginService loginService;
+    private final PasswordEncoder passwordEncoder;
+
+    public LoginController(
+            UsuarioRepository usuarioRepository,
+            LoginService loginService,
+            PasswordEncoder passwordEncoder
+    ) {
+        this.usuarioRepository = usuarioRepository;
+        this.loginService = loginService;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @PostMapping("/login")
-    public ResponseEntity<?> logar(@RequestBody @Valid Login login){
+    public ResponseEntity<?> logar(
+            @RequestBody @Valid Login login
+    ) {
+
         try {
-            LoginResponseDTO response = loginService.login(login);
+
+            LoginResponseDTO response =
+                    loginService.login(login);
+
             return ResponseEntity.ok(response);
+
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(e.getMessage());
+
         }
     }
+
+
     @PostMapping("/cadastrar")
-    public ResponseEntity<?> cadastrar(@RequestBody @Valid UsuarioResquest dto){
-        if(usuarioRepository.existsByEmail(dto.email())){
-            return ResponseEntity.badRequest().build();
-        }
-        String encryptedPassword = new BCryptPasswordEncoder().encode(dto.password());
+    public ResponseEntity<?> cadastrar(
+            @RequestBody @Valid UsuarioResquest dto
+    ) {
 
-        Usuario newUser = new Usuario(null,
+        if (usuarioRepository.existsByEmail(dto.email())) {
+
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body("Já existe um usuário cadastrado com este e-mail.");
+
+        }
+
+
+        String encryptedPassword =
+                passwordEncoder.encode(dto.password());
+
+
+        Usuario newUser = new Usuario(
+                null,
                 dto.name(),
                 dto.email(),
                 encryptedPassword,
-                PRODUTOR);
+                Role.USER
+        );
+
 
         usuarioRepository.save(newUser);
-        return ResponseEntity.ok().build();
+
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
     }
-    @PostMapping("/cadastrar-admin")
-    public ResponseEntity<?> cadastrarAdmin(@RequestBody @Valid UsuarioResquest dto){
-        if(usuarioRepository.existsByEmail(dto.email())){
-            return ResponseEntity.badRequest().build();
-        }
-        String encryptedPassword = new BCryptPasswordEncoder().encode(dto.password());
 
-        Usuario newUser = new Usuario(null,
+
+    @PostMapping("/cadastrar-admin")
+    public ResponseEntity<?> cadastrarAdmin(
+            @RequestBody @Valid UsuarioResquest dto
+    ) {
+
+        if (usuarioRepository.existsByEmail(dto.email())) {
+
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body("Já existe um usuário cadastrado com este e-mail.");
+
+        }
+
+
+        String encryptedPassword =
+                passwordEncoder.encode(dto.password());
+
+
+        Usuario newUser = new Usuario(
+                null,
                 dto.name(),
                 dto.email(),
                 encryptedPassword,
-                ADMIN);
+                Role.ADMIN
+        );
+
 
         usuarioRepository.save(newUser);
-        return ResponseEntity.ok().build();
+
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
     }
 
 }

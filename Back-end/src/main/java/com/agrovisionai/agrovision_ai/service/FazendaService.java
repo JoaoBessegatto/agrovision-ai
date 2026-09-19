@@ -13,62 +13,77 @@ import com.agrovisionai.agrovision_ai.exception.ResouceNotFoundException;
 import com.agrovisionai.agrovision_ai.exception.UnauthorizedException;
 import com.agrovisionai.agrovision_ai.repository.FazendaRepository;
 import com.agrovisionai.agrovision_ai.repository.ProdutorRepository;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
 public class FazendaService {
+
     private final FazendaRepository fazendaRepository;
     private final ProdutorRepository produtorRepository;
     private final CurrentUserProvider currentUserProvider;
 
-    public FazendaService(FazendaRepository fazendaRepository, ProdutorRepository produtorRepository, CurrentUserProvider currentUserProvider) {
+    public FazendaService(
+            FazendaRepository fazendaRepository,
+            ProdutorRepository produtorRepository,
+            CurrentUserProvider currentUserProvider
+    ) {
         this.fazendaRepository = fazendaRepository;
         this.produtorRepository = produtorRepository;
         this.currentUserProvider = currentUserProvider;
     }
 
-    public FazendaResponseDTO salvar(FazendaRequestDTO dto){
-        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
-        if(usuarioLogado.getRole() != Role.PRODUTOR){
-            throw new UnauthorizedException("Usuário autenticado não é PRODUTOR");
-        }
+    // =========================================================
+    // CADASTRAR FAZENDA
+    // =========================================================
 
-        Produtor produtor = produtorRepository.findByUsuario(usuarioLogado)
-                .orElseThrow(() -> new ResouceNotFoundException("Produtor não encontrado para o usuário autenticado"));
+    @Transactional
+    public FazendaResponseDTO salvar(FazendaRequestDTO dto) {
 
+        Produtor produtor = getProdutorLogado();
 
         Fazenda fazenda = new Fazenda();
+
         fazenda.setNome(dto.nome());
         fazenda.setCidade(dto.cidade());
         fazenda.setEstado(dto.estado());
         fazenda.setLatitude(dto.latitude());
         fazenda.setLongitude(dto.longitude());
         fazenda.setAreaTotalHa(dto.areaTotalHa());
-        fazenda.setExploracao(TipoExploracao.valueOf(dto.exploracao()));
+        fazenda.setExploracao(converterTipoExploracao(dto.exploracao()));
         fazenda.setGeopoligono(dto.geopoligono());
+
+        // A fazenda pertence ao produtor autenticado.
         fazenda.setProdutor(produtor);
 
-        Fazenda FazendaSalva = fazendaRepository.save(fazenda);
+        Fazenda fazendaSalva =
+                fazendaRepository.save(fazenda);
 
-        return new FazendaResponseDTO(FazendaSalva);
+        return new FazendaResponseDTO(fazendaSalva);
     }
-    public FazendaResponseDTO atualizar(FazendaRequestDTO dto){
-        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
-        if(usuarioLogado.getRole() != Role.PRODUTOR){
-            throw new UnauthorizedException("Usuario autenticado não é Produtor");
-        }
 
-        Produtor produtor = produtorRepository.findByUsuario(usuarioLogado)
-                .orElseThrow(() -> new BusinessException("O Usuario precisa ter cadastro de produtor"));
+    // =========================================================
+    // ATUALIZAR FAZENDA
+    // =========================================================
 
-        Fazenda fazenda = fazendaRepository.findByIdAndProdutor(dto.id(),produtor)
-                .orElseThrow(() -> new ResouceNotFoundException("Fazenda não encontrada para esse produtor"));
+    @Transactional
+    public FazendaResponseDTO atualizar(FazendaRequestDTO dto) {
+
+        Produtor produtor = getProdutorLogado();
+
+        Fazenda fazenda =
+                fazendaRepository
+                        .findByIdAndProdutor(dto.id(), produtor)
+                        .orElseThrow(() ->
+                                new ResouceNotFoundException(
+                                        "Fazenda não encontrada para o produtor autenticado."
+                                )
+                        );
 
         fazenda.setNome(dto.nome());
         fazenda.setCidade(dto.cidade());
@@ -76,50 +91,157 @@ public class FazendaService {
         fazenda.setLatitude(dto.latitude());
         fazenda.setLongitude(dto.longitude());
         fazenda.setAreaTotalHa(dto.areaTotalHa());
-        fazenda.setExploracao(TipoExploracao.valueOf(dto.exploracao()));
+        fazenda.setExploracao(converterTipoExploracao(dto.exploracao()));
         fazenda.setGeopoligono(dto.geopoligono());
 
-        Fazenda fazendaAtualizada = fazendaRepository.save(fazenda);
-        return new FazendaResponseDTO(fazendaAtualizada);
+        Fazenda fazendaAtualizada =
+                fazendaRepository.save(fazenda);
+
+        return new FazendaResponseDTO(
+                fazendaAtualizada
+        );
     }
-    public boolean deletar(UUID fazendaId){
-        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
-        if(usuarioLogado.getRole() != Role.PRODUTOR){
-            throw new UnauthorizedException("O usuario precisa ser Produtor");
-        }
-        Produtor produtor = produtorRepository.findByUsuario(usuarioLogado)
-                .orElseThrow(()-> new ResouceNotFoundException("Não foi possivel achar cadastro de Produtor para esse usuario logado"));
 
-        Fazenda fazenda = fazendaRepository.findByIdAndProdutor(fazendaId,produtor)
-                .orElseThrow(()-> new ResouceNotFoundException("Fazenda não encontrada para esse produtor logado"));
+    // =========================================================
+    // DELETAR FAZENDA
+    // =========================================================
+
+    @Transactional
+    public boolean deletar(UUID fazendaId) {
+
+        Produtor produtor = getProdutorLogado();
+
+        Fazenda fazenda =
+                fazendaRepository
+                        .findByIdAndProdutor(
+                                fazendaId,
+                                produtor
+                        )
+                        .orElseThrow(() ->
+                                new ResouceNotFoundException(
+                                        "Fazenda não encontrada para o produtor autenticado."
+                                )
+                        );
 
         fazendaRepository.delete(fazenda);
+
         return true;
     }
-    public List<FazendaResponseDTO>getAll(){
-        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
-        if(usuarioLogado.getRole() != Role.ADMIN){
-            throw new UnauthorizedException("O Usuario não tem permicão de ADMIN");
+
+    // =========================================================
+    // LISTAR TODAS AS FAZENDAS
+    // SOMENTE ADMIN
+    // =========================================================
+
+    @Transactional(readOnly = true)
+    public List<FazendaResponseDTO> getAll() {
+
+        Usuario usuarioLogado =
+                currentUserProvider.getUsuarioAtual();
+
+        if (usuarioLogado.getRole() != Role.ADMIN) {
+
+            throw new UnauthorizedException(
+                    "Somente administradores podem listar todas as fazendas."
+            );
         }
 
-        return fazendaRepository.findAll()
+        return fazendaRepository
+                .findAll()
                 .stream()
                 .map(FazendaResponseDTO::new)
                 .toList();
     }
-    public FazendaResponseDTO get(UUID fazendaId){
-        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
-        if(usuarioLogado.getRole() != Role.PRODUTOR){
-            throw new UnauthorizedException("Usuario logado precisa ser Produtor");
-        }
-        Produtor produtor = produtorRepository.findByUsuario(usuarioLogado)
-                .orElseThrow(()-> new UnauthorizedException("Usuario precisa ter cadastro de Produtor"));
-        Fazenda fazenda = fazendaRepository.findByIdAndProdutor(fazendaId,produtor)
-                .orElseThrow(()-> new ResouceNotFoundException("Fazenda não encontrada para esse produtor"));
+
+    // =========================================================
+    // BUSCAR UMA FAZENDA DO PRODUTOR LOGADO
+    // =========================================================
+
+    @Transactional(readOnly = true)
+    public FazendaResponseDTO get(UUID fazendaId) {
+
+        Produtor produtor = getProdutorLogado();
+
+        Fazenda fazenda =
+                fazendaRepository
+                        .findByIdAndProdutor(
+                                fazendaId,
+                                produtor
+                        )
+                        .orElseThrow(() ->
+                                new ResouceNotFoundException(
+                                        "Fazenda não encontrada para o produtor autenticado."
+                                )
+                        );
 
         return new FazendaResponseDTO(fazenda);
     }
+
+
+    // =========================================================
+    // LISTAR MINHAS FAZENDAS
+    // =========================================================
+
+    @Transactional(readOnly = true)
+    public List<FazendaResponseDTO> getMinhasFazendas() {
+
+        Produtor produtor = getProdutorLogado();
+
+        return fazendaRepository
+                .findByProdutor(produtor)
+                .stream()
+                .map(FazendaResponseDTO::new)
+                .toList();
+    }
+
+
+    // =========================================================
+    // MÉTODOS AUXILIARES
+    // =========================================================
+
+    private Produtor getProdutorLogado() {
+
+        Usuario usuarioLogado =
+                currentUserProvider.getUsuarioAtual();
+
+        return produtorRepository
+                .findByUsuario(usuarioLogado)
+                .orElseThrow(() ->
+                        new BusinessException(
+                                "O usuário autenticado não possui perfil de produtor."
+                        )
+                );
+    }
+
+
+    private TipoExploracao converterTipoExploracao(
+            String exploracao
+    ) {
+
+        if (exploracao == null || exploracao.isBlank()) {
+
+            throw new BusinessException(
+                    "O tipo de exploração da fazenda é obrigatório."
+            );
+        }
+
+        try {
+
+            return TipoExploracao.valueOf(
+                    exploracao
+                            .trim()
+                            .toUpperCase()
+            );
+
+        } catch (IllegalArgumentException e) {
+
+            throw new BusinessException(
+                    "Tipo de exploração inválido."
+            );
+        }
+    }
+
 }

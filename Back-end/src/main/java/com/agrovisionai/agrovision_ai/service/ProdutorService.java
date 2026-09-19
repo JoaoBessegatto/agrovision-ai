@@ -15,92 +15,133 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-
 @Service
 public class ProdutorService {
 
     private final ProdutorRepository produtorRepository;
     private final CurrentUserProvider currentUserProvider;
 
-    public ProdutorService(ProdutorRepository produtorRepository,
-                           CurrentUserProvider currentUserProvider) {
+    public ProdutorService(
+            ProdutorRepository produtorRepository,
+            CurrentUserProvider currentUserProvider
+    ) {
         this.produtorRepository = produtorRepository;
         this.currentUserProvider = currentUserProvider;
     }
 
-    public ProdutorResponseDTO cadastrar(ProdutorRequestDTO dto){
-        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
+    @Transactional
+    public ProdutorResponseDTO cadastrar(ProdutorRequestDTO dto) {
 
-        if(usuarioLogado.getRole() != Role.PRODUTOR){
-            throw new UnauthorizedException("O Usuário não possui Role Produtor");
-        }
+        Usuario usuarioLogado =
+                currentUserProvider.getUsuarioAtual();
 
-        if(produtorRepository.existsByUsuario(usuarioLogado)){
-            throw new BusinessException("Este usuário ja esta vinculado a um produtor");
+        if (produtorRepository.existsByUsuario(usuarioLogado)) {
+
+            throw new BusinessException(
+                    "Este usuário já possui um perfil de produtor."
+            );
         }
 
         Produtor produtor = new Produtor();
-        produtor.setCpfOrCnpj(dto.cpfOrCnpj());
+
         produtor.setNomeCompleto(dto.nomeCompleto());
+        produtor.setCpfOrCnpj(dto.cpfOrCnpj());
         produtor.setDataNascimento(dto.dataNascimento());
+        produtor.setTelefone(dto.telefone());
+
         produtor.setUsuario(usuarioLogado);
-        produtor.setTelefone(dto.telefone());
 
-        Produtor produtorSave = produtorRepository.save(produtor);
-        return new ProdutorResponseDTO(produtorSave);
+        Produtor produtorSalvo =
+                produtorRepository.save(produtor);
+
+        return new ProdutorResponseDTO(produtorSalvo);
     }
-    public ProdutorResponseDTO atualizar(ProdutorRequestDTO dto){
-        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
-        if(usuarioLogado.getRole() != Role.PRODUTOR){
-            throw new UnauthorizedException("O Usuario não possui permição para atualizar");
-        }
+    @Transactional
+    public ProdutorResponseDTO atualizar(ProdutorRequestDTO dto) {
 
-        Produtor produtor = produtorRepository.findByUsuario(usuarioLogado)
-                .orElseThrow(() -> new ResouceNotFoundException("Produtor não encontrado para este usuário"));
+        Usuario usuarioLogado =
+                currentUserProvider.getUsuarioAtual();
+
+        Produtor produtor =
+                produtorRepository
+                        .findByUsuario(usuarioLogado)
+                        .orElseThrow(() ->
+                                new ResouceNotFoundException(
+                                        "Perfil de produtor não encontrado para este usuário."
+                                )
+                        );
 
         produtor.setNomeCompleto(dto.nomeCompleto());
         produtor.setCpfOrCnpj(dto.cpfOrCnpj());
         produtor.setDataNascimento(dto.dataNascimento());
         produtor.setTelefone(dto.telefone());
 
-        Produtor produtorAtualizado = produtorRepository.save(produtor);
+        Produtor produtorAtualizado =
+                produtorRepository.save(produtor);
 
-        return new ProdutorResponseDTO(produtorAtualizado);
+        return new ProdutorResponseDTO(
+                produtorAtualizado
+        );
     }
-    public boolean deletar (){
-        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
-        if (usuarioLogado.getRole() != Role.PRODUTOR) {
-            throw new UnauthorizedException("Usuário não possui permissão para deletar produtor");
-        }
+    @Transactional
+    public boolean deletar() {
 
-        Produtor produtor = produtorRepository.findByUsuario(usuarioLogado)
-                .orElseThrow(() -> new ResouceNotFoundException("Produtor não encontrado"));
+        Usuario usuarioLogado =
+                currentUserProvider.getUsuarioAtual();
+
+        Produtor produtor =
+                produtorRepository
+                        .findByUsuario(usuarioLogado)
+                        .orElseThrow(() ->
+                                new ResouceNotFoundException(
+                                        "Perfil de produtor não encontrado."
+                                )
+                        );
 
         produtorRepository.delete(produtor);
+
         return true;
     }
-    @Transactional(readOnly = true)
-    public List<ProdutorResponseDTO> findAll(){
-        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
-        if(usuarioLogado.getRole() != Role.ADMIN){
-            throw new UnauthorizedException("Somente ADMIN podem fazer essa requisição");
+    @Transactional(readOnly = true)
+    public List<ProdutorResponseDTO> findAll() {
+
+        Usuario usuarioLogado =
+                currentUserProvider.getUsuarioAtual();
+
+        if (usuarioLogado.getRole() != Role.ADMIN) {
+
+            throw new UnauthorizedException(
+                    "Somente administradores podem listar todos os produtores."
+            );
         }
-        return produtorRepository.findAll()
+
+        return produtorRepository
+                .findAll()
                 .stream()
                 .map(ProdutorResponseDTO::new)
                 .toList();
     }
 
-    @Transactional(readOnly = true)
-    public ProdutorResponseDTO findMe(){
-        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
 
-        Produtor produtor = produtorRepository.findByUsuario(usuarioLogado)
-                .orElseThrow(() -> new ResouceNotFoundException("Produtor não encontrado"));
+    @Transactional(readOnly = true)
+    public ProdutorResponseDTO findMe() {
+
+        Usuario usuarioLogado =
+                currentUserProvider.getUsuarioAtual();
+
+        Produtor produtor =
+                produtorRepository
+                        .findByUsuario(usuarioLogado)
+                        .orElseThrow(() ->
+                                new ResouceNotFoundException(
+                                        "Perfil de produtor não encontrado para este usuário."
+                                )
+                        );
 
         return new ProdutorResponseDTO(produtor);
     }
+
 }
