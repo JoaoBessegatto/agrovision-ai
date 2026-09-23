@@ -4,7 +4,6 @@ import com.agrovisionai.agrovision_ai.domain.dto.request.FazendaRequestDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.FazendaResponseDTO;
 import com.agrovisionai.agrovision_ai.service.FazendaService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,42 +13,74 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("api/fazenda")
+@RequestMapping("/api/fazenda")
 public class FazendaController {
-    @Autowired
-    FazendaService fazendaService;
 
-    @PostMapping()
-    @PreAuthorize("hasRole('PRODUTOR')")
-    public ResponseEntity<FazendaResponseDTO>cadastrar(@RequestBody @Valid FazendaRequestDTO dto){
-        FazendaResponseDTO fazendaResponse = fazendaService.salvar(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(fazendaResponse);
+    private final FazendaService fazendaService;
+
+    public FazendaController(
+            FazendaService fazendaService
+    ) {
+        this.fazendaService = fazendaService;
     }
 
-    @PutMapping()
-    @PreAuthorize("hasRole('PRODUTOR')")
-    public ResponseEntity<FazendaResponseDTO>atualizar(@RequestBody @Valid FazendaRequestDTO dto){
-        FazendaResponseDTO fazendaResponse = fazendaService.atualizar(dto);
-        return ResponseEntity.ok().body(fazendaResponse);
+    @PostMapping
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<FazendaResponseDTO> cadastrar(
+            @RequestBody @Valid FazendaRequestDTO dto
+    ) {
+
+        FazendaResponseDTO fazenda =
+                fazendaService.salvar(dto);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(fazenda);
+    }
+
+    @PutMapping
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<FazendaResponseDTO> atualizar(
+            @RequestBody @Valid FazendaRequestDTO dto
+    ) {
+
+        FazendaResponseDTO fazenda =
+                fazendaService.atualizar(dto);
+
+        return ResponseEntity.ok(fazenda);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('PRODUTOR')")
-    public ResponseEntity<Void>deletar(@PathVariable UUID id){
-        boolean deletado = fazendaService.deletar(id);
-        return deletado ? ResponseEntity.noContent().build()
-                : ResponseEntity.notFound().build();
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deletar(
+            @PathVariable("id") UUID id
+    ) {
+
+        fazendaService.deletar(id);
+
+        return ResponseEntity
+                .noContent()
+                .build();
     }
 
-    @GetMapping()
+
+    @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<FazendaResponseDTO>>getAll(){
-        return ResponseEntity.ok().body(fazendaService.getAll());
+    public ResponseEntity<List<FazendaResponseDTO>> getAll() {
+
+        return ResponseEntity.ok(
+                fazendaService.getAll()
+        );
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('PRODUTOR')")
-    public ResponseEntity<FazendaResponseDTO>getOne(@PathVariable UUID fazendaId){
-        return ResponseEntity.ok().body(fazendaService.get(fazendaId));
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<FazendaResponseDTO> getOne(
+            @PathVariable("id") UUID id
+    ) {
+
+        return ResponseEntity.ok(
+                fazendaService.get(id)
+        );
     }
 }
