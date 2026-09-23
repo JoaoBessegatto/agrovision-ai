@@ -1,0 +1,640 @@
+<div class="page">
+
+  <!-- =====================================
+       HEADER
+  ====================================== -->
+
+  <header class="topbar">
+
+    <a
+      routerLink="/onboarding"
+      class="logo"
+    >
+      🌱
+
+      <strong>
+        AgroVision AI
+      </strong>
+    </a>
+
+
+    <span class="step-indicator">
+      Etapa 3 de 3
+    </span>
+
+  </header>
+
+
+  <!-- =====================================
+       LOADING INICIAL
+  ====================================== -->
+
+  @if (pageLoading()) {
+
+    <main class="loading-page">
+
+      <div class="loader"></div>
+
+      <p>
+        Preparando cadastro da propriedade...
+      </p>
+
+    </main>
+
+  } @else {
+
+
+    <main class="container">
+
+
+      <button
+        type="button"
+        class="back-button"
+        (click)="voltar()"
+      >
+
+        <mat-icon>
+          arrow_back
+        </mat-icon>
+
+        Voltar
+
+      </button>
+
+
+      <!-- =====================================
+           CABEÇALHO
+      ====================================== -->
+
+      <section class="header-content">
+
+        <span class="label">
+          PRIMEIRA PROPRIEDADE
+        </span>
+
+        <h1>
+          Cadastre sua fazenda
+        </h1>
+
+        <p>
+          Informe os principais dados da propriedade.
+          Depois disso sua configuração inicial estará
+          concluída e você poderá começar a utilizar
+          o AgroVision AI.
+        </p>
+
+      </section>
+
+
+      <!-- =====================================
+           ERRO
+      ====================================== -->
+
+      @if (errorMessage()) {
+
+        <div class="alert-error">
+
+          <mat-icon>
+            error_outline
+          </mat-icon>
+
+          <span>
+            {{ errorMessage() }}
+          </span>
+
+        </div>
+
+      }
+
+
+      <!-- =====================================
+           FORMULÁRIO
+      ====================================== -->
+
+      <form
+        class="form-card"
+        [formGroup]="fazendaForm"
+        (ngSubmit)="onSubmit()"
+      >
+
+
+        <div class="section-title">
+
+          <div class="section-icon">
+            <mat-icon>
+              agriculture
+            </mat-icon>
+          </div>
+
+          <div>
+
+            <strong>
+              Dados da propriedade
+            </strong>
+
+            <small>
+              Informações principais da fazenda
+            </small>
+
+          </div>
+
+        </div>
+
+
+        <!-- NOME -->
+
+        <div class="field full">
+
+          <label for="nome">
+            Nome da fazenda
+          </label>
+
+          <div
+            class="input-wrapper"
+            [class.invalid]="
+              fazendaForm.controls.nome.invalid &&
+              fazendaForm.controls.nome.touched
+            "
+          >
+
+            <mat-icon>
+              home_work
+            </mat-icon>
+
+            <input
+              id="nome"
+              type="text"
+              formControlName="nome"
+              placeholder="Ex.: Fazenda Santa Rita"
+            >
+
+          </div>
+
+
+          @if (
+            fazendaForm.controls.nome.invalid &&
+            fazendaForm.controls.nome.touched
+          ) {
+
+            <small class="field-error">
+              Informe o nome da propriedade.
+            </small>
+
+          }
+
+        </div>
+
+
+        <!-- CIDADE / ESTADO -->
+
+        <div class="row location-row">
+
+          <div class="field">
+
+            <label for="cidade">
+              Cidade
+            </label>
+
+            <div
+              class="input-wrapper"
+              [class.invalid]="
+                fazendaForm.controls.cidade.invalid &&
+                fazendaForm.controls.cidade.touched
+              "
+            >
+
+              <mat-icon>
+                location_city
+              </mat-icon>
+
+              <input
+                id="cidade"
+                type="text"
+                formControlName="cidade"
+                placeholder="Ex.: Araçatuba"
+              >
+
+            </div>
+
+
+            @if (
+              fazendaForm.controls.cidade.invalid &&
+              fazendaForm.controls.cidade.touched
+            ) {
+
+              <small class="field-error">
+                Informe a cidade.
+              </small>
+
+            }
+
+          </div>
+
+
+          <div class="field state-field">
+
+            <label for="estado">
+              Estado
+            </label>
+
+            <div
+              class="select-wrapper"
+              [class.invalid]="
+                fazendaForm.controls.estado.invalid &&
+                fazendaForm.controls.estado.touched
+              "
+            >
+
+              <select
+                id="estado"
+                formControlName="estado"
+              >
+
+                <option
+                  value=""
+                  disabled
+                >
+                  UF
+                </option>
+
+                @for (
+                  estado of estados;
+                  track estado
+                ) {
+
+                  <option
+                    [value]="estado"
+                  >
+                    {{ estado }}
+                  </option>
+
+                }
+
+              </select>
+
+            </div>
+
+
+            @if (
+              fazendaForm.controls.estado.invalid &&
+              fazendaForm.controls.estado.touched
+            ) {
+
+              <small class="field-error">
+                Informe o estado.
+              </small>
+
+            }
+
+          </div>
+
+        </div>
+
+
+        <!-- ÁREA -->
+
+        <div class="field full">
+
+          <label for="areaTotalHa">
+            Área total
+          </label>
+
+          <div
+            class="input-wrapper"
+            [class.invalid]="
+              fazendaForm.controls.areaTotalHa.invalid &&
+              fazendaForm.controls.areaTotalHa.touched
+            "
+          >
+
+            <mat-icon>
+              landscape
+            </mat-icon>
+
+            <input
+              id="areaTotalHa"
+              type="text"
+              inputmode="decimal"
+              formControlName="areaTotalHa"
+              placeholder="Ex.: 350"
+            >
+
+            <span class="input-suffix">
+              ha
+            </span>
+
+          </div>
+
+
+          @if (
+            fazendaForm.controls.areaTotalHa.touched &&
+            fazendaForm.controls.areaTotalHa.hasError('required')
+          ) {
+
+            <small class="field-error">
+              Informe a área total da propriedade.
+            </small>
+
+          }
+
+
+          @if (
+            fazendaForm.controls.areaTotalHa.touched &&
+            fazendaForm.controls.areaTotalHa.hasError('positiveNumber')
+          ) {
+
+            <small class="field-error">
+              Informe uma área maior que zero.
+            </small>
+
+          }
+
+        </div>
+
+
+        <!-- =====================================
+             EXPLORAÇÃO
+        ====================================== -->
+
+        <div class="form-divider"></div>
+
+
+        <div class="section-title">
+
+          <div class="section-icon">
+            <mat-icon>
+              grass
+            </mat-icon>
+          </div>
+
+          <div>
+
+            <strong>
+              Tipo de exploração
+            </strong>
+
+            <small>
+              Selecione a principal atividade da propriedade
+            </small>
+
+          </div>
+
+        </div>
+
+
+        <div class="exploration-grid">
+
+          @for (
+            tipo of tiposExploracao;
+            track tipo.value
+          ) {
+
+            <label
+              class="exploration-card"
+              [class.selected]="
+                fazendaForm.controls.exploracao.value
+                === tipo.value
+              "
+            >
+
+              <input
+                type="radio"
+                formControlName="exploracao"
+                [value]="tipo.value"
+              >
+
+              <div class="radio-indicator">
+                <span></span>
+              </div>
+
+              <div>
+
+                <strong>
+                  {{ tipo.label }}
+                </strong>
+
+                <p>
+                  {{ tipo.description }}
+                </p>
+
+              </div>
+
+            </label>
+
+          }
+
+        </div>
+
+
+        @if (
+          fazendaForm.controls.exploracao.invalid &&
+          fazendaForm.controls.exploracao.touched
+        ) {
+
+          <small class="field-error">
+            Selecione o tipo de exploração.
+          </small>
+
+        }
+
+
+        <!-- =====================================
+             LOCALIZAÇÃO
+        ====================================== -->
+
+        <div class="form-divider"></div>
+
+
+        <div class="section-title">
+
+          <div class="section-icon">
+            <mat-icon>
+              location_on
+            </mat-icon>
+          </div>
+
+          <div>
+
+            <strong>
+              Localização
+            </strong>
+
+            <small>
+              Informações opcionais
+            </small>
+
+          </div>
+
+        </div>
+
+
+        <div class="optional-notice">
+
+          <mat-icon>
+            info_outline
+          </mat-icon>
+
+          <span>
+            Latitude, longitude e geopolígono são
+            opcionais e podem ser informados posteriormente.
+          </span>
+
+        </div>
+
+
+        <div class="row">
+
+          <!-- LATITUDE -->
+
+          <div class="field">
+
+            <label for="latitude">
+              Latitude
+            </label>
+
+            <div
+              class="input-wrapper"
+              [class.invalid]="
+                fazendaForm.controls.latitude.invalid &&
+                fazendaForm.controls.latitude.touched
+              "
+            >
+
+              <input
+                id="latitude"
+                type="text"
+                inputmode="decimal"
+                formControlName="latitude"
+                placeholder="Ex.: -21.2088"
+              >
+
+            </div>
+
+
+            @if (
+              fazendaForm.controls.latitude.hasError('numberRange') &&
+              fazendaForm.controls.latitude.touched
+            ) {
+
+              <small class="field-error">
+                Informe uma latitude entre -90 e 90.
+              </small>
+
+            }
+
+          </div>
+
+
+          <!-- LONGITUDE -->
+
+          <div class="field">
+
+            <label for="longitude">
+              Longitude
+            </label>
+
+            <div
+              class="input-wrapper"
+              [class.invalid]="
+                fazendaForm.controls.longitude.invalid &&
+                fazendaForm.controls.longitude.touched
+              "
+            >
+
+              <input
+                id="longitude"
+                type="text"
+                inputmode="decimal"
+                formControlName="longitude"
+                placeholder="Ex.: -50.4322"
+              >
+
+            </div>
+
+
+            @if (
+              fazendaForm.controls.longitude.hasError('numberRange') &&
+              fazendaForm.controls.longitude.touched
+            ) {
+
+              <small class="field-error">
+                Informe uma longitude entre -180 e 180.
+              </small>
+
+            }
+
+          </div>
+
+        </div>
+
+
+        <!-- GEOPOLÍGONO -->
+
+        <div class="field full">
+
+          <label for="geopoligono">
+            Geopolígono
+            <span class="optional">
+              Opcional
+            </span>
+          </label>
+
+          <textarea
+            id="geopoligono"
+            formControlName="geopoligono"
+            rows="4"
+            placeholder="Informe apenas se já possuir esse dado."
+          ></textarea>
+
+        </div>
+
+
+        <!-- =====================================
+             BOTÕES
+        ====================================== -->
+
+        <div class="actions">
+
+          <button
+            type="button"
+            class="secondary-button"
+            (click)="voltar()"
+            [disabled]="loading()"
+          >
+            Voltar
+          </button>
+
+
+          <button
+            type="submit"
+            class="primary-button"
+            [disabled]="loading()"
+          >
+
+            @if (loading()) {
+
+              <span class="spinner"></span>
+
+              Cadastrando propriedade...
+
+            } @else {
+
+              Concluir configuração
+
+              <mat-icon>
+                arrow_forward
+              </mat-icon>
+
+            }
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </main>
+
+  }
+
+</div>

@@ -33,6 +33,40 @@ export const routes: Routes = [
       import('./pages/dashboard/dashboard.component')
         .then(m => m.Dashboard)
   },
+  {
+  path: 'onboarding',
+
+  canActivate: [
+    authGuard
+  ],
+
+  loadComponent: () =>
+    import('./pages/onboarding/onboarding')
+    
+  .then(m => m.Onboarding)
+  },
+  {
+  path: 'onboarding/produtor',
+
+  canActivate: [
+    authGuard
+  ],
+
+  loadComponent: () =>
+    import('./pages/onboarding-produtor/onboarding-produtor')
+      .then(m => m.OnboardingProdutor)
+  },
+    {
+  path: 'onboarding/fazenda',
+
+  canActivate: [
+    authGuard
+  ],
+
+  loadComponent: () =>
+    import('./pages/onboarding-fazenda/onboarding-fazenda')
+      .then(m => m.OnboardingFazenda)
+  },
 
   {
     path: '**',

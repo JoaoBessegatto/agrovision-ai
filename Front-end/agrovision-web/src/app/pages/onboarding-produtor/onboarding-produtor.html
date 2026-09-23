@@ -1,0 +1,357 @@
+<div class="page">
+
+  <!-- =====================================
+       HEADER
+  ====================================== -->
+  <header class="topbar">
+
+    <a
+      routerLink="/onboarding"
+      class="logo"
+    >
+      🌱
+      <strong>
+        AgroVision AI
+      </strong>
+    </a>
+
+
+    <span class="step-indicator">
+      Etapa 2 de 3
+    </span>
+
+  </header>
+
+
+  <!-- =====================================
+       CONTEÚDO
+  ====================================== -->
+  <main class="container">
+
+    <button
+      type="button"
+      class="back-button"
+      (click)="voltar()"
+    >
+
+      <mat-icon>
+        arrow_back
+      </mat-icon>
+
+      Voltar
+
+    </button>
+
+
+    <section class="header-content">
+
+      <span class="label">
+        PERFIL DE PRODUTOR
+      </span>
+
+      <h1>
+        Conte um pouco sobre você
+      </h1>
+
+      <p>
+        Essas informações serão utilizadas
+        para identificar o responsável pelas
+        propriedades cadastradas no AgroVision.
+      </p>
+
+    </section>
+
+
+    <!-- =====================================
+         ERRO
+    ====================================== -->
+    @if (errorMessage()) {
+
+      <div class="alert-error">
+
+        <mat-icon>
+          error_outline
+        </mat-icon>
+
+        <span>
+          {{ errorMessage() }}
+        </span>
+
+      </div>
+
+    }
+
+
+    <!-- =====================================
+         FORMULÁRIO
+    ====================================== -->
+    <form
+      class="form-card"
+      [formGroup]="produtorForm"
+      (ngSubmit)="onSubmit()"
+    >
+
+
+      <!-- NOME -->
+      <div class="field full">
+
+        <label for="nomeCompleto">
+          Nome completo
+        </label>
+
+        <div
+          class="input-wrapper"
+          [class.invalid]="
+            produtorForm.controls.nomeCompleto.invalid &&
+            produtorForm.controls.nomeCompleto.touched
+          "
+        >
+
+          <mat-icon>
+            person_outline
+          </mat-icon>
+
+          <input
+            id="nomeCompleto"
+            type="text"
+            formControlName="nomeCompleto"
+            placeholder="Digite seu nome completo"
+            autocomplete="name"
+          >
+
+        </div>
+
+
+        @if (
+          produtorForm.controls.nomeCompleto.touched &&
+          produtorForm.controls.nomeCompleto.hasError('required')
+        ) {
+
+          <small class="field-error">
+            O nome completo é obrigatório.
+          </small>
+
+        }
+
+
+        @if (
+          produtorForm.controls.nomeCompleto.touched &&
+          produtorForm.controls.nomeCompleto.hasError('minlength')
+        ) {
+
+          <small class="field-error">
+            Informe um nome válido.
+          </small>
+
+        }
+
+      </div>
+
+
+      <div class="row">
+
+        <!-- CPF/CNPJ -->
+        <div class="field">
+
+          <label for="cpfOrCnpj">
+            CPF ou CNPJ
+          </label>
+
+          <div
+            class="input-wrapper"
+            [class.invalid]="
+              produtorForm.controls.cpfOrCnpj.invalid &&
+              produtorForm.controls.cpfOrCnpj.touched
+            "
+          >
+
+            <mat-icon>
+              badge
+            </mat-icon>
+
+            <input
+              id="cpfOrCnpj"
+              type="text"
+              formControlName="cpfOrCnpj"
+              placeholder="000.000.000-00"
+              maxlength="18"
+              (input)="formatCpfCnpj($event)"
+            >
+
+          </div>
+
+
+          @if (
+            produtorForm.controls.cpfOrCnpj.invalid &&
+            produtorForm.controls.cpfOrCnpj.touched
+          ) {
+
+            <small class="field-error">
+              Informe seu CPF ou CNPJ.
+            </small>
+
+          }
+
+        </div>
+
+
+        <!-- DATA -->
+        <div class="field">
+
+          <label for="dataNascimento">
+            Data de nascimento
+          </label>
+
+          <div
+            class="input-wrapper"
+            [class.invalid]="
+              produtorForm.controls.dataNascimento.invalid &&
+              produtorForm.controls.dataNascimento.touched
+            "
+          >
+
+            <mat-icon>
+              calendar_today
+            </mat-icon>
+
+            <input
+              id="dataNascimento"
+              type="date"
+              formControlName="dataNascimento"
+              [max]="maxBirthDate"
+            >
+
+          </div>
+
+
+          @if (
+            produtorForm.controls.dataNascimento.invalid &&
+            produtorForm.controls.dataNascimento.touched
+          ) {
+
+            <small class="field-error">
+              Informe sua data de nascimento.
+            </small>
+
+          }
+
+        </div>
+
+      </div>
+
+
+      <!-- TELEFONE -->
+      <div class="field full">
+
+        <label for="telefone">
+          Telefone
+        </label>
+
+        <div
+          class="input-wrapper"
+          [class.invalid]="
+            produtorForm.controls.telefone.invalid &&
+            produtorForm.controls.telefone.touched
+          "
+        >
+
+          <mat-icon>
+            phone
+          </mat-icon>
+
+          <input
+            id="telefone"
+            type="tel"
+            formControlName="telefone"
+            placeholder="(18) 99999-9999"
+            maxlength="15"
+            autocomplete="tel"
+            (input)="formatTelefone($event)"
+          >
+
+        </div>
+
+
+        @if (
+          produtorForm.controls.telefone.invalid &&
+          produtorForm.controls.telefone.touched
+        ) {
+
+          <small class="field-error">
+            Informe seu telefone.
+          </small>
+
+        }
+
+      </div>
+
+
+      <!-- INFO -->
+      <div class="info-box">
+
+        <mat-icon>
+          info_outline
+        </mat-icon>
+
+        <div>
+
+          <strong>
+            Seus dados permanecem vinculados
+            à sua conta.
+          </strong>
+
+          <p>
+            Você poderá atualizar essas
+            informações posteriormente nas
+            configurações do perfil.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- BOTÕES -->
+      <div class="actions">
+
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="voltar()"
+          [disabled]="loading()"
+        >
+          Voltar
+        </button>
+
+
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="loading()"
+        >
+
+          @if (loading()) {
+
+            <span class="spinner"></span>
+
+            Salvando...
+
+          } @else {
+
+            Continuar
+
+            <mat-icon>
+              arrow_forward
+            </mat-icon>
+
+          }
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </main>
+
+</div>

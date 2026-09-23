@@ -1,0 +1,474 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.page {
+  min-height: 100vh;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f4f8f3 0%,
+      #ffffff 100%
+    );
+
+  color: #223528;
+}
+
+
+// ==========================================
+// TOPBAR
+// ==========================================
+
+.topbar {
+  height: 76px;
+
+  padding: 0 60px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: white;
+
+  border-bottom: 1px solid #e4ebe5;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  color: #235d3a;
+
+  font-size: 20px;
+
+  text-decoration: none;
+}
+
+.step-indicator {
+  padding: 7px 13px;
+
+  border-radius: 30px;
+
+  background: #edf4ee;
+
+  color: #39774b;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+
+// ==========================================
+// CONTAINER
+// ==========================================
+
+.container {
+  width: 100%;
+
+  max-width: 780px;
+
+  margin: 0 auto;
+
+  padding: 55px 25px 80px;
+}
+
+.back-button {
+  margin-bottom: 32px;
+
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #637268;
+
+  font-size: 13px;
+
+  cursor: pointer;
+}
+
+.back-button mat-icon {
+  font-size: 18px;
+}
+
+.back-button:hover {
+  color: #286a41;
+}
+
+
+// ==========================================
+// HEADER
+// ==========================================
+
+.header-content {
+  margin-bottom: 32px;
+}
+
+.label {
+  color: #3d7b50;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 1.6px;
+}
+
+.header-content h1 {
+  margin: 9px 0;
+
+  color: #173624;
+
+  font-size: 36px;
+
+  line-height: 1.2;
+
+  letter-spacing: -1px;
+}
+
+.header-content p {
+  max-width: 610px;
+
+  margin: 0;
+
+  color: #718078;
+
+  line-height: 1.7;
+}
+
+
+// ==========================================
+// CARD
+// ==========================================
+
+.form-card {
+  padding: 32px;
+
+  border: 1px solid #dde6df;
+
+  border-radius: 15px;
+
+  background: white;
+
+  box-shadow:
+    0 12px 35px
+    rgba(30, 75, 45, 0.06);
+}
+
+
+// ==========================================
+// FORM
+// ==========================================
+
+.row {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 18px;
+}
+
+.field {
+  margin-bottom: 22px;
+}
+
+.field label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #304638;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+.input-wrapper {
+  height: 52px;
+
+  padding: 0 14px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  border: 1px solid #dce4dd;
+
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  transition: 0.2s;
+}
+
+.input-wrapper:focus-within {
+  border-color: #3e8154;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(62, 129, 84, 0.1);
+}
+
+.input-wrapper.invalid {
+  border-color: #c65252;
+}
+
+.input-wrapper mat-icon {
+  flex-shrink: 0;
+
+  color: #819087;
+
+  font-size: 20px;
+}
+
+.input-wrapper input {
+  width: 100%;
+  height: 100%;
+
+  border: 0;
+
+  outline: 0;
+
+  background: transparent;
+
+  color: #26382c;
+
+  font-size: 14px;
+}
+
+.input-wrapper input::placeholder {
+  color: #a3ada7;
+}
+
+.field-error {
+  display: block;
+
+  margin-top: 6px;
+
+  color: #b74242;
+
+  font-size: 12px;
+}
+
+
+// ==========================================
+// INFO
+// ==========================================
+
+.info-box {
+  margin-top: 5px;
+
+  padding: 15px;
+
+  display: flex;
+  align-items: flex-start;
+
+  gap: 12px;
+
+  border-radius: 10px;
+
+  background: #f3f7f2;
+
+  color: #56705e;
+}
+
+.info-box mat-icon {
+  color: #47805a;
+}
+
+.info-box strong {
+  color: #375544;
+
+  font-size: 13px;
+}
+
+.info-box p {
+  margin: 4px 0 0;
+
+  font-size: 12px;
+
+  line-height: 1.5;
+}
+
+
+// ==========================================
+// AÇÕES
+// ==========================================
+
+.actions {
+  margin-top: 30px;
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 12px;
+}
+
+.primary-button,
+.secondary-button {
+  min-height: 48px;
+
+  padding: 0 22px;
+
+  display: flex;
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  border-radius: 9px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.primary-button {
+  border: 0;
+
+  background: #276840;
+
+  color: white;
+}
+
+.primary-button:hover:not(:disabled) {
+  background: #1f5936;
+}
+
+.secondary-button {
+  border: 1px solid #d4dfd6;
+
+  background: white;
+
+  color: #526359;
+}
+
+.secondary-button:hover:not(:disabled) {
+  background: #f5f8f5;
+}
+
+.primary-button:disabled,
+.secondary-button:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+}
+
+.primary-button mat-icon {
+  font-size: 19px;
+}
+
+
+// ==========================================
+// ERROR
+// ==========================================
+
+.alert-error {
+  margin-bottom: 20px;
+
+  padding: 14px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  border: 1px solid #edcccc;
+
+  border-radius: 9px;
+
+  background: #fff4f4;
+
+  color: #a33f3f;
+
+  font-size: 13px;
+}
+
+
+// ==========================================
+// SPINNER
+// ==========================================
+
+.spinner {
+  width: 17px;
+  height: 17px;
+
+  border:
+    2px solid
+    rgba(255, 255, 255, 0.35);
+
+  border-top-color: white;
+
+  border-radius: 50%;
+
+  animation:
+    spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+
+  to {
+    transform: rotate(360deg);
+  }
+
+}
+
+
+// ==========================================
+// RESPONSIVO
+// ==========================================
+
+@media (max-width: 650px) {
+
+  .topbar {
+    padding: 0 20px;
+  }
+
+  .container {
+    padding:
+      40px 18px 60px;
+  }
+
+  .header-content h1 {
+    font-size: 30px;
+  }
+
+  .form-card {
+    padding: 22px 18px;
+  }
+
+  .row {
+    grid-template-columns: 1fr;
+
+    gap: 0;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .primary-button,
+  .secondary-button {
+    width: 100%;
+  }
+
+}

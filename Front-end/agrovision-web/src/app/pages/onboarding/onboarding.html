@@ -1,0 +1,239 @@
+<div class="onboarding-page">
+
+  <header class="topbar">
+
+    <a
+      routerLink="/"
+      class="logo"
+    >
+      🌱
+      <strong>
+        AgroVision AI
+      </strong>
+    </a>
+
+  </header>
+
+
+  <main class="onboarding-container">
+
+    @if (loading()) {
+
+      <div class="loading">
+        Carregando suas informações...
+      </div>
+
+    } @else if (errorMessage()) {
+
+      <div class="error-box">
+
+        <mat-icon>
+          error_outline
+        </mat-icon>
+
+        <p>
+          {{ errorMessage() }}
+        </p>
+
+        <button
+          type="button"
+          (click)="carregarContexto()"
+        >
+          Tentar novamente
+        </button>
+
+      </div>
+
+    } @else if (contexto(); as user) {
+
+      <section class="welcome">
+
+        <span class="label">
+          PRIMEIROS PASSOS
+        </span>
+
+        <h1>
+          Bem-vindo ao AgroVision,
+          <span>{{ user.name }}</span>
+        </h1>
+
+        <p>
+          Vamos configurar sua conta para que
+          você possa começar a utilizar a
+          plataforma.
+        </p>
+
+      </section>
+
+
+      <section class="steps">
+
+        <!-- CONTA -->
+        <article
+          class="step completed"
+        >
+
+          <div class="step-icon">
+
+            <mat-icon>
+              check
+            </mat-icon>
+
+          </div>
+
+          <div class="step-content">
+
+            <span class="step-number">
+              ETAPA 1
+            </span>
+
+            <h2>
+              Conta criada
+            </h2>
+
+            <p>
+              Seu acesso ao AgroVision AI
+              está configurado.
+            </p>
+
+            <small>
+              {{ user.email }}
+            </small>
+
+          </div>
+
+        </article>
+
+
+        <!-- PRODUTOR -->
+        <article
+          class="step"
+          [class.completed]="
+            user.possuiPerfilProdutor
+          "
+          [class.current]="
+            !user.possuiPerfilProdutor
+          "
+        >
+
+          <div class="step-icon">
+
+            @if (
+              user.possuiPerfilProdutor
+            ) {
+
+              <mat-icon>
+                check
+              </mat-icon>
+
+            } @else {
+
+              <mat-icon>
+                person
+              </mat-icon>
+
+            }
+
+          </div>
+
+
+          <div class="step-content">
+
+            <span class="step-number">
+              ETAPA 2
+            </span>
+
+            <h2>
+              Perfil de produtor
+            </h2>
+
+            <p>
+              Cadastre seus dados como
+              produtor para começar a
+              gerenciar propriedades.
+            </p>
+
+          </div>
+
+        </article>
+
+
+        <!-- FAZENDA -->
+        <article
+          class="step"
+          [class.completed]="
+            user.possuiFazenda
+          "
+          [class.current]="
+            user.possuiPerfilProdutor &&
+            !user.possuiFazenda
+          "
+        >
+
+          <div class="step-icon">
+
+            @if (
+              user.possuiFazenda
+            ) {
+
+              <mat-icon>
+                check
+              </mat-icon>
+
+            } @else {
+
+              <mat-icon>
+                agriculture
+              </mat-icon>
+
+            }
+
+          </div>
+
+
+          <div class="step-content">
+
+            <span class="step-number">
+              ETAPA 3
+            </span>
+
+            <h2>
+              Primeira propriedade
+            </h2>
+
+            <p>
+              Cadastre sua primeira fazenda
+              para iniciar a gestão do
+              rebanho.
+            </p>
+
+          </div>
+
+        </article>
+
+      </section>
+
+
+      <section class="actions">
+
+        <button
+          type="button"
+          class="primary-button"
+          (click)="irParaProximoPasso()"
+        >
+
+          {{ tituloProximoPasso }}
+
+          <mat-icon>
+            arrow_forward
+          </mat-icon>
+
+        </button>
+
+      </section>
+
+    }
+
+  </main>
+
+</div>
