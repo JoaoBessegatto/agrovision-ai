@@ -83,4 +83,12 @@ public class FazendaController {
                 fazendaService.get(id)
         );
     }
+    @GetMapping("/minhas")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<FazendaResponseDTO>> getMinhasFazendas() {
+
+        return ResponseEntity.ok(
+                fazendaService.getMinhasFazendas()
+        );
+    }
 }
