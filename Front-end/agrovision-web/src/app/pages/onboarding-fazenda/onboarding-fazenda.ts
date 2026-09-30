@@ -469,17 +469,8 @@ export class OnboardingFazenda
             fazenda
           );
 
-
-          /*
-           * Agora o /api/me/context
-           * passará a retornar
-           *
-           * possuiFazenda = true.
-           *
-           * Onboarding concluído.
-           */
           this.router.navigate([
-            '/dashboard'
+            '/app'
           ]);
 
         },

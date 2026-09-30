@@ -174,7 +174,7 @@ export class LoginComponent {
           if (contexto.admin) {
 
             this.router.navigate([
-              '/dashboard'
+              '/app'
             ]);
 
             return;
@@ -203,7 +203,7 @@ export class LoginComponent {
            * de produtor e fazenda.
            */
           this.router.navigate([
-            '/dashboard'
+            '/app'
           ]);
 
         },

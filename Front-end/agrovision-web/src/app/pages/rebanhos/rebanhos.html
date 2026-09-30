@@ -1,0 +1,698 @@
+<div class="rebanhos-page">
+
+  <!-- =======================================
+       CABEÇALHO
+  ======================================== -->
+
+  <section class="page-header">
+
+    <div>
+
+      <span class="eyebrow">
+        PECUÁRIA
+      </span>
+
+      <h1>
+        Rebanhos
+      </h1>
+
+
+      @if (
+        fazendaContext.fazendaAtiva();
+        as fazenda
+      ) {
+
+        <p>
+          Gerencie os rebanhos da
+          <strong>
+            {{ fazenda.nome }}
+          </strong>.
+        </p>
+
+      } @else {
+
+        <p>
+          Selecione uma fazenda para visualizar
+          seus rebanhos.
+        </p>
+
+      }
+
+    </div>
+
+
+    <button
+      type="button"
+      class="primary-button"
+      (click)="abrirNovoRebanho()"
+      [disabled]="
+        !fazendaContext.fazendaAtivaId()
+      "
+    >
+
+      <mat-icon>
+        add
+      </mat-icon>
+
+      Novo rebanho
+
+    </button>
+
+  </section>
+
+
+  <!-- =======================================
+       ERRO
+  ======================================== -->
+
+  @if (errorMessage()) {
+
+    <div class="alert-error">
+
+      <mat-icon>
+        error_outline
+      </mat-icon>
+
+      <span>
+        {{ errorMessage() }}
+      </span>
+
+
+      <button
+        type="button"
+        (click)="limparErro()"
+      >
+
+        <mat-icon>
+          close
+        </mat-icon>
+
+      </button>
+
+    </div>
+
+  }
+
+
+  <!-- =======================================
+       RESUMO
+  ======================================== -->
+
+  @if (
+    fazendaContext.fazendaAtiva();
+    as fazenda
+  ) {
+
+    <section class="summary">
+
+      <div class="summary-icon">
+
+        <mat-icon>
+          agriculture
+        </mat-icon>
+
+      </div>
+
+
+      <div>
+
+        <span>
+          Fazenda ativa
+        </span>
+
+        <strong>
+          {{ fazenda.nome }}
+        </strong>
+
+        <small>
+          {{ fazenda.cidade }} -
+          {{ fazenda.estado }}
+        </small>
+
+      </div>
+
+
+      <div class="summary-count">
+
+        <span>
+          Rebanhos
+        </span>
+
+        <strong>
+          {{ rebanhos().length }}
+        </strong>
+
+      </div>
+
+    </section>
+
+  }
+
+
+  <!-- =======================================
+       LOADING
+  ======================================== -->
+
+  @if (loading()) {
+
+    <div class="loading-state">
+
+      <div class="loader"></div>
+
+      <p>
+        Carregando rebanhos...
+      </p>
+
+    </div>
+
+  }
+
+
+  <!-- =======================================
+       SEM FAZENDA
+  ======================================== -->
+
+  @else if (
+    !fazendaContext.fazendaAtivaId()
+  ) {
+
+    <section class="empty-state">
+
+      <div class="empty-icon">
+
+        <mat-icon>
+          agriculture
+        </mat-icon>
+
+      </div>
+
+      <h2>
+        Nenhuma fazenda selecionada
+      </h2>
+
+      <p>
+        Selecione uma propriedade no topo
+        para visualizar seus rebanhos.
+      </p>
+
+    </section>
+
+  }
+
+
+  <!-- =======================================
+       SEM REBANHOS
+  ======================================== -->
+
+  @else if (
+    rebanhos().length === 0
+  ) {
+
+    <section class="empty-state">
+
+      <div class="empty-icon">
+
+        <mat-icon>
+          groups
+        </mat-icon>
+
+      </div>
+
+
+      <h2>
+        Nenhum rebanho cadastrado
+      </h2>
+
+      <p>
+        Comece organizando os animais desta
+        propriedade em seu primeiro rebanho.
+      </p>
+
+
+      <button
+        type="button"
+        class="primary-button"
+        (click)="abrirNovoRebanho()"
+      >
+
+        <mat-icon>
+          add
+        </mat-icon>
+
+        Criar primeiro rebanho
+
+      </button>
+
+    </section>
+
+  }
+
+
+  <!-- =======================================
+       LISTA
+  ======================================== -->
+
+  @else {
+
+    <section class="rebanhos-grid">
+
+      @for (
+        rebanho of rebanhos();
+        track rebanho.id
+      ) {
+
+        <article class="rebanho-card">
+
+          <div class="card-top">
+
+            <div class="herd-icon">
+
+              <mat-icon>
+                groups
+              </mat-icon>
+
+            </div>
+
+
+            <div class="card-actions">
+
+              <button
+                type="button"
+                title="Editar rebanho"
+                (click)="abrirEdicao(rebanho)"
+              >
+
+                <mat-icon>
+                  edit
+                </mat-icon>
+
+              </button>
+
+
+              <button
+                type="button"
+                title="Excluir rebanho"
+                class="delete"
+                (click)="
+                  solicitarExclusao(rebanho)
+                "
+              >
+
+                <mat-icon>
+                  delete_outline
+                </mat-icon>
+
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div class="card-content">
+
+            <h2>
+              {{ rebanho.nome }}
+            </h2>
+
+
+            <p>
+
+              {{
+                rebanho.descricao
+                ||
+                'Nenhuma descrição informada.'
+              }}
+
+            </p>
+
+          </div>
+
+
+          <div class="card-footer">
+
+            <div>
+
+              <span>
+                Animais
+              </span>
+
+              <strong>
+                {{
+                  rebanho.quantidadeAnimais
+                }}
+              </strong>
+
+            </div>
+
+
+            <button
+              type="button"
+              class="details-button"
+            >
+
+              Ver detalhes
+
+              <mat-icon>
+                arrow_forward
+              </mat-icon>
+
+            </button>
+
+          </div>
+
+        </article>
+
+      }
+
+    </section>
+
+  }
+
+
+  <!-- =======================================
+       MODAL CADASTRO / EDIÇÃO
+  ======================================== -->
+
+  @if (modalAberto()) {
+
+    <div
+      class="modal-overlay"
+      (click)="fecharModal()"
+    >
+
+      <div
+        class="modal"
+        (click)="$event.stopPropagation()"
+      >
+
+        <div class="modal-header">
+
+          <div>
+
+            <span class="eyebrow">
+
+              {{
+                editando()
+                  ? 'EDITAR REBANHO'
+                  : 'NOVO REBANHO'
+              }}
+
+            </span>
+
+
+            <h2>
+
+              {{
+                editando()
+                  ? 'Editar rebanho'
+                  : 'Cadastrar rebanho'
+              }}
+
+            </h2>
+
+          </div>
+
+
+          <button
+            type="button"
+            class="close-button"
+            (click)="fecharModal()"
+          >
+
+            <mat-icon>
+              close
+            </mat-icon>
+
+          </button>
+
+        </div>
+
+
+        @if (
+          fazendaContext.fazendaAtiva();
+          as fazenda
+        ) {
+
+          <div class="modal-farm">
+
+            <mat-icon>
+              agriculture
+            </mat-icon>
+
+            <div>
+
+              <span>
+                Fazenda
+              </span>
+
+              <strong>
+                {{ fazenda.nome }}
+              </strong>
+
+            </div>
+
+          </div>
+
+        }
+
+
+        <form
+          [formGroup]="rebanhoForm"
+          (ngSubmit)="salvar()"
+        >
+
+          <!-- NOME -->
+
+          <div class="field">
+
+            <label for="nome">
+              Nome do rebanho
+            </label>
+
+
+            <div
+              class="input-wrapper"
+              [class.invalid]="
+                rebanhoForm.controls.nome.invalid &&
+                rebanhoForm.controls.nome.touched
+              "
+            >
+
+              <mat-icon>
+                groups
+              </mat-icon>
+
+              <input
+                id="nome"
+                type="text"
+                formControlName="nome"
+                placeholder="Ex.: Lote de Engorda 01"
+                maxlength="100"
+              >
+
+            </div>
+
+
+            @if (
+              rebanhoForm.controls.nome.touched &&
+              rebanhoForm.controls.nome.hasError('required')
+            ) {
+
+              <small class="field-error">
+                Informe o nome do rebanho.
+              </small>
+
+            }
+
+
+            @if (
+              rebanhoForm.controls.nome.touched &&
+              rebanhoForm.controls.nome.hasError('minlength')
+            ) {
+
+              <small class="field-error">
+                O nome deve possuir pelo menos
+                2 caracteres.
+              </small>
+
+            }
+
+          </div>
+
+
+          <!-- DESCRIÇÃO -->
+
+          <div class="field">
+
+            <label for="descricao">
+
+              Descrição
+
+              <span>
+                Opcional
+              </span>
+
+            </label>
+
+
+            <textarea
+              id="descricao"
+              formControlName="descricao"
+              maxlength="500"
+              rows="5"
+              placeholder="Ex.: Animais em fase de terminação..."
+            ></textarea>
+
+
+            <div class="character-count">
+
+              {{
+                rebanhoForm.controls
+                  .descricao.value.length
+              }}/500
+
+            </div>
+
+          </div>
+
+
+          <!-- BOTÕES -->
+
+          <div class="modal-actions">
+
+            <button
+              type="button"
+              class="secondary-button"
+              (click)="fecharModal()"
+              [disabled]="salvando()"
+            >
+
+              Cancelar
+
+            </button>
+
+
+            <button
+              type="submit"
+              class="primary-button"
+              [disabled]="salvando()"
+            >
+
+              @if (salvando()) {
+
+                <span class="small-loader"></span>
+
+                Salvando...
+
+              } @else {
+
+                <mat-icon>
+                  save
+                </mat-icon>
+
+                {{
+                  editando()
+                    ? 'Salvar alterações'
+                    : 'Cadastrar rebanho'
+                }}
+
+              }
+
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- =======================================
+       CONFIRMAÇÃO DE EXCLUSÃO
+  ======================================== -->
+
+  @if (
+    rebanhoParaExcluir();
+    as rebanho
+  ) {
+
+    <div
+      class="modal-overlay"
+      (click)="cancelarExclusao()"
+    >
+
+      <div
+        class="confirm-modal"
+        (click)="$event.stopPropagation()"
+      >
+
+        <div class="danger-icon">
+
+          <mat-icon>
+            delete_outline
+          </mat-icon>
+
+        </div>
+
+
+        <h2>
+          Excluir rebanho?
+        </h2>
+
+
+        <p>
+          O rebanho
+          <strong>
+            {{ rebanho.nome }}
+          </strong>
+          será excluído permanentemente.
+        </p>
+
+
+        <div class="modal-actions">
+
+          <button
+            type="button"
+            class="secondary-button"
+            (click)="cancelarExclusao()"
+            [disabled]="excluindo()"
+          >
+
+            Cancelar
+
+          </button>
+
+
+          <button
+            type="button"
+            class="danger-button"
+            (click)="confirmarExclusao()"
+            [disabled]="excluindo()"
+          >
+
+            @if (excluindo()) {
+
+              Excluindo...
+
+            } @else {
+
+              Excluir rebanho
+
+            }
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+</div>

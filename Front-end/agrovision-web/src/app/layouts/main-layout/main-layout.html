@@ -1,0 +1,415 @@
+<div class="app-shell">
+
+  <!-- =========================================
+       OVERLAY MOBILE
+  ========================================== -->
+
+  @if (sidebarOpen()) {
+
+    <div
+      class="sidebar-overlay"
+      (click)="fecharSidebar()"
+    ></div>
+
+  }
+
+
+  <!-- =========================================
+       SIDEBAR
+  ========================================== -->
+
+  <aside
+    class="sidebar"
+    [class.open]="sidebarOpen()"
+  >
+
+    <div class="sidebar-header">
+
+      <a
+        routerLink="/app"
+        class="brand"
+        (click)="fecharSidebar()"
+      >
+
+        <div class="brand-icon">
+          🌱
+        </div>
+
+        <div class="brand-text">
+
+          <strong>
+            AgroVision
+          </strong>
+
+          <span>
+            AI
+          </span>
+
+        </div>
+
+      </a>
+
+    </div>
+
+
+    <!-- FAZENDA MOBILE -->
+
+    <div class="mobile-farm">
+
+      <span class="mobile-farm-label">
+        Fazenda ativa
+      </span>
+
+      @if (
+        fazendaContext.fazendaAtiva();
+        as fazenda
+      ) {
+
+        <strong>
+          {{ fazenda.nome }}
+        </strong>
+
+        <small>
+          {{ fazenda.cidade }} -
+          {{ fazenda.estado }}
+        </small>
+
+      }
+
+    </div>
+
+
+    <!-- =========================================
+         MENU
+    ========================================== -->
+
+    <nav class="navigation">
+
+      <span class="menu-label">
+        PRINCIPAL
+      </span>
+
+
+      <a
+        routerLink="/app"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{
+          exact: true
+        }"
+        (click)="fecharSidebar()"
+      >
+
+        <mat-icon>
+          home
+        </mat-icon>
+
+        <span>
+          Início
+        </span>
+
+      </a>
+
+
+      <a
+        routerLink="/app/dashboard"
+        routerLinkActive="active"
+        (click)="fecharSidebar()"
+      >
+
+        <mat-icon>
+          dashboard
+        </mat-icon>
+
+        <span>
+          Dashboard
+        </span>
+
+      </a>
+
+
+      <span class="menu-label second">
+        PECUÁRIA
+      </span>
+
+
+      <a
+        routerLink="/app/rebanhos"
+        routerLinkActive="active"
+        (click)="fecharSidebar()"
+      >
+
+        <mat-icon>
+          groups
+        </mat-icon>
+
+        <span>
+          Rebanhos
+        </span>
+
+      </a>
+
+
+      <a
+        routerLink="/app/animais"
+        routerLinkActive="active"
+        (click)="fecharSidebar()"
+      >
+
+        <mat-icon>
+          pets
+        </mat-icon>
+
+        <span>
+          Animais
+        </span>
+
+      </a>
+
+
+      <a
+        routerLink="/app/pesagens"
+        routerLinkActive="active"
+        (click)="fecharSidebar()"
+      >
+
+        <mat-icon>
+          monitor_weight
+        </mat-icon>
+
+        <span>
+          Pesagens
+        </span>
+
+      </a>
+
+
+      <span class="menu-label second">
+        GESTÃO
+      </span>
+
+
+      <a
+        routerLink="/app/fazendas"
+        routerLinkActive="active"
+        (click)="fecharSidebar()"
+      >
+
+        <mat-icon>
+          agriculture
+        </mat-icon>
+
+        <span>
+          Fazendas
+        </span>
+
+      </a>
+
+
+      <a
+        routerLink="/app/funcionarios"
+        routerLinkActive="active"
+        (click)="fecharSidebar()"
+      >
+
+        <mat-icon>
+          badge
+        </mat-icon>
+
+        <span>
+          Funcionários
+        </span>
+
+      </a>
+
+
+      <a
+        routerLink="/app/relatorios"
+        routerLinkActive="active"
+        (click)="fecharSidebar()"
+      >
+
+        <mat-icon>
+          assessment
+        </mat-icon>
+
+        <span>
+          Relatórios
+        </span>
+
+      </a>
+
+    </nav>
+
+
+    <!-- =========================================
+         FOOTER SIDEBAR
+    ========================================== -->
+
+    <div class="sidebar-footer">
+
+      <button
+        type="button"
+        class="logout-button"
+        (click)="logout()"
+      >
+
+        <mat-icon>
+          logout
+        </mat-icon>
+
+        <span>
+          Sair
+        </span>
+
+      </button>
+
+    </div>
+
+  </aside>
+
+
+  <!-- =========================================
+       ÁREA PRINCIPAL
+  ========================================== -->
+
+  <div class="main-area">
+
+    <!-- TOPBAR -->
+
+    <header class="topbar">
+
+      <div class="topbar-left">
+
+        <button
+          type="button"
+          class="menu-button"
+          (click)="toggleSidebar()"
+        >
+
+          <mat-icon>
+            menu
+          </mat-icon>
+
+        </button>
+
+
+        <!-- FAZENDA -->
+
+        <div class="farm-selector">
+
+          <div class="farm-icon">
+
+            <mat-icon>
+              agriculture
+            </mat-icon>
+
+          </div>
+
+
+          <div class="farm-select-content">
+
+            <span>
+              Fazenda ativa
+            </span>
+
+
+            @if (
+              fazendaContext.loading()
+            ) {
+
+              <strong>
+                Carregando...
+              </strong>
+
+            } @else if (
+              fazendaContext.fazendas().length
+              > 0
+            ) {
+
+              <select
+                [value]="
+                  fazendaContext
+                    .fazendaAtivaId()
+                "
+                (change)="
+                  trocarFazenda($event)
+                "
+              >
+
+                @for (
+                  fazenda
+                  of fazendaContext.fazendas();
+                  track fazenda.id
+                ) {
+
+                  <option
+                    [value]="fazenda.id"
+                  >
+                    {{ fazenda.nome }}
+                  </option>
+
+                }
+
+              </select>
+
+            } @else {
+
+              <strong>
+                Nenhuma fazenda
+              </strong>
+
+            }
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- USUÁRIO -->
+
+      <div class="user-area">
+
+        <div class="user-avatar">
+
+          <mat-icon>
+            person
+          </mat-icon>
+
+        </div>
+
+
+        <div class="user-info">
+
+          <strong>
+            {{
+              usuario?.username
+              ?? 'Usuário'
+            }}
+          </strong>
+
+          <span>
+            AgroVision AI
+          </span>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <!-- =========================================
+         CONTEÚDO DAS ROTAS
+    ========================================== -->
+
+    <main class="content">
+
+      <router-outlet />
+
+    </main>
+
+  </div>
+
+</div>

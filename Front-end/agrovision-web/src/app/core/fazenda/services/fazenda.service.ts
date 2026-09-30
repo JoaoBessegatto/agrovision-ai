@@ -62,4 +62,11 @@ export class FazendaService {
       `${this.API_URL}/${id}`
     );
   }
+  listarMinhasFazendas():
+  Observable<FazendaResponse[]> {
+
+  return this.http.get<FazendaResponse[]>(
+    `${this.API_URL}/minhas`
+  );
+  }
 }

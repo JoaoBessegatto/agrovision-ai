@@ -1,0 +1,438 @@
+<div class="home-page">
+
+  <!-- =====================================
+       CABEÇALHO
+  ====================================== -->
+
+  <section class="page-header">
+
+    <div>
+
+      <span class="eyebrow">
+        VISÃO GERAL
+      </span>
+
+      <h1>
+        Bem-vindo ao AgroVision
+      </h1>
+
+
+      @if (
+        fazendaContext.fazendaAtiva();
+        as fazenda
+      ) {
+
+        <p>
+          Acompanhando
+          <strong>
+            {{ fazenda.nome }}
+          </strong>
+
+          ·
+
+          {{ fazenda.cidade }} -
+          {{ fazenda.estado }}
+        </p>
+
+      } @else {
+
+        <p>
+          Selecione uma propriedade
+          para começar.
+        </p>
+
+      }
+
+    </div>
+
+
+    <a
+      routerLink="/app/rebanhos"
+      class="primary-action"
+    >
+
+      <mat-icon>
+        add
+      </mat-icon>
+
+      Novo rebanho
+
+    </a>
+
+  </section>
+
+
+  <!-- =====================================
+       MÉTRICAS
+  ====================================== -->
+
+  <section class="metrics">
+
+    <article class="metric-card">
+
+      <div class="metric-icon">
+
+        <mat-icon>
+          groups
+        </mat-icon>
+
+      </div>
+
+      <div>
+
+        <span>
+          Rebanhos
+        </span>
+
+        <strong>
+          —
+        </strong>
+
+        <small>
+          Fazenda selecionada
+        </small>
+
+      </div>
+
+    </article>
+
+
+    <article class="metric-card">
+
+      <div class="metric-icon">
+
+        <mat-icon>
+          pets
+        </mat-icon>
+
+      </div>
+
+      <div>
+
+        <span>
+          Animais
+        </span>
+
+        <strong>
+          —
+        </strong>
+
+        <small>
+          Total cadastrado
+        </small>
+
+      </div>
+
+    </article>
+
+
+    <article class="metric-card">
+
+      <div class="metric-icon">
+
+        <mat-icon>
+          monitor_weight
+        </mat-icon>
+
+      </div>
+
+      <div>
+
+        <span>
+          Pesagens
+        </span>
+
+        <strong>
+          —
+        </strong>
+
+        <small>
+          Registros realizados
+        </small>
+
+      </div>
+
+    </article>
+
+
+    <article class="metric-card">
+
+      <div class="metric-icon">
+
+        <mat-icon>
+          badge
+        </mat-icon>
+
+      </div>
+
+      <div>
+
+        <span>
+          Funcionários
+        </span>
+
+        <strong>
+          —
+        </strong>
+
+        <small>
+          Vinculados à propriedade
+        </small>
+
+      </div>
+
+    </article>
+
+  </section>
+
+
+  <!-- =====================================
+       ACESSO RÁPIDO
+  ====================================== -->
+
+  <section class="section">
+
+    <div class="section-header">
+
+      <div>
+
+        <h2>
+          Acesso rápido
+        </h2>
+
+        <p>
+          Principais áreas do AgroVision.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="quick-grid">
+
+      <a
+        routerLink="/app/rebanhos"
+        class="quick-card"
+      >
+
+        <div class="quick-icon">
+
+          <mat-icon>
+            groups
+          </mat-icon>
+
+        </div>
+
+        <div>
+
+          <strong>
+            Rebanhos
+          </strong>
+
+          <p>
+            Organize os animais
+            em lotes e rebanhos.
+          </p>
+
+        </div>
+
+        <mat-icon class="arrow">
+          arrow_forward
+        </mat-icon>
+
+      </a>
+
+
+      <a
+        routerLink="/app/animais"
+        class="quick-card"
+      >
+
+        <div class="quick-icon">
+
+          <mat-icon>
+            pets
+          </mat-icon>
+
+        </div>
+
+        <div>
+
+          <strong>
+            Animais
+          </strong>
+
+          <p>
+            Consulte e gerencie os
+            animais da propriedade.
+          </p>
+
+        </div>
+
+        <mat-icon class="arrow">
+          arrow_forward
+        </mat-icon>
+
+      </a>
+
+
+      <a
+        routerLink="/app/pesagens"
+        class="quick-card"
+      >
+
+        <div class="quick-icon">
+
+          <mat-icon>
+            monitor_weight
+          </mat-icon>
+
+        </div>
+
+        <div>
+
+          <strong>
+            Pesagens
+          </strong>
+
+          <p>
+            Registre e acompanhe a
+            evolução de peso.
+          </p>
+
+        </div>
+
+        <mat-icon class="arrow">
+          arrow_forward
+        </mat-icon>
+
+      </a>
+
+
+      <a
+        routerLink="/app/dashboard"
+        class="quick-card"
+      >
+
+        <div class="quick-icon">
+
+          <mat-icon>
+            dashboard
+          </mat-icon>
+
+        </div>
+
+        <div>
+
+          <strong>
+            Dashboard
+          </strong>
+
+          <p>
+            Visualize indicadores
+            da propriedade.
+          </p>
+
+        </div>
+
+        <mat-icon class="arrow">
+          arrow_forward
+        </mat-icon>
+
+      </a>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================
+       PROPRIEDADE
+  ====================================== -->
+
+  @if (
+    fazendaContext.fazendaAtiva();
+    as fazenda
+  ) {
+
+    <section class="farm-summary">
+
+      <div class="farm-summary-header">
+
+        <div>
+
+          <span class="eyebrow">
+            PROPRIEDADE ATIVA
+          </span>
+
+          <h2>
+            {{ fazenda.nome }}
+          </h2>
+
+        </div>
+
+
+        <a
+          routerLink="/app/fazendas"
+        >
+          Gerenciar propriedade
+
+          <mat-icon>
+            arrow_forward
+          </mat-icon>
+        </a>
+
+      </div>
+
+
+      <div class="farm-info">
+
+        <div>
+
+          <span>
+            Localização
+          </span>
+
+          <strong>
+            {{ fazenda.cidade }} -
+            {{ fazenda.estado }}
+          </strong>
+
+        </div>
+
+
+        <div>
+
+          <span>
+            Área total
+          </span>
+
+          <strong>
+            {{ fazenda.areaTotalHa }} ha
+          </strong>
+
+        </div>
+
+
+        <div>
+
+          <span>
+            Exploração
+          </span>
+
+          <strong>
+            {{
+              fazenda.exploracao
+            }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  }
+
+</div>
