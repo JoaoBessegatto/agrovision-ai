@@ -146,6 +146,13 @@ export const routes: Routes = [
           import('./pages/rebanhos/rebanhos')
           .then(m => m.Rebanhos)
       },
+      {
+        path: 'animais',
+
+          loadComponent: () =>
+            import('./pages/animais/animais')
+            .then(m => m.Animais)
+      },
     ]
   },
 

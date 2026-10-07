@@ -1,0 +1,1226 @@
+<div class="animais-page">
+
+  <!-- ==========================================
+       CABEÇALHO
+  =========================================== -->
+
+  <section class="page-header">
+
+    <div>
+
+      <span class="eyebrow">
+        PECUÁRIA
+      </span>
+
+      <h1>
+        Animais
+      </h1>
+
+
+      @if (
+        fazendaContext.fazendaAtiva();
+        as fazenda
+      ) {
+
+        <p>
+          Gerencie os animais da
+          <strong>
+            {{ fazenda.nome }}
+          </strong>.
+        </p>
+
+      } @else {
+
+        <p>
+          Selecione uma fazenda para
+          visualizar os animais.
+        </p>
+
+      }
+
+    </div>
+
+
+    <button
+      type="button"
+      class="primary-button"
+      (click)="abrirNovoAnimal()"
+      [disabled]="
+        !fazendaContext.fazendaAtivaId()
+      "
+    >
+
+      <mat-icon>
+        add
+      </mat-icon>
+
+      Novo animal
+
+    </button>
+
+  </section>
+
+
+  <!-- ==========================================
+       ERRO
+  =========================================== -->
+
+  @if (errorMessage()) {
+
+    <div class="alert-error">
+
+      <mat-icon>
+        error_outline
+      </mat-icon>
+
+
+      <span>
+        {{ errorMessage() }}
+      </span>
+
+
+      <button
+        type="button"
+        (click)="limparErro()"
+      >
+
+        <mat-icon>
+          close
+        </mat-icon>
+
+      </button>
+
+    </div>
+
+  }
+
+
+  <!-- ==========================================
+       RESUMO DA FAZENDA
+  =========================================== -->
+
+  @if (
+    fazendaContext.fazendaAtiva();
+    as fazenda
+  ) {
+
+    <section class="summary">
+
+      <div class="summary-icon">
+
+        <mat-icon>
+          agriculture
+        </mat-icon>
+
+      </div>
+
+
+      <div class="summary-content">
+
+        <span>
+          Fazenda ativa
+        </span>
+
+        <strong>
+          {{ fazenda.nome }}
+        </strong>
+
+        <small>
+          {{ fazenda.cidade }} -
+          {{ fazenda.estado }}
+        </small>
+
+      </div>
+
+
+      <div class="summary-stats">
+
+        <div>
+
+          <span>
+            Animais
+          </span>
+
+          <strong>
+            {{ animais().length }}
+          </strong>
+
+        </div>
+
+
+        <div>
+
+          <span>
+            Rebanhos
+          </span>
+
+          <strong>
+            {{ rebanhos().length }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  }
+
+
+  <!-- ==========================================
+       FILTROS
+  =========================================== -->
+
+  @if (
+    !loading() &&
+    animais().length > 0
+  ) {
+
+    <section class="filters">
+
+      <!-- BUSCA -->
+
+      <div class="search-field">
+
+        <mat-icon>
+          search
+        </mat-icon>
+
+
+        <input
+          type="text"
+          placeholder="Buscar por identificação ou raça..."
+          [value]="busca()"
+          (input)="atualizarBusca($event)"
+        >
+
+      </div>
+
+
+      <!-- REBANHO -->
+
+      <div class="select-wrapper">
+
+        <mat-icon>
+          groups
+        </mat-icon>
+
+
+        <select
+          [value]="filtroRebanho()"
+          (change)="
+            atualizarFiltroRebanho($event)
+          "
+        >
+
+          <option value="">
+            Todos os rebanhos
+          </option>
+
+
+          @for (
+            rebanho of rebanhos();
+            track rebanho.id
+          ) {
+
+            <option
+              [value]="rebanho.id"
+            >
+              {{ rebanho.nome }}
+            </option>
+
+          }
+
+        </select>
+
+      </div>
+
+
+      <!-- SITUAÇÃO -->
+
+      <div class="select-wrapper">
+
+        <mat-icon>
+          filter_alt
+        </mat-icon>
+
+
+        <select
+          [value]="filtroSituacao()"
+          (change)="
+            atualizarFiltroSituacao($event)
+          "
+        >
+
+          <option value="">
+            Todas as situações
+          </option>
+
+          <option value="ATIVO">
+            Ativos
+          </option>
+
+          <option value="INATIVO">
+            Inativos
+          </option>
+
+          <option value="VENDIDO">
+            Vendidos
+          </option>
+
+          <option value="MORTO">
+            Mortos
+          </option>
+
+        </select>
+
+      </div>
+
+
+      @if (
+        busca() ||
+        filtroRebanho() ||
+        filtroSituacao()
+      ) {
+
+        <button
+          type="button"
+          class="clear-filter"
+          (click)="limparFiltros()"
+        >
+
+          <mat-icon>
+            close
+          </mat-icon>
+
+          Limpar
+
+        </button>
+
+      }
+
+    </section>
+
+  }
+
+
+  <!-- ==========================================
+       LOADING
+  =========================================== -->
+
+  @if (loading()) {
+
+    <section class="loading-state">
+
+      <div class="loader"></div>
+
+      <p>
+        Carregando animais...
+      </p>
+
+    </section>
+
+  }
+
+
+  <!-- ==========================================
+       SEM FAZENDA
+  =========================================== -->
+
+  @else if (
+    !fazendaContext.fazendaAtivaId()
+  ) {
+
+    <section class="empty-state">
+
+      <div class="empty-icon">
+
+        <mat-icon>
+          agriculture
+        </mat-icon>
+
+      </div>
+
+
+      <h2>
+        Nenhuma fazenda selecionada
+      </h2>
+
+      <p>
+        Selecione uma propriedade no topo
+        para visualizar os animais.
+      </p>
+
+    </section>
+
+  }
+
+
+  <!-- ==========================================
+       SEM REBANHO
+  =========================================== -->
+
+  @else if (
+    rebanhos().length === 0
+  ) {
+
+    <section class="empty-state">
+
+      <div class="empty-icon">
+
+        <mat-icon>
+          groups
+        </mat-icon>
+
+      </div>
+
+
+      <h2>
+        Nenhum rebanho cadastrado
+      </h2>
+
+      <p>
+        Antes de cadastrar animais, esta
+        propriedade precisa possuir pelo
+        menos um rebanho.
+      </p>
+
+    </section>
+
+  }
+
+
+  <!-- ==========================================
+       SEM ANIMAIS
+  =========================================== -->
+
+  @else if (
+    animais().length === 0
+  ) {
+
+    <section class="empty-state">
+
+      <div class="empty-icon">
+
+        <mat-icon>
+          pets
+        </mat-icon>
+
+      </div>
+
+
+      <h2>
+        Nenhum animal cadastrado
+      </h2>
+
+      <p>
+        Comece cadastrando o primeiro
+        animal desta propriedade.
+      </p>
+
+
+      <button
+        type="button"
+        class="primary-button"
+        (click)="abrirNovoAnimal()"
+      >
+
+        <mat-icon>
+          add
+        </mat-icon>
+
+        Cadastrar primeiro animal
+
+      </button>
+
+    </section>
+
+  }
+
+
+  <!-- ==========================================
+       FILTRO SEM RESULTADO
+  =========================================== -->
+
+  @else if (
+    animaisFiltrados().length === 0
+  ) {
+
+    <section class="empty-state small">
+
+      <div class="empty-icon">
+
+        <mat-icon>
+          search_off
+        </mat-icon>
+
+      </div>
+
+
+      <h2>
+        Nenhum animal encontrado
+      </h2>
+
+      <p>
+        Nenhum animal corresponde aos
+        filtros selecionados.
+      </p>
+
+
+      <button
+        type="button"
+        class="secondary-button"
+        (click)="limparFiltros()"
+      >
+        Limpar filtros
+      </button>
+
+    </section>
+
+  }
+
+
+  <!-- ==========================================
+       TABELA
+  =========================================== -->
+
+  @else {
+
+    <section class="table-card">
+
+      <div class="table-header">
+
+        <div>
+
+          <h2>
+            Animais cadastrados
+          </h2>
+
+          <p>
+            {{
+              animaisFiltrados().length
+            }}
+            animal(is) encontrado(s)
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="table-wrapper">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>
+                Identificação
+              </th>
+
+              <th>
+                Raça
+              </th>
+
+              <th>
+                Sexo
+              </th>
+
+              <th>
+                Rebanho
+              </th>
+
+              <th>
+                Peso atual
+              </th>
+
+              <th>
+                Idade
+              </th>
+
+              <th>
+                Situação
+              </th>
+
+              <th class="actions-column">
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            @for (
+              animal of animaisFiltrados();
+              track animal.id
+            ) {
+
+              <tr>
+
+                <!-- IDENTIFICAÇÃO -->
+
+                <td>
+
+                  <div class="animal-identification">
+
+                    <div class="animal-avatar">
+
+                      <mat-icon>
+                        pets
+                      </mat-icon>
+
+                    </div>
+
+
+                    <div>
+
+                      <strong>
+                        {{ animal.identificacao }}
+                      </strong>
+
+                      <small>
+                        Animal
+                      </small>
+
+                    </div>
+
+                  </div>
+
+                </td>
+
+
+                <!-- RAÇA -->
+
+                <td>
+
+                  <span class="main-value">
+                    {{ animal.raca }}
+                  </span>
+
+                </td>
+
+
+                <!-- SEXO -->
+
+                <td>
+
+                  <span class="main-value">
+                    {{
+                      formatarSexo(
+                        animal.sexo
+                      )
+                    }}
+                  </span>
+
+                </td>
+
+
+                <!-- REBANHO -->
+
+                <td>
+
+                  <span class="herd-badge">
+
+                    <mat-icon>
+                      groups
+                    </mat-icon>
+
+                    {{ animal.rebanhoNome }}
+
+                  </span>
+
+                </td>
+
+
+                <!-- PESO -->
+
+                <td>
+
+                  <strong class="weight">
+                    {{
+                      animal.pesoAtual
+                        | number:'1.0-2'
+                    }}
+                    kg
+                  </strong>
+
+                </td>
+
+
+                <!-- IDADE -->
+
+                <td>
+
+                  <span class="main-value">
+                    {{
+                      formatarIdade(
+                        animal.idadeMeses
+                      )
+                    }}
+                  </span>
+
+                </td>
+
+
+                <!-- SITUAÇÃO -->
+
+                <td>
+
+                  <span
+                    class="status-badge"
+                    [class.ativo]="
+                      animal.situacao === 'ATIVO'
+                    "
+                    [class.inativo]="
+                      animal.situacao === 'INATIVO'
+                    "
+                    [class.vendido]="
+                      animal.situacao === 'VENDIDO'
+                    "
+                    [class.morto]="
+                      animal.situacao === 'MORTO'
+                    "
+                  >
+
+                    {{
+                      formatarSituacao(
+                        animal.situacao
+                      )
+                    }}
+
+                  </span>
+
+                </td>
+
+
+                <!-- AÇÕES -->
+
+                <td>
+
+                  <div class="row-actions">
+
+                    @if (
+                      animal.situacao === 'ATIVO' ||
+                      animal.situacao === 'INATIVO'
+                    ) {
+
+                      <button
+                        type="button"
+                        [title]="
+                          animal.situacao === 'ATIVO'
+                            ? 'Inativar animal'
+                            : 'Ativar animal'
+                        "
+                        [disabled]="
+                          alterandoStatusId()
+                            === animal.id
+                        "
+                        (click)="
+                          alterarStatus(animal)
+                        "
+                      >
+
+                        <mat-icon>
+
+                          {{
+                            animal.situacao === 'ATIVO'
+                              ? 'pause_circle_outline'
+                              : 'play_circle_outline'
+                          }}
+
+                        </mat-icon>
+
+                      </button>
+
+                    }
+
+
+                    <button
+                      type="button"
+                      title="Ver detalhes"
+                    >
+
+                      <mat-icon>
+                        arrow_forward
+                      </mat-icon>
+
+                    </button>
+
+                  </div>
+
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+  }
+
+
+  <!-- ==========================================
+       MODAL NOVO ANIMAL
+  =========================================== -->
+
+  @if (modalAberto()) {
+
+    <div
+      class="modal-overlay"
+      (click)="fecharModal()"
+    >
+
+      <div
+        class="modal"
+        (click)="$event.stopPropagation()"
+      >
+
+        <div class="modal-header">
+
+          <div>
+
+            <span class="eyebrow">
+              NOVO ANIMAL
+            </span>
+
+            <h2>
+              Cadastrar animal
+            </h2>
+
+          </div>
+
+
+          <button
+            type="button"
+            class="close-button"
+            (click)="fecharModal()"
+          >
+
+            <mat-icon>
+              close
+            </mat-icon>
+
+          </button>
+
+        </div>
+
+
+        <!-- FAZENDA -->
+
+        @if (
+          fazendaContext.fazendaAtiva();
+          as fazenda
+        ) {
+
+          <div class="modal-farm">
+
+            <mat-icon>
+              agriculture
+            </mat-icon>
+
+
+            <div>
+
+              <span>
+                Fazenda
+              </span>
+
+              <strong>
+                {{ fazenda.nome }}
+              </strong>
+
+            </div>
+
+          </div>
+
+        }
+
+
+        <form
+          [formGroup]="animalForm"
+          (ngSubmit)="salvar()"
+        >
+
+          <div class="form-grid">
+
+            <!-- IDENTIFICAÇÃO -->
+
+            <div class="field full">
+
+              <label for="identificacao">
+                Identificação
+              </label>
+
+
+              <div
+                class="input-wrapper"
+                [class.invalid]="
+                  animalForm.controls.identificacao.invalid &&
+                  animalForm.controls.identificacao.touched
+                "
+              >
+
+                <mat-icon>
+                  tag
+                </mat-icon>
+
+                <input
+                  id="identificacao"
+                  type="text"
+                  formControlName="identificacao"
+                  placeholder="Ex.: BR-001"
+                  maxlength="100"
+                >
+
+              </div>
+
+
+              @if (
+                animalForm.controls.identificacao.touched &&
+                animalForm.controls.identificacao.hasError('required')
+              ) {
+
+                <small class="field-error">
+                  Informe a identificação do animal.
+                </small>
+
+              }
+
+            </div>
+
+
+            <!-- RAÇA -->
+
+            <div class="field">
+
+              <label for="raca">
+                Raça
+              </label>
+
+
+              <div
+                class="input-wrapper"
+                [class.invalid]="
+                  animalForm.controls.raca.invalid &&
+                  animalForm.controls.raca.touched
+                "
+              >
+
+                <mat-icon>
+                  pets
+                </mat-icon>
+
+                <input
+                  id="raca"
+                  type="text"
+                  formControlName="raca"
+                  placeholder="Ex.: Nelore"
+                >
+
+              </div>
+
+
+              @if (
+                animalForm.controls.raca.touched &&
+                animalForm.controls.raca.hasError('required')
+              ) {
+
+                <small class="field-error">
+                  Informe a raça.
+                </small>
+
+              }
+
+            </div>
+
+
+            <!-- SEXO -->
+
+            <div class="field">
+
+              <label for="sexo">
+                Sexo
+              </label>
+
+
+              <div
+                class="input-wrapper select-input"
+                [class.invalid]="
+                  animalForm.controls.sexo.invalid &&
+                  animalForm.controls.sexo.touched
+                "
+              >
+
+                <mat-icon>
+                  wc
+                </mat-icon>
+
+
+                <select
+                  id="sexo"
+                  formControlName="sexo"
+                >
+
+                  <option
+                    value=""
+                    disabled
+                  >
+                    Selecione
+                  </option>
+
+                  <option value="MACHO">
+                    Macho
+                  </option>
+
+                  <option value="FEMEA">
+                    Fêmea
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              @if (
+                animalForm.controls.sexo.touched &&
+                animalForm.controls.sexo.hasError('required')
+              ) {
+
+                <small class="field-error">
+                  Informe o sexo.
+                </small>
+
+              }
+
+            </div>
+
+
+            <!-- NASCIMENTO -->
+
+            <div class="field">
+
+              <label for="dataNascimento">
+                Data de nascimento
+              </label>
+
+
+              <div
+                class="input-wrapper"
+                [class.invalid]="
+                  animalForm.controls.dataNascimento.invalid &&
+                  animalForm.controls.dataNascimento.touched
+                "
+              >
+
+                <mat-icon>
+                  calendar_today
+                </mat-icon>
+
+                <input
+                  id="dataNascimento"
+                  type="date"
+                  formControlName="dataNascimento"
+                  [max]="hoje"
+                >
+
+              </div>
+
+
+              @if (
+                animalForm.controls.dataNascimento.touched &&
+                animalForm.controls.dataNascimento.hasError('required')
+              ) {
+
+                <small class="field-error">
+                  Informe a data de nascimento.
+                </small>
+
+              }
+
+            </div>
+
+
+            <!-- PESO -->
+
+            <div class="field">
+
+              <label for="pesoAtual">
+                Peso atual
+              </label>
+
+
+              <div
+                class="input-wrapper"
+                [class.invalid]="
+                  animalForm.controls.pesoAtual.invalid &&
+                  animalForm.controls.pesoAtual.touched
+                "
+              >
+
+                <mat-icon>
+                  monitor_weight
+                </mat-icon>
+
+                <input
+                  id="pesoAtual"
+                  type="number"
+                  step="0.1"
+                  min="0.1"
+                  formControlName="pesoAtual"
+                  placeholder="Ex.: 320"
+                >
+
+                <span class="unit">
+                  kg
+                </span>
+
+              </div>
+
+
+              @if (
+                animalForm.controls.pesoAtual.touched &&
+                animalForm.controls.pesoAtual.invalid
+              ) {
+
+                <small class="field-error">
+                  Informe um peso válido.
+                </small>
+
+              }
+
+            </div>
+
+
+            <!-- REBANHO -->
+
+            <div class="field full">
+
+              <label for="rebanho">
+                Rebanho
+              </label>
+
+
+              <div
+                class="input-wrapper select-input"
+                [class.invalid]="
+                  animalForm.controls.rebanhoId.invalid &&
+                  animalForm.controls.rebanhoId.touched
+                "
+              >
+
+                <mat-icon>
+                  groups
+                </mat-icon>
+
+
+                <select
+                  id="rebanho"
+                  formControlName="rebanhoId"
+                >
+
+                  <option
+                    value=""
+                    disabled
+                  >
+                    Selecione o rebanho
+                  </option>
+
+
+                  @for (
+                    rebanho of rebanhos();
+                    track rebanho.id
+                  ) {
+
+                    <option
+                      [value]="rebanho.id"
+                    >
+
+                      {{ rebanho.nome }}
+
+                      —
+                      {{ rebanho.quantidadeAnimais }}
+                      animal(is)
+
+                    </option>
+
+                  }
+
+                </select>
+
+              </div>
+
+
+              @if (
+                animalForm.controls.rebanhoId.touched &&
+                animalForm.controls.rebanhoId.hasError('required')
+              ) {
+
+                <small class="field-error">
+                  Selecione o rebanho.
+                </small>
+
+              }
+
+            </div>
+
+          </div>
+
+
+          <div class="modal-actions">
+
+            <button
+              type="button"
+              class="secondary-button"
+              (click)="fecharModal()"
+              [disabled]="salvando()"
+            >
+              Cancelar
+            </button>
+
+
+            <button
+              type="submit"
+              class="primary-button"
+              [disabled]="salvando()"
+            >
+
+              @if (salvando()) {
+
+                <span class="small-loader">
+                </span>
+
+                Cadastrando...
+
+              } @else {
+
+                <mat-icon>
+                  save
+                </mat-icon>
+
+                Cadastrar animal
+
+              }
+
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  }
+
+</div>
