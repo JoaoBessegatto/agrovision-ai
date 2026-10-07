@@ -68,7 +68,7 @@ public class RegistroPesoService {
         );
 
         registroPesoRepository.save(registro);
-        animal.atualizarPeso(dto.pesoKg());
+
 
         return RegistroPesoResponseDTO.from(registro);
     }

@@ -36,11 +36,6 @@ public class FazendaService {
         this.currentUserProvider = currentUserProvider;
     }
 
-
-    // =========================================================
-    // CADASTRAR FAZENDA
-    // =========================================================
-
     @Transactional
     public FazendaResponseDTO salvar(FazendaRequestDTO dto) {
 
@@ -57,19 +52,13 @@ public class FazendaService {
         fazenda.setExploracao(converterTipoExploracao(dto.exploracao()));
         fazenda.setGeopoligono(dto.geopoligono());
 
-        // A fazenda pertence ao produtor autenticado.
         fazenda.setProdutor(produtor);
 
         Fazenda fazendaSalva =
                 fazendaRepository.save(fazenda);
 
         return new FazendaResponseDTO(fazendaSalva);
-    }
-
-
-    // =========================================================
-    // ATUALIZAR FAZENDA
-    // =========================================================
+    } 
 
     @Transactional
     public FazendaResponseDTO atualizar(FazendaRequestDTO dto) {
@@ -102,11 +91,6 @@ public class FazendaService {
         );
     }
 
-
-    // =========================================================
-    // DELETAR FAZENDA
-    // =========================================================
-
     @Transactional
     public boolean deletar(UUID fazendaId) {
 
@@ -129,12 +113,6 @@ public class FazendaService {
         return true;
     }
 
-
-    // =========================================================
-    // LISTAR TODAS AS FAZENDAS
-    // SOMENTE ADMIN
-    // =========================================================
-
     @Transactional(readOnly = true)
     public List<FazendaResponseDTO> getAll() {
 
@@ -156,11 +134,6 @@ public class FazendaService {
     }
 
 
-
-    // =========================================================
-    // BUSCAR UMA FAZENDA DO PRODUTOR LOGADO
-    // =========================================================
-
     @Transactional(readOnly = true)
     public FazendaResponseDTO get(UUID fazendaId) {
 
@@ -181,11 +154,6 @@ public class FazendaService {
         return new FazendaResponseDTO(fazenda);
     }
 
-
-    // =========================================================
-    // LISTAR MINHAS FAZENDAS
-    // =========================================================
-
     @Transactional(readOnly = true)
     public List<FazendaResponseDTO> getMinhasFazendas() {
 
@@ -198,10 +166,6 @@ public class FazendaService {
                 .toList();
     }
 
-
-    // =========================================================
-    // MÉTODOS AUXILIARES
-    // =========================================================
 
     private Produtor getProdutorLogado() {
 

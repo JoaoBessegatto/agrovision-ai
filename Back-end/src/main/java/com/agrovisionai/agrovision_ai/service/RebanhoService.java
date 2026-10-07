@@ -36,10 +36,6 @@ public class RebanhoService {
     }
 
 
-    // =========================================================
-    // CADASTRAR
-    // =========================================================
-
     @Transactional
     public RebanhoResponseDTO cadastrar(
             RebanhoRequestDTO dto
@@ -65,21 +61,11 @@ public class RebanhoService {
         );
     }
 
-
-    // =========================================================
-    // LISTAR POR FAZENDA
-    // =========================================================
-
     @Transactional(readOnly = true)
     public List<RebanhoResponseDTO> listarPorFazenda(
             UUID fazendaId
     ) {
 
-        /*
-         * Antes de listar qualquer coisa,
-         * verificamos se o usuário realmente
-         * possui acesso à fazenda.
-         */
         getFazendaAutorizada(fazendaId);
 
 
@@ -92,10 +78,6 @@ public class RebanhoService {
                 .toList();
     }
 
-
-    // =========================================================
-    // BUSCAR REBANHO
-    // =========================================================
 
     @Transactional(readOnly = true)
     public RebanhoResponseDTO buscarPorId(
@@ -112,11 +94,6 @@ public class RebanhoService {
         );
     }
 
-
-    // =========================================================
-    // ATUALIZAR
-    // =========================================================
-
     @Transactional
     public RebanhoResponseDTO atualizar(
             UUID rebanhoId,
@@ -129,11 +106,6 @@ public class RebanhoService {
                 );
 
 
-        /*
-         * Neste endpoint não permitiremos
-         * transferir o rebanho para outra
-         * fazenda acidentalmente.
-         */
         if (
                 !rebanho
                         .getFazenda()
@@ -159,10 +131,6 @@ public class RebanhoService {
     }
 
 
-    // =========================================================
-    // DELETAR
-    // =========================================================
-
     @Transactional
     public void deletar(
             UUID rebanhoId
@@ -173,14 +141,6 @@ public class RebanhoService {
                         rebanhoId
                 );
 
-
-        /*
-         * Como a relação possui CascadeType.ALL
-         * e orphanRemoval, excluir um rebanho
-         * poderia também excluir animais.
-         *
-         * Por segurança, bloqueamos.
-         */
         if (
                 rebanho.getQuantidadeAnimais() > 0
         ) {
@@ -195,11 +155,6 @@ public class RebanhoService {
                 rebanho
         );
     }
-
-
-    // =========================================================
-    // MÉTODOS AUXILIARES
-    // =========================================================
 
     private Fazenda getFazendaAutorizada(
             UUID fazendaId
@@ -258,14 +213,6 @@ public class RebanhoService {
         return rebanho;
     }
 
-
-    /*
-     * Por enquanto apenas o proprietário
-     * da fazenda possui acesso.
-     *
-     * Quando implementarmos Funcionário,
-     * ampliaremos essa regra.
-     */
     private void validarPermissao(
             Usuario usuario,
             Fazenda fazenda

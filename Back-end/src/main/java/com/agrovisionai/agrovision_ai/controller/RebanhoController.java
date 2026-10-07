@@ -26,10 +26,6 @@ public class RebanhoController {
     }
 
 
-    // =========================================================
-    // CADASTRAR
-    // =========================================================
-
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<RebanhoResponseDTO> cadastrar(
@@ -45,10 +41,6 @@ public class RebanhoController {
     }
 
 
-    // =========================================================
-    // LISTAR POR FAZENDA
-    // =========================================================
-
     @GetMapping("/fazenda/{fazendaId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<RebanhoResponseDTO>> listarPorFazenda(
@@ -62,10 +54,6 @@ public class RebanhoController {
     }
 
 
-    // =========================================================
-    // BUSCAR UM REBANHO
-    // =========================================================
-
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<RebanhoResponseDTO> buscarPorId(
@@ -76,11 +64,6 @@ public class RebanhoController {
                 rebanhoService.buscarPorId(id)
         );
     }
-
-
-    // =========================================================
-    // ATUALIZAR
-    // =========================================================
 
     @PutMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
@@ -97,10 +80,6 @@ public class RebanhoController {
         );
     }
 
-
-    // =========================================================
-    // EXCLUIR
-    // =========================================================
 
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")

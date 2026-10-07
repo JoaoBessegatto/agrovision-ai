@@ -16,10 +16,4 @@ public class DashboardController {
     @Autowired
     DashboardService dashboardService;
 
-    @GetMapping
-    @PreAuthorize("hasRole('PRODUTOR')")
-    public ResponseEntity<DashboardResponseDTO> getDashboard() {
-        DashboardResponseDTO dashboard = dashboardService.criarDashboard();
-        return ResponseEntity.ok(dashboard);
-    }
 }

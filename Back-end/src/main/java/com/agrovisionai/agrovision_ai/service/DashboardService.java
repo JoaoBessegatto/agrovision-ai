@@ -43,52 +43,6 @@ public class DashboardService {
         this.currentUserProvider = currentUserProvider;
     }
 
-    @Transactional(readOnly = true)
-    public DashboardResponseDTO criarDashboard() {
-
-        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
-
-        Fazenda fazenda = buscarFazendaDoUsuario(usuarioLogado);
-
-        UUID fazendaId = fazenda.getId();
-
-        long totalAnimais =
-                animalRepository.countByRebanhoFazendaId(fazendaId);
-
-        long animaisAtivos =
-                animalRepository.countByRebanhoFazendaIdAndSituacao(
-                        fazendaId,
-                        SituacaoAnimal.ATIVO
-                );
-
-        long animaisInativos =
-                animalRepository.countByRebanhoFazendaIdAndSituacao(
-                        fazendaId,
-                        SituacaoAnimal.INATIVO
-                );
-
-        long totalRebanhos =
-                rebanhoRepository.countByFazendaId(fazendaId);
-
-        long totalFuncionarios =
-                funcionarioRepository.countByFazendaId(fazendaId);
-
-        Double pesoMedio =
-                registroPesoRepository.buscarPesoMedio(fazendaId);
-
-        LocalDateTime ultimaPesagem =
-                registroPesoRepository.buscarUltimaPesagem(fazendaId);
-
-        return new DashboardResponseDTO(
-                totalAnimais,
-                animaisAtivos,
-                animaisInativos,
-                totalRebanhos,
-                totalFuncionarios,
-                pesoMedio,
-                ultimaPesagem
-        );
-    }
 
     private Fazenda buscarFazendaDoUsuario(Usuario usuario) {
 

@@ -139,9 +139,6 @@ public class FuncionarioService {
         funcionario.desativar();
     }
 
-    // ==========================
-    // Métodos privados
-    // ==========================
 
     private Funcionario buscarFuncionario(UUID id) {
         return funcionarioRepository.findById(id)
