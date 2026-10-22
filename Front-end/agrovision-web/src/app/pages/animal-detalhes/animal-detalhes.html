@@ -1,0 +1,1276 @@
+<div class="animal-page">
+
+  <!-- ========================================
+       VOLTAR
+  ========================================= -->
+
+  <button
+    type="button"
+    class="back-button"
+    (click)="voltar()"
+  >
+
+    <mat-icon>
+      arrow_back
+    </mat-icon>
+
+    Voltar para animais
+
+  </button>
+
+
+  <!-- ========================================
+       ERRO
+  ========================================= -->
+
+  @if (errorMessage()) {
+
+    <div class="alert-error">
+
+      <mat-icon>
+        error_outline
+      </mat-icon>
+
+      <span>
+        {{ errorMessage() }}
+      </span>
+
+      <button
+        type="button"
+        (click)="limparErro()"
+      >
+
+        <mat-icon>
+          close
+        </mat-icon>
+
+      </button>
+
+    </div>
+
+  }
+
+
+  <!-- ========================================
+       LOADING
+  ========================================= -->
+
+  @if (loading()) {
+
+    <section class="loading-state">
+
+      <div class="loader"></div>
+
+      <p>
+        Carregando animal...
+      </p>
+
+    </section>
+
+  }
+
+
+  <!-- ========================================
+       ANIMAL
+  ========================================= -->
+
+  @else if (
+    animal();
+    as animal
+  ) {
+
+    <!-- ======================================
+         HEADER
+    ======================================= -->
+
+    <section class="animal-header">
+
+      <div class="animal-header-main">
+
+        <div class="animal-icon">
+
+          <mat-icon>
+            pets
+          </mat-icon>
+
+        </div>
+
+
+        <div>
+
+          <span class="eyebrow">
+            ANIMAL
+          </span>
+
+
+          <div class="title-line">
+
+            <h1>
+              {{ animal.identificacao }}
+            </h1>
+
+
+            <span
+              class="status-badge"
+
+              [class.ativo]="
+                animal.situacao === 'ATIVO'
+              "
+
+              [class.inativo]="
+                animal.situacao === 'INATIVO'
+              "
+
+              [class.vendido]="
+                animal.situacao === 'VENDIDO'
+              "
+
+              [class.morto]="
+                animal.situacao === 'MORTO'
+              "
+            >
+
+              {{
+                formatarSituacao(
+                  animal.situacao
+                )
+              }}
+
+            </span>
+
+          </div>
+
+
+          <p>
+
+            {{ animal.raca }}
+
+            ·
+
+            {{
+              formatarSexo(
+                animal.sexo
+              )
+            }}
+
+            ·
+
+            {{
+              formatarIdade(
+                animal.idadeMeses
+              )
+            }}
+
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- ==================================
+           AÇÕES
+      =================================== -->
+
+      <div class="header-actions">
+
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="abrirTransferencia()"
+        >
+
+          <mat-icon>
+            swap_horiz
+          </mat-icon>
+
+          Transferir rebanho
+
+        </button>
+
+
+        @if (
+          animal.situacao === 'ATIVO' ||
+          animal.situacao === 'INATIVO'
+        ) {
+
+          <button
+            type="button"
+            class="status-button"
+
+            [class.activate]="
+              animal.situacao === 'INATIVO'
+            "
+
+            (click)="alterarStatus()"
+
+            [disabled]="alterandoStatus()"
+          >
+
+            <mat-icon>
+
+              {{
+                animal.situacao === 'ATIVO'
+                  ? 'pause_circle_outline'
+                  : 'play_circle_outline'
+              }}
+
+            </mat-icon>
+
+
+            @if (alterandoStatus()) {
+
+              Salvando...
+
+            } @else {
+
+              {{
+                animal.situacao === 'ATIVO'
+                  ? 'Inativar'
+                  : 'Ativar'
+              }}
+
+            }
+
+          </button>
+
+        }
+
+      </div>
+
+    </section>
+
+
+    <!-- ======================================
+         MÉTRICAS
+    ======================================= -->
+
+    <section class="metrics">
+
+      <!-- PESO -->
+
+      <article class="metric-card">
+
+        <div class="metric-icon">
+
+          <mat-icon>
+            monitor_weight
+          </mat-icon>
+
+        </div>
+
+
+        <div>
+
+          <span>
+            Peso atual
+          </span>
+
+          <strong>
+
+            {{
+              animal.pesoAtual
+                | number:'1.0-2'
+            }}
+
+            <small>
+              kg
+            </small>
+
+          </strong>
+
+          <p>
+            Último peso registrado
+          </p>
+
+        </div>
+
+      </article>
+
+
+      <!-- IDADE -->
+
+      <article class="metric-card">
+
+        <div class="metric-icon">
+
+          <mat-icon>
+            calendar_today
+          </mat-icon>
+
+        </div>
+
+
+        <div>
+
+          <span>
+            Idade
+          </span>
+
+          <strong>
+
+            {{
+              formatarIdade(
+                animal.idadeMeses
+              )
+            }}
+
+          </strong>
+
+          <p>
+            Desde o nascimento
+          </p>
+
+        </div>
+
+      </article>
+
+
+      <!-- REBANHO -->
+
+      <article class="metric-card">
+
+        <div class="metric-icon">
+
+          <mat-icon>
+            groups
+          </mat-icon>
+
+        </div>
+
+
+        <div>
+
+          <span>
+            Rebanho atual
+          </span>
+
+          <strong>
+            {{ animal.rebanhoNome }}
+          </strong>
+
+          <p>
+            Lote atual do animal
+          </p>
+
+        </div>
+
+      </article>
+
+    </section>
+
+
+    <!-- ======================================
+         CONTEÚDO
+    ======================================= -->
+
+    <div class="content-grid">
+
+      <!-- ==================================
+           DADOS GERAIS
+      =================================== -->
+
+      <section class="card">
+
+        <div class="card-header">
+
+          <div>
+
+            <span class="eyebrow">
+              CADASTRO
+            </span>
+
+            <h2>
+              Informações do animal
+            </h2>
+
+          </div>
+
+
+          <mat-icon>
+            info_outline
+          </mat-icon>
+
+        </div>
+
+
+        <div class="info-grid">
+
+          <!-- IDENTIFICAÇÃO -->
+
+          <div class="info-item">
+
+            <span>
+              Identificação
+            </span>
+
+            <strong>
+              {{ animal.identificacao }}
+            </strong>
+
+          </div>
+
+
+          <!-- RAÇA -->
+
+          <div class="info-item">
+
+            <span>
+              Raça
+            </span>
+
+            <strong>
+              {{ animal.raca }}
+            </strong>
+
+          </div>
+
+
+          <!-- SEXO -->
+
+          <div class="info-item">
+
+            <span>
+              Sexo
+            </span>
+
+            <strong>
+
+              {{
+                formatarSexo(
+                  animal.sexo
+                )
+              }}
+
+            </strong>
+
+          </div>
+
+
+          <!-- NASCIMENTO -->
+
+          <div class="info-item">
+
+            <span>
+              Data de nascimento
+            </span>
+
+            <strong>
+
+              {{
+                animal.dataNascimento
+                  | date:'dd/MM/yyyy'
+              }}
+
+            </strong>
+
+          </div>
+
+
+          <!-- SITUAÇÃO -->
+
+          <div class="info-item">
+
+            <span>
+              Situação
+            </span>
+
+            <strong>
+
+              {{
+                formatarSituacao(
+                  animal.situacao
+                )
+              }}
+
+            </strong>
+
+          </div>
+
+
+          <!-- REBANHO -->
+
+          <div class="info-item">
+
+            <span>
+              Rebanho
+            </span>
+
+            <strong>
+              {{ animal.rebanhoNome }}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ==================================
+           HISTÓRICO DE PESAGENS
+      =================================== -->
+
+      <section class="card weight-card">
+
+        <div class="card-header weight-header">
+
+          <div>
+
+            <span class="eyebrow">
+              DESEMPENHO
+            </span>
+
+            <h2>
+              Histórico de peso
+            </h2>
+
+          </div>
+
+
+          @if (
+            animal.situacao === 'ATIVO'
+          ) {
+
+            <button
+              type="button"
+              class="primary-button compact"
+              (click)="abrirNovaPesagem()"
+            >
+
+              <mat-icon>
+                add
+              </mat-icon>
+
+              Registrar pesagem
+
+            </button>
+
+          }
+
+        </div>
+
+
+        <!-- ==================================
+             LOADING PESAGENS
+        =================================== -->
+
+        @if (loadingPesagens()) {
+
+          <div class="weight-loading">
+
+            <div class="loader"></div>
+
+            <span>
+              Carregando pesagens...
+            </span>
+
+          </div>
+
+        }
+
+
+        <!-- ==================================
+             SEM PESAGENS
+        =================================== -->
+
+        @else if (
+          pesagens().length === 0
+        ) {
+
+          <div class="weight-empty">
+
+            <div class="placeholder-icon">
+
+              <mat-icon>
+                monitor_weight
+              </mat-icon>
+
+            </div>
+
+
+            <h3>
+              Nenhuma pesagem registrada
+            </h3>
+
+
+            <p>
+              Registre a primeira pesagem
+              para iniciar o histórico de
+              evolução deste animal.
+            </p>
+
+
+            @if (
+              animal.situacao === 'ATIVO'
+            ) {
+
+              <button
+                type="button"
+                class="secondary-button"
+                (click)="abrirNovaPesagem()"
+              >
+
+                <mat-icon>
+                  add
+                </mat-icon>
+
+                Registrar primeira pesagem
+
+              </button>
+
+            }
+
+          </div>
+
+        }
+
+
+        <!-- ==================================
+             HISTÓRICO
+        =================================== -->
+
+        @else {
+
+          <div class="weight-history">
+
+            @for (
+              registro of pesagens();
+              track registro.id;
+              let i = $index
+            ) {
+
+              @let variacao =
+                calcularVariacao(i);
+
+
+              <article class="weight-record">
+
+                <!-- TIMELINE -->
+
+                <div class="timeline">
+
+                  <div
+                    class="timeline-dot"
+                    [class.latest]="
+                      i === 0
+                    "
+                  >
+                  </div>
+
+
+                  @if (
+                    i <
+                    pesagens().length - 1
+                  ) {
+
+                    <div class="timeline-line">
+                    </div>
+
+                  }
+
+                </div>
+
+
+                <!-- CONTEÚDO -->
+
+                <div class="weight-record-content">
+
+                  <div class="weight-record-top">
+
+                    <div class="weight-main">
+
+                      <strong>
+
+                        {{
+                          registro.pesoKg
+                            | number:'1.0-2'
+                        }}
+
+                        <small>
+                          kg
+                        </small>
+
+                      </strong>
+
+
+                      @if (
+                        variacao !== null
+                      ) {
+
+                        <span
+                          class="variation"
+
+                          [class.positive]="
+                            variacao > 0
+                          "
+
+                          [class.negative]="
+                            variacao < 0
+                          "
+
+                          [class.neutral]="
+                            variacao === 0
+                          "
+                        >
+
+                          @if (
+                            variacao > 0
+                          ) {
+
+                            <mat-icon>
+                              trending_up
+                            </mat-icon>
+
+                            +
+
+                          }
+
+                          @else if (
+                            variacao < 0
+                          ) {
+
+                            <mat-icon>
+                              trending_down
+                            </mat-icon>
+
+                          }
+
+                          @else {
+
+                            <mat-icon>
+                              trending_flat
+                            </mat-icon>
+
+                          }
+
+
+                          {{
+                            variacao
+                              | number:'1.0-2'
+                          }}
+
+                          kg
+
+                        </span>
+
+                      }
+
+                    </div>
+
+
+                    <time>
+
+                      {{
+                        registro.dataRegistro
+                          | date:'dd/MM/yyyy'
+                      }}
+
+                      <small>
+
+                        {{
+                          registro.dataRegistro
+                            | date:'HH:mm'
+                        }}
+
+                      </small>
+
+                    </time>
+
+                  </div>
+
+
+                  <div class="weight-record-footer">
+
+                    <div>
+
+                      <mat-icon>
+                        person_outline
+                      </mat-icon>
+
+                      <span>
+                        Registrado por
+                        <strong>
+                          {{ registro.usuario }}
+                        </strong>
+                      </span>
+
+                    </div>
+
+
+                    @if (i === 0) {
+
+                      <span class="latest-badge">
+                        Mais recente
+                      </span>
+
+                    }
+
+                  </div>
+
+                </div>
+
+              </article>
+
+            }
+
+          </div>
+
+        }
+
+      </section>
+
+    </div>
+
+  }
+
+</div>
+
+
+<!-- ==========================================
+     MODAL TRANSFERÊNCIA
+=========================================== -->
+
+@if (
+  modalTransferencia() &&
+  animal();
+  as animal
+) {
+
+  <div
+    class="modal-overlay"
+    (click)="fecharTransferencia()"
+  >
+
+    <div
+      class="modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="eyebrow">
+            TRANSFERÊNCIA
+          </span>
+
+          <h2>
+            Transferir animal
+          </h2>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="close-button"
+          (click)="fecharTransferencia()"
+        >
+
+          <mat-icon>
+            close
+          </mat-icon>
+
+        </button>
+
+      </div>
+
+
+      <div class="transfer-animal">
+
+        <div class="animal-mini-icon">
+
+          <mat-icon>
+            pets
+          </mat-icon>
+
+        </div>
+
+
+        <div>
+
+          <span>
+            Animal
+          </span>
+
+          <strong>
+            {{ animal.identificacao }}
+          </strong>
+
+          <small>
+            Rebanho atual:
+            {{ animal.rebanhoNome }}
+          </small>
+
+        </div>
+
+      </div>
+
+
+      <div class="field">
+
+        <label for="novoRebanho">
+          Novo rebanho
+        </label>
+
+
+        <div class="select-wrapper">
+
+          <mat-icon>
+            groups
+          </mat-icon>
+
+
+          <select
+            id="novoRebanho"
+
+            [value]="
+              novoRebanhoId()
+            "
+
+            (change)="
+              alterarNovoRebanho($event)
+            "
+          >
+
+            @for (
+              rebanho of rebanhos();
+              track rebanho.id
+            ) {
+
+              <option
+                [value]="rebanho.id"
+              >
+
+                {{ rebanho.nome }}
+
+                @if (
+                  rebanho.id ===
+                  animal.rebanhoId
+                ) {
+
+                  — atual
+
+                }
+
+              </option>
+
+            }
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          class="secondary-button"
+
+          (click)="
+            fecharTransferencia()
+          "
+
+          [disabled]="
+            transferindo()
+          "
+        >
+
+          Cancelar
+
+        </button>
+
+
+        <button
+          type="button"
+          class="primary-button"
+
+          (click)="
+            confirmarTransferencia()
+          "
+
+          [disabled]="
+            transferindo() ||
+            novoRebanhoId() ===
+            animal.rebanhoId
+          "
+        >
+
+          @if (transferindo()) {
+
+            <span class="small-loader">
+            </span>
+
+            Transferindo...
+
+          } @else {
+
+            <mat-icon>
+              swap_horiz
+            </mat-icon>
+
+            Confirmar transferência
+
+          }
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+}
+
+
+<!-- ==========================================
+     MODAL NOVA PESAGEM
+=========================================== -->
+
+@if (
+  modalPesagem() &&
+  animal();
+  as animal
+) {
+
+  <div
+    class="modal-overlay"
+    (click)="fecharPesagem()"
+  >
+
+    <div
+      class="modal weight-modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <!-- HEADER -->
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="eyebrow">
+            NOVA PESAGEM
+          </span>
+
+          <h2>
+            Registrar peso
+          </h2>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="close-button"
+          (click)="fecharPesagem()"
+        >
+
+          <mat-icon>
+            close
+          </mat-icon>
+
+        </button>
+
+      </div>
+
+
+      <!-- ANIMAL -->
+
+      <div class="weighing-animal">
+
+        <div class="animal-mini-icon">
+
+          <mat-icon>
+            pets
+          </mat-icon>
+
+        </div>
+
+
+        <div>
+
+          <span>
+            Animal
+          </span>
+
+          <strong>
+            {{ animal.identificacao }}
+          </strong>
+
+          <small>
+
+            Peso atual:
+
+            {{
+              animal.pesoAtual
+                | number:'1.0-2'
+            }}
+
+            kg
+
+          </small>
+
+        </div>
+
+      </div>
+
+
+      <!-- FORM -->
+
+      <form
+        [formGroup]="pesagemForm"
+        (ngSubmit)="registrarPesagem()"
+      >
+
+        <div class="field">
+
+          <label for="pesoKg">
+            Novo peso
+          </label>
+
+
+          <div
+            class="weight-input"
+
+            [class.invalid]="
+              pesagemForm.controls
+                .pesoKg.invalid &&
+              pesagemForm.controls
+                .pesoKg.touched
+            "
+          >
+
+            <mat-icon>
+              monitor_weight
+            </mat-icon>
+
+
+            <input
+              id="pesoKg"
+
+              type="number"
+
+              formControlName="pesoKg"
+
+              min="0.1"
+
+              max="1500"
+
+              step="0.1"
+
+              placeholder="Ex.: 425.5"
+            >
+
+
+            <span>
+              kg
+            </span>
+
+          </div>
+
+
+          @if (
+            pesagemForm.controls
+              .pesoKg.touched &&
+            pesagemForm.controls
+              .pesoKg.invalid
+          ) {
+
+            <small class="field-error">
+
+              Informe um peso válido
+              entre 0,1 e 1500 kg.
+
+            </small>
+
+          }
+
+        </div>
+
+
+        <!-- INFORMAÇÃO -->
+
+        <div class="weight-info">
+
+          <mat-icon>
+            info_outline
+          </mat-icon>
+
+
+          <p>
+
+            O novo peso será adicionado ao
+            histórico de pesagens e também
+            passará a ser o peso atual
+            deste animal.
+
+          </p>
+
+        </div>
+
+
+        <!-- AÇÕES -->
+
+        <div class="modal-actions">
+
+          <button
+            type="button"
+            class="secondary-button"
+
+            (click)="
+              fecharPesagem()
+            "
+
+            [disabled]="
+              salvandoPesagem()
+            "
+          >
+
+            Cancelar
+
+          </button>
+
+
+          <button
+            type="submit"
+            class="primary-button"
+
+            [disabled]="
+              salvandoPesagem()
+            "
+          >
+
+            @if (salvandoPesagem()) {
+
+              <span class="small-loader">
+              </span>
+
+              Registrando...
+
+            } @else {
+
+              <mat-icon>
+                monitor_weight
+              </mat-icon>
+
+              Registrar pesagem
+
+            }
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+}

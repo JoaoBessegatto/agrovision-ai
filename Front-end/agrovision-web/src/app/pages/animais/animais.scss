@@ -1223,4 +1223,29 @@ tbody tr:hover {
     width: 100%;
   }
 
+}.details-action {
+  width: 33px;
+  height: 33px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 7px;
+
+  color: #7c8980;
+
+  text-decoration: none;
+
+  transition: 0.2s;
+}
+
+.details-action:hover {
+  background: #eef4ef;
+
+  color: #39754d;
+}
+
+.details-action mat-icon {
+  font-size: 18px;
 }

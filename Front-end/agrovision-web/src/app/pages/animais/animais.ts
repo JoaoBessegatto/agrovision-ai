@@ -28,7 +28,7 @@ import {
 import {
   FazendaContextService
 } from '../../core/fazenda/services/fazenda-context.service';
-
+import { RouterLink } from '@angular/router';
 import {
   AnimalService
 } from '../../core/animal/services/animal.service';
@@ -62,7 +62,8 @@ import {
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatIconModule
+    MatIconModule,
+    RouterLink
   ],
 
   templateUrl: './animais.html',

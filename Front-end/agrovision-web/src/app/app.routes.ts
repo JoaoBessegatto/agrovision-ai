@@ -153,6 +153,13 @@ export const routes: Routes = [
             import('./pages/animais/animais')
             .then(m => m.Animais)
       },
+      {
+        path: 'animais/:id',
+
+          loadComponent: () =>
+           import( './pages/animal-detalhes/animal-detalhes')
+            .then(m => m.AnimalDetalhes)
+      },
     ]
   },
 
