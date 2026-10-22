@@ -6,13 +6,12 @@ import com.agrovisionai.agrovision_ai.domain.dto.request.RegistroPesoRequestDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.RegistroPesoResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.entity.Animal;
 import com.agrovisionai.agrovision_ai.domain.entity.Fazenda;
-import com.agrovisionai.agrovision_ai.domain.entity.Funcionario;
 import com.agrovisionai.agrovision_ai.domain.entity.RegistroPeso;
+import com.agrovisionai.agrovision_ai.domain.enums.SituacaoAnimal;
 import com.agrovisionai.agrovision_ai.exception.BusinessException;
 import com.agrovisionai.agrovision_ai.exception.ResouceNotFoundException;
 import com.agrovisionai.agrovision_ai.exception.UnauthorizedException;
 import com.agrovisionai.agrovision_ai.repository.AnimalRepository;
-import com.agrovisionai.agrovision_ai.repository.FuncionarioRepository;
 import com.agrovisionai.agrovision_ai.repository.RegistroPesoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,98 +23,255 @@ import java.util.UUID;
 @Transactional
 public class RegistroPesoService {
 
-    private final RegistroPesoRepository registroPesoRepository;
-    private final AnimalRepository animalRepository;
-    private final FuncionarioRepository funcionarioRepository;
-    private final CurrentUserProvider currentUserProvider;
+    private final RegistroPesoRepository
+            registroPesoRepository;
+
+    private final AnimalRepository
+            animalRepository;
+
+    private final CurrentUserProvider
+            currentUserProvider;
+
 
     public RegistroPesoService(
             RegistroPesoRepository registroPesoRepository,
             AnimalRepository animalRepository,
-            FuncionarioRepository funcionarioRepository,
             CurrentUserProvider currentUserProvider
     ) {
-        this.registroPesoRepository = registroPesoRepository;
-        this.animalRepository = animalRepository;
-        this.funcionarioRepository = funcionarioRepository;
-        this.currentUserProvider = currentUserProvider;
+
+        this.registroPesoRepository =
+                registroPesoRepository;
+
+        this.animalRepository =
+                animalRepository;
+
+        this.currentUserProvider =
+                currentUserProvider;
     }
 
-    public RegistroPesoResponseDTO registrarPeso(
+
+    // =========================================================
+    // REGISTRAR PESAGEM
+    // =========================================================
+
+    public RegistroPesoResponseDTO registrar(
             UUID animalId,
             RegistroPesoRequestDTO dto
     ) {
 
-        Usuario usuarioLogado = currentUserProvider.getUsuarioAtual();
+        Usuario usuario =
+                currentUserProvider
+                        .getUsuarioAtual();
 
-        Animal animal = buscarAnimal(animalId);
 
-        Funcionario funcionario = buscarFuncionario(
-                usuarioLogado.getId(),
-                animal.getRebanho().getFazenda().getId()
+        Animal animal =
+                buscarAnimal(
+                        animalId
+                );
+
+
+        validarPermissao(
+                usuario,
+                animal.getRebanho()
+                        .getFazenda()
         );
 
-        if (!funcionario.podeRegistrarPeso()) {
-            throw new UnauthorizedException(
-                    "Funcionário não possui permissão para registrar pesagens."
-            );
-        }
 
-        RegistroPeso registro = new RegistroPeso(
-                animal,
-                usuarioLogado,
+        validarAnimalParaPesagem(
+                animal
+        );
+
+
+        validarPeso(
                 dto.pesoKg()
         );
 
-        registroPesoRepository.save(registro);
+
+        RegistroPeso registro =
+                new RegistroPeso(
+                        animal,
+                        usuario,
+                        dto.pesoKg()
+                );
 
 
-        return RegistroPesoResponseDTO.from(registro);
+        registroPesoRepository
+                .save(registro);
+
+
+        /*
+         * Atualiza o snapshot de peso
+         * atual do animal.
+         */
+        animal.atualizarPeso(
+                dto.pesoKg()
+        );
+
+
+        return RegistroPesoResponseDTO
+                .from(registro);
     }
 
-    @Transactional(readOnly = true)
-    public List<RegistroPesoResponseDTO> listarHistorico(UUID animalId) {
 
-        buscarAnimal(animalId);
+    // =========================================================
+    // HISTÓRICO
+    // =========================================================
+
+    @Transactional(readOnly = true)
+    public List<RegistroPesoResponseDTO> listarHistorico(
+            UUID animalId
+    ) {
+
+        Usuario usuario =
+                currentUserProvider
+                        .getUsuarioAtual();
+
+
+        Animal animal =
+                buscarAnimal(
+                        animalId
+                );
+
+
+        validarPermissao(
+                usuario,
+                animal.getRebanho()
+                        .getFazenda()
+        );
+
 
         return registroPesoRepository
-                .findByAnimalIdOrderByDataRegistroDesc(animalId)
+                .findByAnimalIdOrderByDataRegistroDesc(
+                        animalId
+                )
                 .stream()
-                .map(RegistroPesoResponseDTO::from)
+                .map(
+                        RegistroPesoResponseDTO::from
+                )
                 .toList();
     }
 
+
+    // =========================================================
+    // ÚLTIMA PESAGEM
+    // =========================================================
+
     @Transactional(readOnly = true)
-    public RegistroPesoResponseDTO buscarUltimoRegistro(UUID animalId) {
-
-        RegistroPeso registro = registroPesoRepository
-                .findTopByAnimalIdOrderByDataRegistroDesc(animalId)
-                .orElseThrow(() ->
-                        new ResouceNotFoundException(
-                                "Animal ainda não possui pesagens."
-                        ));
-
-        return RegistroPesoResponseDTO.from(registro);
-    }
-
-    private Animal buscarAnimal(UUID id) {
-
-        return animalRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResouceNotFoundException("Animal não encontrado."));
-    }
-
-    private Funcionario buscarFuncionario(
-            UUID usuarioId,
-            UUID fazendaId
+    public RegistroPesoResponseDTO buscarUltimaPesagem(
+            UUID animalId
     ) {
 
-        return funcionarioRepository
-                .findByUsuarioIdAndFazendaId(usuarioId, fazendaId)
-                .orElseThrow(() ->
-                        new UnauthorizedException(
-                                "Usuário não pertence à fazenda."
-                        ));
+        Usuario usuario =
+                currentUserProvider
+                        .getUsuarioAtual();
+
+
+        Animal animal =
+                buscarAnimal(
+                        animalId
+                );
+
+
+        validarPermissao(
+                usuario,
+                animal.getRebanho()
+                        .getFazenda()
+        );
+
+
+        RegistroPeso registro =
+                registroPesoRepository
+                        .findFirstByAnimalIdOrderByDataRegistroDesc(
+                                animalId
+                        )
+                        .orElseThrow(() ->
+                                new ResouceNotFoundException(
+                                        "Nenhuma pesagem encontrada para este animal."
+                                )
+                        );
+
+
+        return RegistroPesoResponseDTO
+                .from(registro);
     }
 
+
+    // =========================================================
+    // AUXILIARES
+    // =========================================================
+
+    private Animal buscarAnimal(
+            UUID animalId
+    ) {
+
+        return animalRepository
+                .findById(animalId)
+                .orElseThrow(() ->
+                        new ResouceNotFoundException(
+                                "Animal não encontrado."
+                        )
+                );
+    }
+
+
+    private void validarAnimalParaPesagem(
+            Animal animal
+    ) {
+
+        if (
+                animal.getSituacao()
+                        != SituacaoAnimal.ATIVO
+        ) {
+
+            throw new BusinessException(
+                    "Não é possível registrar pesagem para um animal inativo."
+            );
+        }
+    }
+
+
+    private void validarPeso(
+            Double peso
+    ) {
+
+        if (
+                peso == null ||
+                        peso <= 0
+        ) {
+
+            throw new BusinessException(
+                    "Peso inválido."
+            );
+        }
+
+
+        if (peso > 1500) {
+
+            throw new BusinessException(
+                    "Peso informado está acima do limite permitido."
+            );
+        }
+    }
+
+
+    private void validarPermissao(
+            Usuario usuario,
+            Fazenda fazenda
+    ) {
+
+        if (
+                !fazenda
+                        .getProdutor()
+                        .getUsuario()
+                        .getId()
+                        .equals(
+                                usuario.getId()
+                        )
+        ) {
+
+            throw new UnauthorizedException(
+                    "Usuário não possui acesso a esta fazenda."
+            );
+        }
+    }
 }
