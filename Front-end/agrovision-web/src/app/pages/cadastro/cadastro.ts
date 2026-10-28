@@ -100,8 +100,11 @@ export class CadastroComponent {
   showConfirmPassword = false;
 
 
-  private errorTimeout?:
-    ReturnType<typeof setTimeout>;
+  readonly anoAtual =
+    new Date().getFullYear();
+
+
+  
 
 
   cadastroForm =
@@ -295,45 +298,15 @@ export class CadastroComponent {
 
     this.errorMessage.set('');
 
-
-    if (this.errorTimeout) {
-
-      clearTimeout(
-        this.errorTimeout
-      );
-
-      this.errorTimeout =
-        undefined;
-
-    }
-
   }
 
 
+  // O erro fica na tela até o usuário fechar ou tentar de novo.
   private showErrorMessage(
     message: string
   ): void {
 
-    this.errorMessage.set(
-      message
-    );
-
-
-    if (this.errorTimeout) {
-
-      clearTimeout(
-        this.errorTimeout
-      );
-
-    }
-
-
-    this.errorTimeout =
-      setTimeout(() => {
-
-        this.errorMessage.set('');
-
-      }, 6000);
+    this.errorMessage.set(message);
 
   }
 

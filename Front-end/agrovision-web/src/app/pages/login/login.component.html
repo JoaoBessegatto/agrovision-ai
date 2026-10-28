@@ -1,234 +1,265 @@
-<div class="login-page">
+<div class="auth-page auth-page--login">
 
-  <!-- =========================
-       TOAST DE ERRO
-  ========================= -->
-  @if (errorMessage()) {
-    <div class="toast toast-error" role="alert">
+  <!-- ===== FOTO ===== -->
 
-      <div class="toast-icon">
-        <mat-icon>close</mat-icon>
-      </div>
+  <aside class="auth-brand">
 
-      <div class="toast-body">
-        <strong>Não foi possível entrar</strong>
-        <span>{{ errorMessage() }}</span>
-      </div>
+    <img
+      class="auth-bg"
+      src="assets/images/nelore-hero.jpg"
+      alt=""
+      width="1280"
+      height="870"
+    />
 
-      <button
-        type="button"
-        class="toast-close"
-        (click)="clearError()"
-        aria-label="Fechar aviso"
-      >
-        <mat-icon>close</mat-icon>
-      </button>
+    <div class="auth-shade"></div>
 
-      <div class="toast-progress"></div>
+    <a
+      class="logo"
+      routerLink="/"
+      aria-label="AgroVision AI, ir para a página inicial"
+    >
+      <span class="logo-mark" aria-hidden="true">
+        <mat-icon>grass</mat-icon>
+      </span>
+      <span class="logo-text">AgroVision</span>
+      <span class="logo-badge">AI</span>
+    </a>
 
-    </div>
-  }
+    <div>
 
+      <p class="auth-headline">
+        Seus dados, sua fazenda, uma única visão.
+      </p>
 
-  <!-- =========================
-       PAINEL DE MARCA (esquerda)
-  ========================= -->
-  <div class="login-brand">
-
-    <div class="login-brand-overlay"></div>
-
-    <div class="login-brand-content">
-
-      <a class="logo" routerLink="/">
-        <span class="logo-icon">
-          <mat-icon>eco</mat-icon>
-        </span>
-        <span class="logo-text">Agro<span>Vision</span> AI</span>
-      </a>
-
-      <div class="brand-message">
-        <span class="brand-eyebrow">Gestão inteligente para pecuária de corte</span>
-
-        <h1>
-          Seus dados, sua fazenda,
-          <span>uma única visão.</span>
-        </h1>
-
-        <p>
-          Acesse sua conta e continue acompanhando propriedades, rebanhos
-          e pesagens com clareza e segurança.
-        </p>
-      </div>
-
-      <div class="brand-highlights">
-
-        <div class="highlight-item">
-          <mat-icon>home_work</mat-icon>
-          <span>Propriedades organizadas</span>
-        </div>
-
-        <div class="highlight-item">
-          <mat-icon>pets</mat-icon>
-          <span>Rebanhos sob controle</span>
-        </div>
-
-        <div class="highlight-item">
-          <mat-icon>monitor_weight</mat-icon>
-          <span>Pesagens em dia</span>
-        </div>
-
-      </div>
+      <p class="auth-lead">
+        Acesse sua conta e continue acompanhando propriedades, rebanhos
+        e pesagens com clareza.
+      </p>
 
     </div>
 
-  </div>
+  </aside>
 
 
-  <!-- =========================
-       PAINEL DE LOGIN (direita)
-  ========================= -->
-  <div class="login-panel">
+  <!-- ===== FORMULÁRIO ===== -->
 
-    <div class="login-container">
+  <main class="auth-panel">
 
-      <a class="back-link" routerLink="/">
-        <mat-icon>arrow_back</mat-icon>
-        Voltar ao início
-      </a>
+    <a class="back-link" routerLink="/">
+      <mat-icon>arrow_back</mat-icon>
+      Voltar ao início
+    </a>
 
-      <div class="login-card">
 
-        <div class="login-header">
-          <span class="eyebrow">Acesso</span>
-          <h2>Entre na sua conta</h2>
-          <p>Informe suas credenciais para continuar.</p>
+    <div class="auth-main">
+
+      <header class="auth-header">
+
+        <h1>Entre na sua conta</h1>
+
+        <p>Use o e-mail e a senha que você cadastrou.</p>
+
+      </header>
+
+
+      @if (contaCriada()) {
+
+        <div class="alert alert-success" role="status">
+
+          <mat-icon>check_circle</mat-icon>
+
+          <span>Conta criada com sucesso. Entre para continuar.</span>
+
         </div>
 
-        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+      }
 
-          <div class="form-group">
 
-            <label for="email">E-mail</label>
+      @if (errorMessage()) {
 
-            <div class="input-wrapper">
-              <mat-icon class="input-icon">mail_outline</mat-icon>
+        <div class="alert alert-error" role="alert">
 
-              <input
-                id="email"
-                type="email"
-                formControlName="email"
-                placeholder="seuemail@exemplo.com"
-                autocomplete="email"
-                [class.invalid]="loginForm.controls.email.touched && loginForm.controls.email.invalid"
-              >
-            </div>
+          <mat-icon>error_outline</mat-icon>
 
-            @if (
+          <div>
+            <strong>Não foi possível entrar</strong>
+            <span>{{ errorMessage() }}</span>
+          </div>
+
+          <button
+            type="button"
+            aria-label="Fechar aviso"
+            (click)="clearError()"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+
+        </div>
+
+      }
+
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+
+        <!-- E-MAIL -->
+
+        <div class="field">
+
+          <label for="email">E-mail</label>
+
+          <div
+            class="input-wrapper"
+            [class.invalid]="
               loginForm.controls.email.touched &&
-              loginForm.controls.email.hasError('required')
-            ) {
-              <span class="error">
+              loginForm.controls.email.invalid
+            "
+          >
+
+            <mat-icon>mail_outline</mat-icon>
+
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="seuemail@exemplo.com"
+              autocomplete="email"
+              autofocus
+              [attr.aria-invalid]="
+                loginForm.controls.email.touched &&
+                loginForm.controls.email.invalid
+              "
+            >
+
+          </div>
+
+          @if (loginForm.controls.email.touched) {
+
+            @if (loginForm.controls.email.hasError('required')) {
+
+              <span class="field-error">
                 <mat-icon>error_outline</mat-icon>
-                O e-mail é obrigatório.
+                Informe o seu e-mail.
               </span>
-            }
 
-            @if (
-              loginForm.controls.email.touched &&
-              loginForm.controls.email.hasError('email')
-            ) {
-              <span class="error">
+            } @else if (loginForm.controls.email.hasError('email')) {
+
+              <span class="field-error">
                 <mat-icon>error_outline</mat-icon>
                 Digite um e-mail válido.
               </span>
+
             }
 
-          </div>
+          }
 
-
-          <div class="form-group">
-
-            <div class="label-row">
-              <label for="password">Senha</label>
-              <a class="forgot-link" routerLink="/recuperar-senha">Esqueceu a senha?</a>
-            </div>
-
-            <div class="input-wrapper">
-              <mat-icon class="input-icon">lock_outline</mat-icon>
-
-              <input
-                [id]="'password'"
-                [type]="showPassword ? 'text' : 'password'"
-                formControlName="password"
-                placeholder="Digite sua senha"
-                autocomplete="current-password"
-                [class.invalid]="loginForm.controls.password.touched && loginForm.controls.password.invalid"
-              >
-
-              <button
-                type="button"
-                class="toggle-password"
-                (click)="showPassword = !showPassword"
-                [attr.aria-label]="showPassword ? 'Ocultar senha' : 'Mostrar senha'"
-              >
-                <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-              </button>
-            </div>
-
-            @if (
-              loginForm.controls.password.touched &&
-              loginForm.controls.password.hasError('required')
-            ) {
-              <span class="error">
-                <mat-icon>error_outline</mat-icon>
-                A senha é obrigatória.
-              </span>
-            }
-
-            @if (
-              loginForm.controls.password.touched &&
-              loginForm.controls.password.hasError('minlength')
-            ) {
-              <span class="error">
-                <mat-icon>error_outline</mat-icon>
-                A senha deve ter pelo menos 6 caracteres.
-              </span>
-            }
-
-          </div>
-
-
-          <button
-            type="submit"
-            class="btn-submit"
-            [disabled]="loading()"
-          >
-
-            @if (loading()) {
-              <span class="spinner"></span>
-              Entrando...
-            } @else {
-              Entrar
-              <mat-icon>arrow_forward</mat-icon>
-            }
-
-          </button>
-
-        </form>
-
-        <div class="login-footer">
-          <p>
-            Ainda não tem uma conta?
-            <a routerLink="/cadastro">Criar conta</a>
-          </p>
         </div>
 
-      </div>
 
-      <p class="login-copyright">© 2026 AgroVision AI. Projeto de TCC.</p>
+        <!-- SENHA -->
+
+        <div class="field">
+
+          <div class="label-row">
+
+            <label for="password">Senha</label>
+
+            <a class="text-link" routerLink="/recuperar-senha">
+              Esqueceu a senha?
+            </a>
+
+          </div>
+
+          <div
+            class="input-wrapper"
+            [class.invalid]="
+              loginForm.controls.password.touched &&
+              loginForm.controls.password.invalid
+            "
+          >
+
+            <mat-icon>lock_outline</mat-icon>
+
+            <input
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Digite sua senha"
+              autocomplete="current-password"
+              [attr.aria-invalid]="
+                loginForm.controls.password.touched &&
+                loginForm.controls.password.invalid
+              "
+            >
+
+            <button
+              type="button"
+              class="toggle-password"
+              (click)="showPassword = !showPassword"
+              [attr.aria-label]="showPassword ? 'Ocultar senha' : 'Mostrar senha'"
+              [attr.aria-pressed]="showPassword"
+            >
+              <mat-icon>
+                {{ showPassword ? 'visibility_off' : 'visibility' }}
+              </mat-icon>
+            </button>
+
+          </div>
+
+          @if (loginForm.controls.password.touched) {
+
+            @if (loginForm.controls.password.hasError('required')) {
+
+              <span class="field-error">
+                <mat-icon>error_outline</mat-icon>
+                Informe a sua senha.
+              </span>
+
+            } @else if (loginForm.controls.password.hasError('minlength')) {
+
+              <span class="field-error">
+                <mat-icon>error_outline</mat-icon>
+                A senha tem pelo menos 6 caracteres.
+              </span>
+
+            }
+
+          }
+
+        </div>
+
+
+        <button type="submit" class="btn-submit" [disabled]="loading()">
+
+          @if (loading()) {
+
+            <span class="spinner"></span>
+            Entrando...
+
+          } @else {
+
+            Entrar
+            <mat-icon>arrow_forward</mat-icon>
+
+          }
+
+        </button>
+
+      </form>
+
+
+      <p class="auth-alt">
+        Ainda não tem uma conta?
+        <a routerLink="/cadastro">Criar conta</a>
+      </p>
 
     </div>
 
-  </div>
+
+    <p class="auth-copy">
+      © {{ anoAtual }} AgroVision AI. Projeto de TCC.
+    </p>
+
+  </main>
 
 </div>

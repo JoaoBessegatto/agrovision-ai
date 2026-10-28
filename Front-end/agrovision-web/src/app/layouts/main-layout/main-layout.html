@@ -1,8 +1,6 @@
 <div class="app-shell">
 
-  <!-- =========================================
-       OVERLAY MOBILE
-  ========================================== -->
+  <!-- Overlay mobile -->
 
   @if (sidebarOpen()) {
 
@@ -14,9 +12,7 @@
   }
 
 
-  <!-- =========================================
-       SIDEBAR
-  ========================================== -->
+  <!-- ===== SIDEBAR ===== -->
 
   <aside
     class="sidebar"
@@ -28,23 +24,17 @@
       <a
         routerLink="/app"
         class="brand"
+        aria-label="AgroVision AI, ir para o início"
         (click)="fecharSidebar()"
       >
 
-        <div class="brand-icon">
-          🌱
+        <div class="brand-mark" aria-hidden="true">
+          <mat-icon>grass</mat-icon>
         </div>
 
         <div class="brand-text">
-
-          <strong>
-            AgroVision
-          </strong>
-
-          <span>
-            AI
-          </span>
-
+          <strong>AgroVision</strong>
+          <span>AI</span>
         </div>
 
       </a>
@@ -52,7 +42,7 @@
     </div>
 
 
-    <!-- FAZENDA MOBILE -->
+    <!-- Fazenda (mobile) -->
 
     <div class="mobile-farm">
 
@@ -65,13 +55,10 @@
         as fazenda
       ) {
 
-        <strong>
-          {{ fazenda.nome }}
-        </strong>
+        <strong>{{ fazenda.nome }}</strong>
 
         <small>
-          {{ fazenda.cidade }} -
-          {{ fazenda.estado }}
+          {{ fazenda.cidade }} - {{ fazenda.estado }}
         </small>
 
       }
@@ -79,171 +66,102 @@
     </div>
 
 
-    <!-- =========================================
-         MENU
-    ========================================== -->
+    <nav
+      class="navigation"
+      aria-label="Menu principal"
+    >
 
-    <nav class="navigation">
-
-      <span class="menu-label">
-        PRINCIPAL
-      </span>
-
+      <span class="menu-label">Principal</span>
 
       <a
         routerLink="/app"
         routerLinkActive="active"
-        [routerLinkActiveOptions]="{
-          exact: true
-        }"
+        ariaCurrentWhenActive="page"
+        [routerLinkActiveOptions]="{ exact: true }"
         (click)="fecharSidebar()"
       >
-
-        <mat-icon>
-          home
-        </mat-icon>
-
-        <span>
-          Início
-        </span>
-
+        <mat-icon>home</mat-icon>
+        <span>Início</span>
       </a>
-
 
       <a
         routerLink="/app/dashboard"
         routerLinkActive="active"
+        ariaCurrentWhenActive="page"
         (click)="fecharSidebar()"
       >
-
-        <mat-icon>
-          dashboard
-        </mat-icon>
-
-        <span>
-          Dashboard
-        </span>
-
+        <mat-icon>dashboard</mat-icon>
+        <span>Dashboard</span>
       </a>
 
 
-      <span class="menu-label second">
-        PECUÁRIA
-      </span>
-
+      <span class="menu-label second">Pecuária</span>
 
       <a
         routerLink="/app/rebanhos"
         routerLinkActive="active"
+        ariaCurrentWhenActive="page"
         (click)="fecharSidebar()"
       >
-
-        <mat-icon>
-          groups
-        </mat-icon>
-
-        <span>
-          Rebanhos
-        </span>
-
+        <mat-icon>groups</mat-icon>
+        <span>Rebanhos</span>
       </a>
-
 
       <a
         routerLink="/app/animais"
         routerLinkActive="active"
+        ariaCurrentWhenActive="page"
         (click)="fecharSidebar()"
       >
-
-        <mat-icon>
-          pets
-        </mat-icon>
-
-        <span>
-          Animais
-        </span>
-
+        <mat-icon>pets</mat-icon>
+        <span>Animais</span>
       </a>
-
 
       <a
         routerLink="/app/pesagens"
         routerLinkActive="active"
+        ariaCurrentWhenActive="page"
         (click)="fecharSidebar()"
       >
-
-        <mat-icon>
-          monitor_weight
-        </mat-icon>
-
-        <span>
-          Pesagens
-        </span>
-
+        <mat-icon>monitor_weight</mat-icon>
+        <span>Pesagens</span>
       </a>
 
 
-      <span class="menu-label second">
-        GESTÃO
-      </span>
-
+      <span class="menu-label second">Gestão</span>
 
       <a
         routerLink="/app/fazendas"
         routerLinkActive="active"
+        ariaCurrentWhenActive="page"
         (click)="fecharSidebar()"
       >
-
-        <mat-icon>
-          agriculture
-        </mat-icon>
-
-        <span>
-          Fazendas
-        </span>
-
+        <mat-icon>agriculture</mat-icon>
+        <span>Fazendas</span>
       </a>
-
 
       <a
         routerLink="/app/funcionarios"
         routerLinkActive="active"
+        ariaCurrentWhenActive="page"
         (click)="fecharSidebar()"
       >
-
-        <mat-icon>
-          badge
-        </mat-icon>
-
-        <span>
-          Funcionários
-        </span>
-
+        <mat-icon>badge</mat-icon>
+        <span>Funcionários</span>
       </a>
-
 
       <a
         routerLink="/app/relatorios"
         routerLinkActive="active"
+        ariaCurrentWhenActive="page"
         (click)="fecharSidebar()"
       >
-
-        <mat-icon>
-          assessment
-        </mat-icon>
-
-        <span>
-          Relatórios
-        </span>
-
+        <mat-icon>assessment</mat-icon>
+        <span>Relatórios</span>
       </a>
 
     </nav>
 
-
-    <!-- =========================================
-         FOOTER SIDEBAR
-    ========================================== -->
 
     <div class="sidebar-footer">
 
@@ -252,15 +170,8 @@
         class="logout-button"
         (click)="logout()"
       >
-
-        <mat-icon>
-          logout
-        </mat-icon>
-
-        <span>
-          Sair
-        </span>
-
+        <mat-icon>logout</mat-icon>
+        <span>Sair</span>
       </button>
 
     </div>
@@ -268,13 +179,9 @@
   </aside>
 
 
-  <!-- =========================================
-       ÁREA PRINCIPAL
-  ========================================== -->
+  <!-- ===== ÁREA PRINCIPAL ===== -->
 
   <div class="main-area">
-
-    <!-- TOPBAR -->
 
     <header class="topbar">
 
@@ -283,80 +190,65 @@
         <button
           type="button"
           class="menu-button"
+          aria-label="Abrir menu"
+          [attr.aria-expanded]="sidebarOpen()"
           (click)="toggleSidebar()"
         >
-
-          <mat-icon>
-            menu
-          </mat-icon>
-
+          <mat-icon>menu</mat-icon>
         </button>
 
 
-        <!-- FAZENDA -->
-
         <div class="farm-selector">
 
-          <div class="farm-icon">
-
-            <mat-icon>
-              agriculture
-            </mat-icon>
-
-          </div>
-
+          <mat-icon class="farm-icon">agriculture</mat-icon>
 
           <div class="farm-select-content">
 
-            <span>
-              Fazenda ativa
-            </span>
+            <span>Fazenda ativa</span>
 
+            @if (fazendaContext.loading()) {
 
-            @if (
-              fazendaContext.loading()
-            ) {
-
-              <strong>
-                Carregando...
-              </strong>
+              <strong>Carregando...</strong>
 
             } @else if (
-              fazendaContext.fazendas().length
-              > 0
+              fazendaContext.fazendas().length > 0
             ) {
 
-              <select
-                [value]="
-                  fazendaContext
-                    .fazendaAtivaId()
-                "
-                (change)="
-                  trocarFazenda($event)
-                "
-              >
+              <div class="select-wrap">
 
-                @for (
-                  fazenda
-                  of fazendaContext.fazendas();
-                  track fazenda.id
-                ) {
+                <select
+                  aria-label="Trocar fazenda ativa"
+                  (change)="trocarFazenda($event)"
+                >
 
-                  <option
-                    [value]="fazenda.id"
-                  >
-                    {{ fazenda.nome }}
-                  </option>
+                  @for (
+                    fazenda of fazendaContext.fazendas();
+                    track fazenda.id
+                  ) {
 
-                }
+                    <option
+                      [value]="fazenda.id"
+                      [selected]="
+                        fazenda.id
+                        === fazendaContext.fazendaAtivaId()
+                      "
+                    >
+                      {{ fazenda.nome }}
+                    </option>
 
-              </select>
+                  }
+
+                </select>
+
+                <mat-icon class="select-chevron">
+                  expand_more
+                </mat-icon>
+
+              </div>
 
             } @else {
 
-              <strong>
-                Nenhuma fazenda
-              </strong>
+              <strong>Nenhuma fazenda</strong>
 
             }
 
@@ -367,42 +259,22 @@
       </div>
 
 
-      <!-- USUÁRIO -->
-
       <div class="user-area">
 
-        <div class="user-avatar">
-
-          <mat-icon>
-            person
-          </mat-icon>
-
+        <div class="user-avatar" aria-hidden="true">
+          {{ (usuario?.username ?? 'U').charAt(0).toUpperCase() }}
         </div>
 
-
         <div class="user-info">
-
           <strong>
-            {{
-              usuario?.username
-              ?? 'Usuário'
-            }}
+            {{ usuario?.username ?? 'Usuário' }}
           </strong>
-
-          <span>
-            AgroVision AI
-          </span>
-
         </div>
 
       </div>
 
     </header>
 
-
-    <!-- =========================================
-         CONTEÚDO DAS ROTAS
-    ========================================== -->
 
     <main class="content">
 

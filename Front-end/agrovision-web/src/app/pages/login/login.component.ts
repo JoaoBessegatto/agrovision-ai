@@ -6,6 +6,7 @@ import {
   Validators
 } from '@angular/forms';
 import {
+  ActivatedRoute,
   Router,
   RouterLink
 } from '@angular/router';
@@ -20,7 +21,7 @@ import { AuthService } from '../../core/auth/services/auth.service';
 import { UsuarioContextService } from '../../core/user/services/user-context.service';
 
 import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
+
 
 @Component({
   selector: 'app-login',
@@ -30,7 +31,6 @@ import { MatButtonModule } from '@angular/material/button';
     CommonModule,
     ReactiveFormsModule,
     MatIconModule,
-    MatButtonModule,
     RouterLink
   ],
 
@@ -50,8 +50,20 @@ export class LoginComponent {
   private readonly router =
     inject(Router);
 
-  private errorTimeout?:
-    ReturnType<typeof setTimeout>;
+  private readonly route =
+    inject(ActivatedRoute);
+
+  readonly anoAtual =
+    new Date().getFullYear();
+
+  /** Vindo do cadastro: /login?cadastrado=true */
+  readonly contaCriada =
+    signal(
+      this.route.snapshot.queryParamMap
+        .get('cadastrado') === 'true'
+    );
+
+  
 
   loading = signal(false);
 
@@ -301,23 +313,6 @@ export class LoginComponent {
 
     this.errorMessage.set(message);
 
-
-    if (this.errorTimeout) {
-
-      clearTimeout(
-        this.errorTimeout
-      );
-
-    }
-
-
-    this.errorTimeout =
-      setTimeout(() => {
-
-        this.errorMessage.set('');
-
-      }, 6000);
-
   }
 
 
@@ -325,17 +320,7 @@ export class LoginComponent {
 
     this.errorMessage.set('');
 
-
-    if (this.errorTimeout) {
-
-      clearTimeout(
-        this.errorTimeout
-      );
-
-      this.errorTimeout =
-        undefined;
-
-    }
+    this.contaCriada.set(false);
 
   }
 

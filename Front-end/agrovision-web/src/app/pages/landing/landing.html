@@ -1,381 +1,488 @@
-<!-- =========================
-     NAVBAR
-========================= -->
-<header class="navbar">
-  <div class="navbar-container">
+<!-- ===== NAVEGAÇÃO ===== -->
 
-    <a class="logo" href="#inicio">
-      <span class="logo-icon">
-        <mat-icon>eco</mat-icon>
+<header
+  class="navbar"
+  [class.scrolled]="scrolled()"
+  [class.menu-open]="menuOpen()"
+>
+
+  <div class="container navbar-container">
+
+    <a
+      class="logo"
+      href="#inicio"
+      aria-label="AgroVision AI, voltar ao topo"
+      (click)="scrollToSection($event, 'inicio')"
+    >
+      <span class="logo-mark" aria-hidden="true">
+        <mat-icon>grass</mat-icon>
       </span>
-      <span class="logo-text">Agro<span>Vision</span> AI</span>
+      <span class="logo-text">AgroVision</span>
+      <span class="logo-badge">AI</span>
     </a>
 
-    <nav class="nav-menu">
-      <a href="#plataforma" (click)="scrollToSection($event, 'plataforma')">Plataforma</a>
-      <a href="#inteligencia" (click)="scrollToSection($event, 'inteligencia')">Inteligência</a>
-      <a href="#beneficios" (click)="scrollToSection($event, 'beneficios')">Benefícios</a>
-    </nav>
 
-    <div class="nav-actions">
-      <button mat-button class="btn-login" type="button" (click)="irParaLogin()">
-        Entrar
-      </button>
+    <div class="nav-panel" id="nav-panel">
 
-      <button mat-flat-button class="btn-register" type="button" (click)="irParaCadastro()">
-        Criar conta
-      </button>
+      <nav class="nav-menu" aria-label="Seções da página">
+        <a href="#plataforma" (click)="scrollToSection($event, 'plataforma')">Plataforma</a>
+        <a href="#inteligencia" (click)="scrollToSection($event, 'inteligencia')">Inteligência</a>
+        <a href="#beneficios" (click)="scrollToSection($event, 'beneficios')">Benefícios</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a routerLink="/login" class="btn btn-text">Entrar</a>
+        <a routerLink="/cadastro" class="btn btn-gold btn-sm">Criar conta</a>
+      </div>
+
     </div>
 
+
+    <button
+      type="button"
+      class="menu-toggle"
+      [attr.aria-label]="menuOpen() ? 'Fechar menu' : 'Abrir menu'"
+      [attr.aria-expanded]="menuOpen()"
+      aria-controls="nav-panel"
+      (click)="alternarMenu()"
+    >
+      <mat-icon>{{ menuOpen() ? 'close' : 'menu' }}</mat-icon>
+    </button>
+
   </div>
+
 </header>
 
 
 <main>
 
-  <!-- =========================
-       HERO
-  ========================= -->
-  <section id="inicio" class="hero">
+  <!-- ===== HERO ===== -->
 
-    <div class="hero-overlay"></div>
+  <section id="inicio" class="hero" aria-labelledby="hero-title">
 
-    <div class="hero-container">
-      <div class="hero-content">
+    <img
+      class="hero-bg"
+      src="assets/images/nelore-hero.jpg"
+      alt=""
+      width="1280"
+      height="870"
+      fetchpriority="high"
+    />
 
-        <span class="hero-eyebrow">Gestão inteligente para pecuária de corte</span>
+    <div class="hero-shade"></div>
 
-        <h1>
-          Cada decisão no confinamento
-          <span>começa com um dado confiável.</span>
-        </h1>
+    <div class="container hero-inner">
 
-        <p>
-          O AgroVision AI reúne propriedades, rebanhos, animais e pesagens
-          em um único lugar, para que produtores e gestores enxerguem com
-          clareza o que está acontecendo na fazenda.
-        </p>
+      <h1 id="hero-title">
+        Cada decisão no confinamento começa com um dado confiável.
+      </h1>
 
-        <div class="hero-actions">
-          <button mat-flat-button class="btn-primary" type="button" (click)="irParaCadastro()">
-            Começar agora
-            <mat-icon>arrow_forward</mat-icon>
-          </button>
+      <p class="hero-text">
+        Gestão para pecuária de corte: o AgroVision AI reúne propriedades,
+        rebanhos, animais e pesagens em um só lugar, para você enxergar com
+        clareza o que acontece na fazenda.
+      </p>
 
-          <a class="btn-secondary" href="#plataforma" (click)="scrollToSection($event, 'plataforma')">
-            Conhecer a plataforma
-          </a>
-        </div>
+      <div class="hero-actions">
+
+        <a routerLink="/cadastro" class="btn btn-gold btn-lg">
+          Começar agora
+          <mat-icon>arrow_forward</mat-icon>
+        </a>
+
+        <a
+          href="#plataforma"
+          class="btn btn-ghost btn-lg"
+          (click)="scrollToSection($event, 'plataforma')"
+        >
+          Conhecer a plataforma
+        </a>
 
       </div>
-    </div>
 
-    <a class="hero-scroll" href="#plataforma" aria-label="Rolar para a seção Plataforma" (click)="scrollToSection($event, 'plataforma')">
-      <mat-icon>keyboard_arrow_down</mat-icon>
-    </a>
+      <ul class="hero-modules" aria-label="O que o sistema organiza">
+        <li><mat-icon>agriculture</mat-icon> Propriedades</li>
+        <li><mat-icon>groups</mat-icon> Rebanhos</li>
+        <li><mat-icon>pets</mat-icon> Animais</li>
+        <li><mat-icon>monitor_weight</mat-icon> Pesagens</li>
+      </ul>
+
+    </div>
 
   </section>
 
 
-  <!-- =========================
-       PLATAFORMA
-  ========================= -->
-  <section id="plataforma" class="section platform-section">
-    <div class="section-container">
+  <!-- ===== PLATAFORMA ===== -->
 
-      <div class="platform-grid">
+  <section
+    id="plataforma"
+    class="section section-light"
+    aria-labelledby="plataforma-title"
+  >
 
-        <div class="platform-image">
-          <div class="platform-image-frame">
-            <img src="assets/images/nelore-confinamento.jpg" alt="Confinamento de gado Nelore" />
+    <div class="container platform-grid">
+
+      <figure class="platform-media">
+
+        <img
+          src="assets/images/nelore-confinamento.jpg"
+          alt="Gado Nelore no cocho de um confinamento"
+          width="800"
+          height="534"
+          loading="lazy"
+        />
+
+        <div
+          class="weigh-card"
+          role="img"
+          aria-label="Exemplo ilustrativo: gráfico de evolução do peso médio de um lote"
+        >
+
+          <div class="weigh-head">
+            <strong>Lote de engorda 01</strong>
+            <span>Exemplo</span>
           </div>
-          <div class="platform-image-tag">
-            <strong>Visão de campo</strong>
-            <span>Do curral à tela do gestor</span>
+
+          <div class="weigh-value">
+            412<small>kg</small>
           </div>
+
+          <p class="weigh-label">Peso médio do lote</p>
+
+          <svg viewBox="0 0 220 64" aria-hidden="true">
+            <polygon
+              points="6,52 48,46 90,40 132,31 174,22 214,10 214,64 6,64"
+              fill="#e3efe5"
+            />
+            <polyline
+              points="6,52 48,46 90,40 132,31 174,22 214,10"
+              fill="none"
+              stroke="#2f7a4b"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <circle cx="6" cy="52" r="3" fill="#fff" stroke="#2f7a4b" stroke-width="2" />
+            <circle cx="48" cy="46" r="3" fill="#fff" stroke="#2f7a4b" stroke-width="2" />
+            <circle cx="90" cy="40" r="3" fill="#fff" stroke="#2f7a4b" stroke-width="2" />
+            <circle cx="132" cy="31" r="3" fill="#fff" stroke="#2f7a4b" stroke-width="2" />
+            <circle cx="174" cy="22" r="3" fill="#fff" stroke="#2f7a4b" stroke-width="2" />
+            <circle cx="214" cy="10" r="5" fill="#e2a82e" stroke="#fff" stroke-width="2" />
+          </svg>
+
+          <p class="weigh-foot">Últimas 6 pesagens</p>
+
         </div>
 
-        <div class="platform-content">
-
-          <span class="eyebrow">Plataforma</span>
-
-          <h2>
-            Gestão pecuária
-            <span>mais organizada.</span>
-          </h2>
-
-          <p>
-            O AgroVision AI centraliza as informações da propriedade em um
-            único ambiente, tornando o acompanhamento do rebanho mais
-            simples e o dia a dia do gestor mais leve.
-          </p>
-
-          <div class="feature-list">
-
-            <div class="feature-item">
-              <mat-icon class="feature-icon">home_work</mat-icon>
-              <div>
-                <h3>Cadastro de propriedades</h3>
-                <p>Organize as informações das fazendas e áreas de produção.</p>
-              </div>
-            </div>
-
-            <div class="feature-item">
-              <mat-icon class="feature-icon">pets</mat-icon>
-              <div>
-                <h3>Controle do rebanho</h3>
-                <p>Acompanhe os animais e sua organização dentro dos rebanhos.</p>
-              </div>
-            </div>
-
-            <div class="feature-item">
-              <mat-icon class="feature-icon">monitor_weight</mat-icon>
-              <div>
-                <h3>Registro de pesagens</h3>
-                <p>Registre e acompanhe a evolução do peso dos animais.</p>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-  </section>
+      </figure>
 
 
-  <!-- =========================
-       INTELIGÊNCIA
-  ========================= -->
-  <section id="inteligencia" class="section intelligence-section">
-    <div class="section-container">
+      <div class="platform-content">
 
-      <div class="section-header">
-        <span class="eyebrow eyebrow-light">Inteligência de dados</span>
-        <h2>
-          Dados que ajudam a
-          <span>tomar decisões.</span>
+        <h2 id="plataforma-title">
+          Da balança ao painel do gestor, tudo no mesmo lugar.
         </h2>
-        <p>
-          Mais do que armazenar informações, o AgroVision AI transforma os
-          dados da produção em algo útil para o acompanhamento do negócio.
+
+        <p class="lead">
+          O AgroVision AI centraliza as informações da propriedade em um
+          único ambiente. O acompanhamento do rebanho fica mais simples e a
+          rotina de quem gerencia, mais leve.
         </p>
+
+        <ul class="feature-list">
+
+          <li>
+            <span class="feature-icon"><mat-icon>home_work</mat-icon></span>
+            <div>
+              <h3>Cadastro de propriedades</h3>
+              <p>Organize as informações das fazendas e das áreas de produção.</p>
+            </div>
+          </li>
+
+          <li>
+            <span class="feature-icon"><mat-icon>pets</mat-icon></span>
+            <div>
+              <h3>Controle do rebanho</h3>
+              <p>Separe os animais em rebanhos e acompanhe cada um deles.</p>
+            </div>
+          </li>
+
+          <li>
+            <span class="feature-icon"><mat-icon>monitor_weight</mat-icon></span>
+            <div>
+              <h3>Registro de pesagens</h3>
+              <p>Anote o peso e veja a evolução de cada animal ao longo do tempo.</p>
+            </div>
+          </li>
+
+        </ul>
+
       </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ===== INTELIGÊNCIA ===== -->
+
+  <section
+    id="inteligencia"
+    class="section section-dark"
+    aria-labelledby="inteligencia-title"
+  >
+
+    <div class="container">
 
       <div class="intelligence-grid">
 
-        <article class="intelligence-card">
-          <mat-icon class="card-icon">bar_chart</mat-icon>
-          <h3>Dashboards</h3>
-          <p>
-            Visualize os indicadores da propriedade em painéis organizados
-            e de fácil leitura.
-          </p>
-        </article>
+        <div>
 
-        <article class="intelligence-card">
-          <mat-icon class="card-icon">trending_up</mat-icon>
-          <h3>Análise de dados</h3>
-          <p>
-            Acompanhe o desempenho do rebanho ao longo do tempo a partir
-            dos dados já registrados.
-          </p>
-        </article>
+          <h2 id="inteligencia-title">
+            Dados organizados viram decisões melhores.
+          </h2>
 
-        <article class="intelligence-card">
-          <mat-icon class="card-icon">hub</mat-icon>
-          <h3>Inteligência artificial</h3>
-          <p>
-            Recursos de IA vão auxiliar na identificação de padrões e na
-            geração de previsões a partir dos dados coletados.
+          <p class="lead">
+            Mais do que guardar informações, o AgroVision AI transforma os
+            registros da produção em algo útil para acompanhar o negócio.
           </p>
-        </article>
+
+          <ul class="pillars">
+
+            <li>
+              <mat-icon>bar_chart</mat-icon>
+              <div>
+                <h3>Dashboards</h3>
+                <p>Indicadores da propriedade em painéis organizados e fáceis de ler.</p>
+              </div>
+            </li>
+
+            <li>
+              <mat-icon>trending_up</mat-icon>
+              <div>
+                <h3>Análise de dados</h3>
+                <p>Desempenho do rebanho ao longo do tempo, a partir dos dados já registrados.</p>
+              </div>
+            </li>
+
+            <li>
+              <mat-icon>hub</mat-icon>
+              <div>
+                <h3>
+                  Inteligência artificial
+                  <span class="soon">Em desenvolvimento</span>
+                </h3>
+                <p>Identificação de padrões e previsões a partir dos dados coletados.</p>
+              </div>
+            </li>
+
+          </ul>
+
+        </div>
+
+
+        <figure class="intelligence-media">
+
+          <img
+            src="assets/images/nelore-aerea.jpg"
+            alt="Vista aérea de um pasto com rebanho Nelore"
+            width="626"
+            height="352"
+            loading="lazy"
+          />
+
+          <figcaption>
+            A propriedade vista de cima, os dados vistos de perto.
+          </figcaption>
+
+        </figure>
 
       </div>
 
-      <div class="data-flow">
 
-        <div class="flow-item">
-          <span class="flow-number">01</span>
-          <div>
-            <strong>Dados</strong>
-            <small>Registros da produção</small>
-          </div>
-        </div>
+      <ol class="flow" aria-label="Do registro à decisão">
 
-        <div class="flow-line"></div>
+        <li>
+          <strong>Registro</strong>
+          <span>Dados da produção</span>
+        </li>
 
-        <div class="flow-item">
-          <span class="flow-number">02</span>
-          <div>
-            <strong>Análise</strong>
-            <small>Processamento das informações</small>
-          </div>
-        </div>
+        <li>
+          <strong>Análise</strong>
+          <span>Processamento das informações</span>
+        </li>
 
-        <div class="flow-line"></div>
+        <li>
+          <strong>Indicadores</strong>
+          <span>Painéis e visualizações</span>
+        </li>
 
-        <div class="flow-item">
-          <span class="flow-number">03</span>
-          <div>
-            <strong>Informação</strong>
-            <small>Indicadores e visualizações</small>
-          </div>
-        </div>
+        <li>
+          <strong>Decisão</strong>
+          <span>Apoio à gestão</span>
+        </li>
 
-        <div class="flow-line"></div>
-
-        <div class="flow-item">
-          <span class="flow-number">04</span>
-          <div>
-            <strong>Decisão</strong>
-            <small>Melhor apoio à gestão</small>
-          </div>
-        </div>
-
-      </div>
+      </ol>
 
     </div>
+
   </section>
 
 
-  <!-- =========================
-       BENEFÍCIOS
-  ========================= -->
-  <section id="beneficios" class="section benefits-section">
-    <div class="section-container">
+  <!-- ===== BENEFÍCIOS ===== -->
+
+  <section
+    id="beneficios"
+    class="section section-tint"
+    aria-labelledby="beneficios-title"
+  >
+
+    <div class="container">
 
       <div class="section-header">
-        <span class="eyebrow">Benefícios</span>
-        <h2>
-          Tecnologia aplicada
-          <span>à pecuária.</span>
+
+        <h2 id="beneficios-title">
+          O que muda na rotina da fazenda.
         </h2>
-        <p>
-          Uma solução pensada para tornar o gerenciamento do rebanho mais
-          simples, organizado e eficiente.
+
+        <p class="lead">
+          Pensado para quem precisa de respostas rápidas sobre o rebanho,
+          seja no escritório ou no curral.
         </p>
-      </div>
-
-      <div class="benefits-grid">
-
-        <div class="benefit">
-          <mat-icon class="benefit-icon">pets</mat-icon>
-          <div>
-            <h3>Controle do rebanho</h3>
-            <p>Mantenha informações dos animais organizadas e acompanhe sua evolução.</p>
-          </div>
-        </div>
-
-        <div class="benefit">
-          <mat-icon class="benefit-icon">home_work</mat-icon>
-          <div>
-            <h3>Gestão das propriedades</h3>
-            <p>Centralize dados das fazendas e dos rebanhos vinculados a cada uma.</p>
-          </div>
-        </div>
-
-        <div class="benefit">
-          <mat-icon class="benefit-icon">monitor_weight</mat-icon>
-          <div>
-            <h3>Acompanhamento de peso</h3>
-            <p>Registre pesagens e acompanhe a evolução dos animais ao longo do tempo.</p>
-          </div>
-        </div>
-
-        <div class="benefit">
-          <mat-icon class="benefit-icon">dashboard</mat-icon>
-          <div>
-            <h3>Informações centralizadas</h3>
-            <p>Tenha os principais dados da produção disponíveis em um único sistema.</p>
-          </div>
-        </div>
-
-        <div class="benefit">
-          <mat-icon class="benefit-icon">search</mat-icon>
-          <div>
-            <h3>Acompanhamento simples</h3>
-            <p>Facilite a consulta das informações e o acompanhamento dos indicadores.</p>
-          </div>
-        </div>
-
-        <div class="benefit">
-          <mat-icon class="benefit-icon">lightbulb</mat-icon>
-          <div>
-            <h3>Apoio à decisão</h3>
-            <p>Use informações organizadas para apoiar decisões sobre a propriedade.</p>
-          </div>
-        </div>
 
       </div>
+
+      <ul class="benefits-grid">
+
+        <li>
+          <mat-icon>dashboard</mat-icon>
+          <h3>Tudo em um só lugar</h3>
+          <p>Propriedades, rebanhos, animais e pesagens reunidos, sem planilhas espalhadas.</p>
+        </li>
+
+        <li>
+          <mat-icon>search</mat-icon>
+          <h3>Consulta rápida</h3>
+          <p>Encontre um animal pela identificação, raça ou rebanho e filtre por situação.</p>
+        </li>
+
+        <li>
+          <mat-icon>monitor_weight</mat-icon>
+          <h3>Histórico de peso</h3>
+          <p>Cada pesagem fica registrada e mostra como o animal evoluiu.</p>
+        </li>
+
+        <li>
+          <mat-icon>swap_horiz</mat-icon>
+          <h3>Mais de uma fazenda</h3>
+          <p>Alterne entre propriedades sem sair do sistema.</p>
+        </li>
+
+        <li>
+          <mat-icon>smartphone</mat-icon>
+          <h3>Funciona no celular</h3>
+          <p>As telas se adaptam ao tamanho da tela, do computador ao celular.</p>
+        </li>
+
+        <li>
+          <mat-icon>lightbulb</mat-icon>
+          <h3>Decisão com base em dados</h3>
+          <p>Informação organizada para apoiar as decisões da propriedade.</p>
+        </li>
+
+      </ul>
 
     </div>
+
   </section>
 
 
-  <!-- =========================
-       CTA
-  ========================= -->
-  <section class="cta-section">
-    <div class="cta-overlay"></div>
+  <!-- ===== CHAMADA FINAL ===== -->
 
-    <div class="cta-container">
-      <span class="eyebrow eyebrow-light">AgroVision AI</span>
+  <section class="cta" aria-labelledby="cta-title">
 
-      <h2>O futuro da gestão pecuária começa com bons dados.</h2>
+    <div class="cta-media" aria-hidden="true">
+      <img
+        src="assets/images/nelore-hero2.jpg"
+        alt=""
+        width="626"
+        height="352"
+        loading="lazy"
+      />
+    </div>
 
-      <p>Organize as informações da sua produção e tenha uma visão mais clara do seu rebanho.</p>
+    <div class="container cta-inner">
+
+      <h2 id="cta-title">
+        Comece a organizar o seu rebanho hoje.
+      </h2>
+
+      <p>
+        Cadastre sua propriedade e tenha uma visão mais clara de cada
+        rebanho, animal e pesagem.
+      </p>
 
       <div class="cta-actions">
-        <button mat-flat-button class="btn-light" type="button" (click)="irParaCadastro()">
-          Criar minha conta
-        </button>
 
-        <button mat-stroked-button class="btn-outline" type="button" (click)="irParaLogin()">
+        <a routerLink="/cadastro" class="btn btn-gold btn-lg">
+          Criar minha conta
+        </a>
+
+        <a routerLink="/login" class="btn btn-ghost btn-lg">
           Já tenho uma conta
-        </button>
+        </a>
+
       </div>
+
     </div>
+
   </section>
 
 </main>
 
 
-<!-- =========================
-     FOOTER
-========================= -->
+<!-- ===== RODAPÉ ===== -->
+
 <footer class="footer">
 
-  <div class="footer-container">
+  <div class="container footer-grid">
 
     <div class="footer-brand">
-      <a class="logo" href="#inicio">
-        <span class="logo-icon"><mat-icon>eco</mat-icon></span>
-        <span class="logo-text">Agro<span>Vision</span> AI</span>
+
+      <a
+        class="logo"
+        href="#inicio"
+        aria-label="AgroVision AI, voltar ao topo"
+        (click)="scrollToSection($event, 'inicio')"
+      >
+        <span class="logo-mark" aria-hidden="true">
+          <mat-icon>grass</mat-icon>
+        </span>
+        <span class="logo-text">AgroVision</span>
+        <span class="logo-badge">AI</span>
       </a>
 
-      <p>Plataforma inteligente para monitoramento e gestão da pecuária de corte.</p>
+      <p>Plataforma para monitoramento e gestão da pecuária de corte.</p>
+
     </div>
 
-    <div class="footer-column">
+    <nav class="footer-column" aria-label="Plataforma">
       <h4>Plataforma</h4>
       <a href="#plataforma" (click)="scrollToSection($event, 'plataforma')">Recursos</a>
       <a href="#inteligencia" (click)="scrollToSection($event, 'inteligencia')">Inteligência</a>
       <a href="#beneficios" (click)="scrollToSection($event, 'beneficios')">Benefícios</a>
-    </div>
+    </nav>
 
-    <div class="footer-column">
+    <nav class="footer-column" aria-label="Acesso">
       <h4>Acesso</h4>
-      <button type="button" (click)="irParaLogin()">Entrar</button>
-      <button type="button" (click)="irParaCadastro()">Criar conta</button>
-    </div>
+      <a routerLink="/login">Entrar</a>
+      <a routerLink="/cadastro">Criar conta</a>
+    </nav>
 
   </div>
 
-  <div class="footer-bottom">
-    <p>© 2026 AgroVision AI. Todos os direitos reservados.</p>
+  <div class="container footer-bottom">
+    <p>© {{ anoAtual }} AgroVision AI. Todos os direitos reservados.</p>
     <p>Desenvolvido como projeto de TCC.</p>
   </div>
 

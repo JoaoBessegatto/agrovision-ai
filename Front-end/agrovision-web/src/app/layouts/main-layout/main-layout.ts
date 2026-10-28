@@ -1,5 +1,6 @@
 import {
   Component,
+  HostListener,
   inject,
   OnInit,
   signal
@@ -68,6 +69,15 @@ export class MainLayout implements OnInit {
 
     this.fazendaContext
       .carregarFazendas();
+
+  }
+
+
+  // Esc fecha o menu lateral no mobile
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+
+    this.fecharSidebar();
 
   }
 

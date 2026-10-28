@@ -1,6 +1,8 @@
 import {
   Component,
+  computed,
   effect,
+  HostListener,
   inject,
   signal
 } from '@angular/core';
@@ -14,6 +16,8 @@ import {
 } from '@angular/forms';
 
 import { MatIconModule } from '@angular/material/icon';
+
+import { RouterLink } from '@angular/router';
 
 import { finalize } from 'rxjs';
 
@@ -42,7 +46,8 @@ import {
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatIconModule
+    MatIconModule,
+    RouterLink
   ],
 
   templateUrl: './rebanhos.html',
@@ -126,6 +131,16 @@ export class Rebanhos {
       ]
 
     });
+
+
+  readonly totalAnimais =
+    computed(() =>
+      this.rebanhos().reduce(
+        (soma, rebanho) =>
+          soma + rebanho.quantidadeAnimais,
+        0
+      )
+    );
 
 
   constructor() {
@@ -257,6 +272,8 @@ export class Rebanhos {
 
     this.modalAberto.set(true);
 
+    this.focar('nome');
+
   }
 
 
@@ -287,6 +304,8 @@ export class Rebanhos {
 
 
     this.modalAberto.set(true);
+
+    this.focar('nome');
 
   }
 
@@ -586,6 +605,48 @@ export class Rebanhos {
   // ========================================
   // ERRO
   // ========================================
+
+  // Esc fecha o modal aberto
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+
+    if (this.rebanhoParaExcluir()) {
+
+      this.cancelarExclusao();
+
+    } else if (this.modalAberto()) {
+
+      this.fecharModal();
+
+    }
+
+  }
+
+
+  // Percentual do rebanho dentro do plantel da fazenda
+  participacao(
+    rebanho: RebanhoResponse
+  ): number {
+
+    const total = this.totalAnimais();
+
+    return total > 0
+      ? Math.round(
+          (rebanho.quantidadeAnimais / total) * 100
+        )
+      : 0;
+
+  }
+
+
+  private focar(id: string): void {
+
+    setTimeout(() =>
+      document.getElementById(id)?.focus()
+    );
+
+  }
+
 
   limparErro(): void {
 

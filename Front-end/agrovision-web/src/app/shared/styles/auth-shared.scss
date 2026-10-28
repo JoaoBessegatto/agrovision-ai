@@ -1,0 +1,709 @@
+
+// Estilos compartilhados de Login e Cadastro
+
+:host {
+  display: block;
+
+  --forest-900: #11281b;
+  --forest-800: #183625;
+  --green-600: #2f7a4b;
+  --green-700: #286a40;
+  --green-100: #e3efe5;
+  --gold: #e2a82e;
+  --bg: #f0f3ee;
+  --surface: #ffffff;
+  --ink: #17261d;
+  --muted: #5d6c62;
+  --line: #dce3dd;
+  --danger: #b3261e;
+  --danger-bg: #fdf0ee;
+
+  --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  color: var(--ink);
+  font-family: var(--font-body);
+
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+mat-icon {
+  flex-shrink: 0;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+
+// =====================================
+// LAYOUT: FOTO À ESQUERDA, FORMULÁRIO À DIREITA
+// =====================================
+
+.auth-page {
+  min-height: 100vh;
+  min-height: 100svh;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+}
+
+
+// ---------- Painel da foto ----------
+
+.auth-brand {
+  position: relative;
+  overflow: hidden;
+
+  padding: 36px 48px 48px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 40px;
+
+  background: var(--forest-900);
+  color: #ffffff;
+}
+
+.auth-bg {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  object-position: 22% 40%;
+}
+
+// o recorte muda no cadastro para as telas não parecerem idênticas
+.auth-page--cadastro .auth-bg {
+  object-position: 88% 30%;
+}
+
+.auth-shade {
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(10, 24, 16, 0.72) 0%,
+      rgba(10, 24, 16, 0.18) 32%,
+      rgba(10, 24, 16, 0.9) 100%
+    );
+}
+
+.auth-brand > :not(.auth-bg):not(.auth-shade) {
+  position: relative;
+}
+
+.logo {
+  align-self: flex-start;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  border-radius: 10px;
+
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.logo-mark {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background: var(--gold);
+  color: var(--forest-900);
+}
+
+.logo-mark mat-icon {
+  width: 22px;
+  height: 22px;
+  font-size: 22px;
+}
+
+.logo-text {
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.logo-badge {
+  padding: 2px 6px;
+
+  border: 1px solid rgba(226, 168, 46, 0.7);
+  border-radius: 6px;
+
+  color: var(--gold);
+
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.auth-headline {
+  margin: 0;
+
+  max-width: 16ch;
+
+  font-family: var(--font-display);
+  font-size: clamp(32px, 3.6vw, 48px);
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+}
+
+.auth-lead {
+  margin: 18px 0 0;
+
+  max-width: 44ch;
+
+  font-size: 17px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.84);
+}
+
+// passos do cadastro (é uma sequência real: onboarding)
+.auth-steps {
+  margin: 32px 0 0;
+  padding: 0;
+
+  list-style: none;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  counter-reset: passo;
+}
+
+.auth-steps li {
+  position: relative;
+
+  padding-left: 46px;
+
+  counter-increment: passo;
+}
+
+.auth-steps li::before {
+  content: counter(passo);
+
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(226, 168, 46, 0.75);
+  border-radius: 50%;
+
+  color: var(--gold);
+
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.auth-steps strong {
+  display: block;
+
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.auth-steps span {
+  margin-top: 2px;
+
+  display: block;
+
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+
+// ---------- Painel do formulário ----------
+
+.auth-panel {
+  padding: 28px 40px 24px;
+
+  display: flex;
+  flex-direction: column;
+
+  background: var(--surface);
+}
+
+.back-link {
+  align-self: flex-start;
+
+  min-height: 40px;
+  padding: 0 10px 0 6px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  border-radius: 10px;
+
+  color: var(--muted);
+
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.back-link:hover {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.back-link mat-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+}
+
+.auth-main {
+  width: 100%;
+  max-width: 420px;
+
+  margin: auto;
+  padding: 32px 0;
+}
+
+.auth-header h1 {
+  margin: 0;
+
+  font-family: var(--font-display);
+  font-size: clamp(28px, 3vw, 34px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.auth-header p {
+  margin: 10px 0 0;
+
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.auth-copy {
+  margin: 0;
+
+  text-align: center;
+
+  font-size: 13px;
+  color: var(--muted);
+}
+
+
+// =====================================
+// AVISOS
+// =====================================
+
+.alert {
+  margin-top: 24px;
+  padding: 12px 12px 12px 14px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  border: 1px solid;
+  border-radius: 12px;
+
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.alert > div,
+.alert > span {
+  flex: 1;
+}
+
+.alert strong {
+  display: block;
+
+  margin-bottom: 2px;
+}
+
+.alert mat-icon {
+  margin-top: 1px;
+}
+
+.alert-error {
+  border-color: #f0c4bf;
+
+  background: var(--danger-bg);
+  color: #8f2018;
+}
+
+.alert-success {
+  border-color: #b9d8c0;
+
+  background: var(--green-100);
+  color: #1f5a37;
+}
+
+.alert button {
+  width: 32px;
+  height: 32px;
+
+  margin: -4px 0;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: transparent;
+  color: inherit;
+
+  cursor: pointer;
+}
+
+.alert button:hover {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.alert button mat-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+}
+
+
+// =====================================
+// FORMULÁRIO
+// =====================================
+
+form {
+  margin-top: 28px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field label,
+.label-row label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.text-link {
+  border-radius: 6px;
+
+  color: var(--green-700);
+
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+}
+
+.input-wrapper {
+  min-height: 52px;
+  padding: 0 14px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border: 1px solid #c3d0c6;
+  border-radius: 12px;
+
+  background: var(--surface);
+
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input-wrapper:hover {
+  border-color: #9fb3a5;
+}
+
+.input-wrapper:focus-within {
+  border-color: var(--green-600);
+
+  box-shadow: 0 0 0 3px rgba(47, 122, 75, 0.2);
+}
+
+.input-wrapper.invalid {
+  border-color: var(--danger);
+}
+
+.input-wrapper.invalid:focus-within {
+  box-shadow: 0 0 0 3px rgba(179, 38, 30, 0.18);
+}
+
+.input-wrapper > mat-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+
+  color: var(--muted);
+}
+
+.input-wrapper input {
+  flex: 1;
+  min-width: 0;
+  height: 50px;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+  color: var(--ink);
+
+  font-family: inherit;
+  font-size: 16px; // evita zoom automático no iOS
+}
+
+.input-wrapper input::placeholder {
+  color: #8b998f;
+}
+
+.toggle-password {
+  width: 40px;
+  height: 40px;
+
+  margin-right: -8px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  border-radius: 10px;
+
+  background: transparent;
+  color: var(--muted);
+
+  cursor: pointer;
+}
+
+.toggle-password:hover {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.toggle-password mat-icon {
+  width: 22px;
+  height: 22px;
+  font-size: 22px;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  font-size: 13px;
+  color: var(--danger);
+}
+
+.field-error mat-icon {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+}
+
+.btn-submit {
+  min-height: 54px;
+
+  margin-top: 4px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  border: 0;
+  border-radius: 12px;
+
+  background: var(--green-600);
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: background-color 0.15s;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: var(--green-700);
+}
+
+.btn-submit:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.btn-submit mat-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.auth-alt {
+  margin: 24px 0 0;
+
+  text-align: center;
+
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.auth-alt a {
+  margin-left: 4px;
+
+  border-radius: 6px;
+
+  color: var(--green-700);
+
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.auth-alt a:hover {
+  text-decoration: underline;
+}
+
+
+// =====================================
+// RESPONSIVO
+// =====================================
+
+// no celular a foto vira uma faixa com o logo
+@media (max-width: 960px) {
+
+  .auth-page {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .auth-brand {
+    padding: 20px 24px;
+
+    min-height: 112px;
+
+    justify-content: center;
+  }
+
+  .auth-brand .auth-headline,
+  .auth-brand .auth-lead,
+  .auth-brand .auth-steps {
+    display: none;
+  }
+
+  .auth-bg,
+  .auth-page--cadastro .auth-bg {
+    object-position: 50% 40%;
+  }
+
+  .auth-shade {
+    background: rgba(10, 24, 16, 0.62);
+  }
+
+  .auth-panel {
+    padding: 12px 24px 20px;
+  }
+
+  .auth-main {
+    padding: 16px 0 28px;
+  }
+
+}
+
+@media (max-width: 420px) {
+
+  .auth-panel {
+    padding-inline: 20px;
+  }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  * {
+    transition: none !important;
+  }
+
+  .spinner {
+    animation-duration: 2s;
+  }
+
+}

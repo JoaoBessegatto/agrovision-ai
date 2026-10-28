@@ -1,431 +1,112 @@
-<div class="home-page">
+<div class="home">
 
-  <!-- =====================================
-       CABEÇALHO
-  ====================================== -->
+  <!-- ===== BANNER DA FAZENDA ===== -->
 
-  <section class="page-header">
+  @if (fazendaContext.fazendaAtiva(); as fazenda) {
 
-    <div>
+    <section class="hero" aria-labelledby="hero-title">
 
-      <span class="eyebrow">
-        VISÃO GERAL
-      </span>
+      <div class="hero-top">
 
-      <h1>
-        Bem-vindo ao AgroVision
-      </h1>
-
-
-      @if (
-        fazendaContext.fazendaAtiva();
-        as fazenda
-      ) {
-
-        <p>
-          Acompanhando
-          <strong>
-            {{ fazenda.nome }}
-          </strong>
-
-          ·
-
-          {{ fazenda.cidade }} -
-          {{ fazenda.estado }}
+        <p class="hero-greeting">
+          {{ saudacao }}@if (nomeUsuario) {, {{ nomeUsuario }}}
         </p>
 
-      } @else {
+        <time class="hero-date">{{ dataHoje }}</time>
 
-        <p>
-          Selecione uma propriedade
-          para começar.
+      </div>
+
+      <div class="hero-main">
+
+        <div class="hero-title">
+
+          <h1 id="hero-title">{{ fazenda.nome }}</h1>
+
+          <ul class="hero-facts">
+
+            <li>
+              <mat-icon>location_on</mat-icon>
+              {{ fazenda.cidade }} - {{ fazenda.estado }}
+            </li>
+
+            <li>
+              <mat-icon>square_foot</mat-icon>
+              {{ fazenda.areaTotalHa }} ha
+            </li>
+
+            <li>
+              <mat-icon>grass</mat-icon>
+              {{ fazenda.exploracao }}
+            </li>
+
+          </ul>
+
+        </div>
+
+        <div class="hero-actions">
+
+          <a routerLink="/app/rebanhos" class="btn btn-primary">
+            <mat-icon>add</mat-icon>
+            Novo rebanho
+          </a>
+
+          <a routerLink="/app/fazendas" class="btn btn-ghost">
+            Gerenciar propriedade
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  } @else if (fazendaContext.loading()) {
+
+    <section class="hero" aria-busy="true">
+
+      <div class="hero-main">
+
+        <div class="hero-title">
+          <h1>Carregando propriedade...</h1>
+        </div>
+
+      </div>
+
+    </section>
+
+  } @else {
+
+    <section class="hero" aria-labelledby="hero-title">
+
+      <div class="hero-top">
+
+        <p class="hero-greeting">
+          {{ saudacao }}@if (nomeUsuario) {, {{ nomeUsuario }}}
         </p>
 
-      }
-
-    </div>
-
-
-    <a
-      routerLink="/app/rebanhos"
-      class="primary-action"
-    >
-
-      <mat-icon>
-        add
-      </mat-icon>
-
-      Novo rebanho
-
-    </a>
-
-  </section>
-
-
-  <!-- =====================================
-       MÉTRICAS
-  ====================================== -->
-
-  <section class="metrics">
-
-    <article class="metric-card">
-
-      <div class="metric-icon">
-
-        <mat-icon>
-          groups
-        </mat-icon>
+        <time class="hero-date">{{ dataHoje }}</time>
 
       </div>
 
-      <div>
+      <div class="hero-main">
 
-        <span>
-          Rebanhos
-        </span>
+        <div class="hero-title">
 
-        <strong>
-          —
-        </strong>
+          <h1 id="hero-title">Nenhuma propriedade selecionada</h1>
 
-        <small>
-          Fazenda selecionada
-        </small>
-
-      </div>
-
-    </article>
-
-
-    <article class="metric-card">
-
-      <div class="metric-icon">
-
-        <mat-icon>
-          pets
-        </mat-icon>
-
-      </div>
-
-      <div>
-
-        <span>
-          Animais
-        </span>
-
-        <strong>
-          —
-        </strong>
-
-        <small>
-          Total cadastrado
-        </small>
-
-      </div>
-
-    </article>
-
-
-    <article class="metric-card">
-
-      <div class="metric-icon">
-
-        <mat-icon>
-          monitor_weight
-        </mat-icon>
-
-      </div>
-
-      <div>
-
-        <span>
-          Pesagens
-        </span>
-
-        <strong>
-          —
-        </strong>
-
-        <small>
-          Registros realizados
-        </small>
-
-      </div>
-
-    </article>
-
-
-    <article class="metric-card">
-
-      <div class="metric-icon">
-
-        <mat-icon>
-          badge
-        </mat-icon>
-
-      </div>
-
-      <div>
-
-        <span>
-          Funcionários
-        </span>
-
-        <strong>
-          —
-        </strong>
-
-        <small>
-          Vinculados à propriedade
-        </small>
-
-      </div>
-
-    </article>
-
-  </section>
-
-
-  <!-- =====================================
-       ACESSO RÁPIDO
-  ====================================== -->
-
-  <section class="section">
-
-    <div class="section-header">
-
-      <div>
-
-        <h2>
-          Acesso rápido
-        </h2>
-
-        <p>
-          Principais áreas do AgroVision.
-        </p>
-
-      </div>
-
-    </div>
-
-
-    <div class="quick-grid">
-
-      <a
-        routerLink="/app/rebanhos"
-        class="quick-card"
-      >
-
-        <div class="quick-icon">
-
-          <mat-icon>
-            groups
-          </mat-icon>
-
-        </div>
-
-        <div>
-
-          <strong>
-            Rebanhos
-          </strong>
-
-          <p>
-            Organize os animais
-            em lotes e rebanhos.
+          <p class="hero-empty">
+            Escolha uma fazenda no topo da página
+            ou cadastre a primeira para começar.
           </p>
 
         </div>
 
-        <mat-icon class="arrow">
-          arrow_forward
-        </mat-icon>
-
-      </a>
-
-
-      <a
-        routerLink="/app/animais"
-        class="quick-card"
-      >
-
-        <div class="quick-icon">
-
-          <mat-icon>
-            pets
-          </mat-icon>
-
-        </div>
-
-        <div>
-
-          <strong>
-            Animais
-          </strong>
-
-          <p>
-            Consulte e gerencie os
-            animais da propriedade.
-          </p>
-
-        </div>
-
-        <mat-icon class="arrow">
-          arrow_forward
-        </mat-icon>
-
-      </a>
-
-
-      <a
-        routerLink="/app/pesagens"
-        class="quick-card"
-      >
-
-        <div class="quick-icon">
-
-          <mat-icon>
-            monitor_weight
-          </mat-icon>
-
-        </div>
-
-        <div>
-
-          <strong>
-            Pesagens
-          </strong>
-
-          <p>
-            Registre e acompanhe a
-            evolução de peso.
-          </p>
-
-        </div>
-
-        <mat-icon class="arrow">
-          arrow_forward
-        </mat-icon>
-
-      </a>
-
-
-      <a
-        routerLink="/app/dashboard"
-        class="quick-card"
-      >
-
-        <div class="quick-icon">
-
-          <mat-icon>
-            dashboard
-          </mat-icon>
-
-        </div>
-
-        <div>
-
-          <strong>
-            Dashboard
-          </strong>
-
-          <p>
-            Visualize indicadores
-            da propriedade.
-          </p>
-
-        </div>
-
-        <mat-icon class="arrow">
-          arrow_forward
-        </mat-icon>
-
-      </a>
-
-    </div>
-
-  </section>
-
-
-  <!-- =====================================
-       PROPRIEDADE
-  ====================================== -->
-
-  @if (
-    fazendaContext.fazendaAtiva();
-    as fazenda
-  ) {
-
-    <section class="farm-summary">
-
-      <div class="farm-summary-header">
-
-        <div>
-
-          <span class="eyebrow">
-            PROPRIEDADE ATIVA
-          </span>
-
-          <h2>
-            {{ fazenda.nome }}
-          </h2>
-
-        </div>
-
-
-        <a
-          routerLink="/app/fazendas"
-        >
-          Gerenciar propriedade
-
-          <mat-icon>
-            arrow_forward
-          </mat-icon>
-        </a>
-
-      </div>
-
-
-      <div class="farm-info">
-
-        <div>
-
-          <span>
-            Localização
-          </span>
-
-          <strong>
-            {{ fazenda.cidade }} -
-            {{ fazenda.estado }}
-          </strong>
-
-        </div>
-
-
-        <div>
-
-          <span>
-            Área total
-          </span>
-
-          <strong>
-            {{ fazenda.areaTotalHa }} ha
-          </strong>
-
-        </div>
-
-
-        <div>
-
-          <span>
-            Exploração
-          </span>
-
-          <strong>
-            {{
-              fazenda.exploracao
-            }}
-          </strong>
+        <div class="hero-actions">
+
+          <a routerLink="/app/fazendas" class="btn btn-primary">
+            <mat-icon>add</mat-icon>
+            Cadastrar propriedade
+          </a>
 
         </div>
 
@@ -434,5 +115,111 @@
     </section>
 
   }
+
+
+  <!-- ===== RESUMO (CADA ITEM ABRE SUA TELA) ===== -->
+
+  <nav class="stats" aria-label="Resumo da propriedade">
+
+    <a routerLink="/app/rebanhos" class="stat">
+      <mat-icon class="stat-icon">groups</mat-icon>
+      <span class="stat-label">Rebanhos</span>
+      <strong class="stat-value">—</strong>
+      <small class="stat-hint">Na fazenda selecionada</small>
+      <mat-icon class="stat-go">north_east</mat-icon>
+    </a>
+
+    <a routerLink="/app/animais" class="stat">
+      <mat-icon class="stat-icon">pets</mat-icon>
+      <span class="stat-label">Animais</span>
+      <strong class="stat-value">—</strong>
+      <small class="stat-hint">Total cadastrado</small>
+      <mat-icon class="stat-go">north_east</mat-icon>
+    </a>
+
+    <a routerLink="/app/pesagens" class="stat">
+      <mat-icon class="stat-icon">monitor_weight</mat-icon>
+      <span class="stat-label">Pesagens</span>
+      <strong class="stat-value">—</strong>
+      <small class="stat-hint">Registros realizados</small>
+      <mat-icon class="stat-go">north_east</mat-icon>
+    </a>
+
+    <a routerLink="/app/funcionarios" class="stat">
+      <mat-icon class="stat-icon">badge</mat-icon>
+      <span class="stat-label">Funcionários</span>
+      <strong class="stat-value">—</strong>
+      <small class="stat-hint">Vinculados à propriedade</small>
+      <mat-icon class="stat-go">north_east</mat-icon>
+    </a>
+
+  </nav>
+
+
+  <!-- ===== ATALHOS ===== -->
+
+  <section class="shortcuts" aria-labelledby="shortcuts-title">
+
+    <h2 id="shortcuts-title">O que você quer fazer hoje?</h2>
+
+    <div class="shortcut-grid">
+
+      <a routerLink="/app/pesagens" class="shortcut">
+        <span class="shortcut-icon"><mat-icon>monitor_weight</mat-icon></span>
+        <span class="shortcut-text">
+          <strong>Registrar pesagem</strong>
+          <span>Anote o peso e acompanhe a evolução.</span>
+        </span>
+        <mat-icon class="shortcut-go">arrow_forward</mat-icon>
+      </a>
+
+      <a routerLink="/app/animais" class="shortcut">
+        <span class="shortcut-icon"><mat-icon>pets</mat-icon></span>
+        <span class="shortcut-text">
+          <strong>Consultar animais</strong>
+          <span>Busque, edite e cadastre animais.</span>
+        </span>
+        <mat-icon class="shortcut-go">arrow_forward</mat-icon>
+      </a>
+
+      <a routerLink="/app/rebanhos" class="shortcut">
+        <span class="shortcut-icon"><mat-icon>groups</mat-icon></span>
+        <span class="shortcut-text">
+          <strong>Organizar rebanhos</strong>
+          <span>Separe os animais em lotes.</span>
+        </span>
+        <mat-icon class="shortcut-go">arrow_forward</mat-icon>
+      </a>
+
+      <a routerLink="/app/dashboard" class="shortcut">
+        <span class="shortcut-icon"><mat-icon>dashboard</mat-icon></span>
+        <span class="shortcut-text">
+          <strong>Ver indicadores</strong>
+          <span>Acompanhe o desempenho da fazenda.</span>
+        </span>
+        <mat-icon class="shortcut-go">arrow_forward</mat-icon>
+      </a>
+
+      <a routerLink="/app/relatorios" class="shortcut">
+        <span class="shortcut-icon"><mat-icon>assessment</mat-icon></span>
+        <span class="shortcut-text">
+          <strong>Gerar relatório</strong>
+          <span>Consulte resultados por período.</span>
+        </span>
+        <mat-icon class="shortcut-go">arrow_forward</mat-icon>
+      </a>
+
+      <a routerLink="/app/funcionarios" class="shortcut">
+        <span class="shortcut-icon"><mat-icon>badge</mat-icon></span>
+        <span class="shortcut-text">
+          <strong>Gerenciar equipe</strong>
+          <span>Veja quem trabalha na propriedade.</span>
+        </span>
+        <mat-icon class="shortcut-go">arrow_forward</mat-icon>
+      </a>
+
+    </div>
+
+  </section>
 
 </div>

@@ -2,6 +2,7 @@ import {
   Component,
   computed,
   effect,
+  HostListener,
   inject,
   signal
 } from '@angular/core';
@@ -28,7 +29,7 @@ import {
 import {
   FazendaContextService
 } from '../../core/fazenda/services/fazenda-context.service';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   AnimalService
 } from '../../core/animal/services/animal.service';
@@ -52,6 +53,13 @@ import {
 import {
   RebanhoResponse
 } from '../../core/rebanho/models/rebanho-response';
+
+
+type CampoOrdenacao =
+  'identificacao' | 'pesoAtual' | 'idadeMeses';
+
+type DirecaoOrdenacao =
+  'asc' | 'desc';
 
 
 @Component({
@@ -82,6 +90,17 @@ export class Animais {
 
   readonly fazendaContext =
     inject(FazendaContextService);
+
+  private readonly route =
+    inject(ActivatedRoute);
+
+  /*
+   * Vindo de "Ver animais" na tela de Rebanhos:
+   * /app/animais?rebanho=<id>
+   */
+  private rebanhoInicial: string | null =
+    this.route.snapshot.queryParamMap
+      .get('rebanho');
 
 
   // ========================================
@@ -121,6 +140,91 @@ export class Animais {
     signal('');
 
 
+  ordenacao =
+    signal<{
+      campo: CampoOrdenacao;
+      direcao: DirecaoOrdenacao;
+    }>({
+      campo: 'identificacao',
+      direcao: 'asc'
+    });
+
+
+  readonly situacoes = [
+    { valor: '', rotulo: 'Todos' },
+    { valor: 'ATIVO', rotulo: 'Ativos' },
+    { valor: 'INATIVO', rotulo: 'Inativos' },
+    { valor: 'VENDIDO', rotulo: 'Vendidos' },
+    { valor: 'MORTO', rotulo: 'Mortos' }
+  ];
+
+
+  readonly opcoesOrdenacao = [
+    { valor: 'identificacao:asc', rotulo: 'Identificação (A–Z)' },
+    { valor: 'pesoAtual:desc', rotulo: 'Mais pesados' },
+    { valor: 'pesoAtual:asc', rotulo: 'Mais leves' },
+    { valor: 'idadeMeses:desc', rotulo: 'Mais velhos' },
+    { valor: 'idadeMeses:asc', rotulo: 'Mais novos' }
+  ];
+
+
+  readonly valorOrdenacao =
+    computed(() => {
+
+      const { campo, direcao } =
+        this.ordenacao();
+
+      return `${campo}:${direcao}`;
+
+    });
+
+
+  readonly resumo =
+    computed(() => {
+
+      const lista = this.animais();
+
+      const ativos =
+        lista.filter(
+          animal => animal.situacao === 'ATIVO'
+        );
+
+      const pesoMedio =
+        ativos.length > 0
+          ? ativos.reduce(
+              (soma, animal) =>
+                soma + animal.pesoAtual,
+              0
+            ) / ativos.length
+          : null;
+
+      return {
+        total: lista.length,
+        ativos: ativos.length,
+        pesoMedio
+      };
+
+    });
+
+
+  readonly contagemSituacao =
+    computed(() => {
+
+      const contagem:
+        Record<string, number> = {};
+
+      for (const animal of this.animais()) {
+
+        contagem[animal.situacao] =
+          (contagem[animal.situacao] ?? 0) + 1;
+
+      }
+
+      return contagem;
+
+    });
+
+
   readonly animaisFiltrados =
     computed(() => {
 
@@ -136,6 +240,13 @@ export class Animais {
         this.filtroSituacao();
 
 
+      const { campo, direcao } =
+        this.ordenacao();
+
+      const fator =
+        direcao === 'asc' ? 1 : -1;
+
+
       return this.animais()
         .filter(animal => {
 
@@ -145,6 +256,9 @@ export class Animais {
               .toLowerCase()
               .includes(busca) ||
             animal.raca
+              .toLowerCase()
+              .includes(busca) ||
+            (animal.rebanhoNome ?? '')
               .toLowerCase()
               .includes(busca);
 
@@ -165,7 +279,12 @@ export class Animais {
             correspondeSituacao
           );
 
-        });
+        })
+
+        .sort(
+          (a, b) =>
+            fator * this.comparar(a, b, campo)
+        );
 
     });
 
@@ -179,7 +298,10 @@ export class Animais {
 
 
   readonly hoje =
-    new Date()
+    new Date(
+      Date.now() -
+      new Date().getTimezoneOffset() * 60000
+    )
       .toISOString()
       .split('T')[0];
 
@@ -332,11 +454,23 @@ export class Animais {
 
           /*
            * Os filtros são zerados quando
-           * mudamos de propriedade.
-           */
+           * mudamos de propriedade. */
           this.busca.set('');
 
-          this.filtroRebanho.set('');
+          const rebanhoDaUrl =
+            this.rebanhoInicial;
+
+          this.rebanhoInicial = null;
+
+          this.filtroRebanho.set(
+            rebanhoDaUrl &&
+            response.rebanhos.some(
+              rebanho =>
+                rebanho.id === rebanhoDaUrl
+            )
+              ? rebanhoDaUrl
+              : ''
+          );
 
           this.filtroSituacao.set('');
 
@@ -482,6 +616,8 @@ export class Animais {
 
     this.modalAberto.set(true);
 
+    this.focar('identificacao');
+
   }
 
 
@@ -599,6 +735,20 @@ export class Animais {
               ...lista,
               animal
             ]
+          );
+
+
+          this.rebanhos.update(
+            lista =>
+              lista.map(rebanho =>
+                rebanho.id === animal.rebanhoId
+                  ? {
+                      ...rebanho,
+                      quantidadeAnimais:
+                        rebanho.quantidadeAnimais + 1
+                    }
+                  : rebanho
+              )
           );
 
 
@@ -807,6 +957,148 @@ export class Animais {
 
 
     return `${anos}a ${mesesRestantes}m`;
+
+  }
+
+
+  // Esc fecha o modal
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+
+    if (this.modalAberto()) {
+
+      this.fecharModal();
+
+    }
+
+  }
+
+
+  // ========================================
+  // ORDENAÇÃO E CHIPS
+  // ========================================
+
+  ordenar(
+    campo: CampoOrdenacao
+  ): void {
+
+    this.ordenacao.update(atual => ({
+
+      campo,
+
+      direcao:
+        atual.campo === campo &&
+        atual.direcao === 'asc'
+          ? 'desc'
+          : 'asc'
+
+    }));
+
+  }
+
+
+  ordenarPorSelect(
+    event: Event
+  ): void {
+
+    const valor =
+      (event.target as HTMLSelectElement)
+        .value;
+
+    const [campo, direcao] =
+      valor.split(':') as [
+        CampoOrdenacao,
+        DirecaoOrdenacao
+      ];
+
+    this.ordenacao.set({
+      campo,
+      direcao
+    });
+
+  }
+
+
+  ariaSort(
+    campo: CampoOrdenacao
+  ): 'ascending' | 'descending' | 'none' {
+
+    const atual = this.ordenacao();
+
+    if (atual.campo !== campo) {
+      return 'none';
+    }
+
+    return atual.direcao === 'asc'
+      ? 'ascending'
+      : 'descending';
+
+  }
+
+
+  iconeOrdem(
+    campo: CampoOrdenacao
+  ): string {
+
+    const atual = this.ordenacao();
+
+    if (atual.campo !== campo) {
+      return 'unfold_more';
+    }
+
+    return atual.direcao === 'asc'
+      ? 'arrow_upward'
+      : 'arrow_downward';
+
+  }
+
+
+  definirSituacao(
+    valor: string
+  ): void {
+
+    this.filtroSituacao.set(valor);
+
+  }
+
+
+  contar(
+    situacao: string
+  ): number {
+
+    return situacao
+      ? this.contagemSituacao()[situacao] ?? 0
+      : this.animais().length;
+
+  }
+
+
+  private comparar(
+    a: AnimalResponse,
+    b: AnimalResponse,
+    campo: CampoOrdenacao
+  ): number {
+
+    if (campo === 'identificacao') {
+
+      return a.identificacao.localeCompare(
+        b.identificacao,
+        'pt-BR',
+        { numeric: true }
+      );
+
+    }
+
+    return a[campo] - b[campo];
+
+  }
+
+
+  private focar(id: string): void {
+
+    setTimeout(() =>
+      document.getElementById(id)?.focus()
+    );
 
   }
 
