@@ -9,7 +9,7 @@
       <div class="hero-top">
 
         <p class="hero-greeting">
-          {{ saudacao }}@if (nomeUsuario) {, {{ nomeUsuario }}}
+          {{ saudacao }}@if (nomeUsuario()) {, {{ nomeUsuario() }}}
         </p>
 
         <time class="hero-date">{{ dataHoje }}</time>
@@ -81,7 +81,7 @@
       <div class="hero-top">
 
         <p class="hero-greeting">
-          {{ saudacao }}@if (nomeUsuario) {, {{ nomeUsuario }}}
+          {{ saudacao }}@if (nomeUsuario()) {, {{ nomeUsuario() }}}
         </p>
 
         <time class="hero-date">{{ dataHoje }}</time>
@@ -124,7 +124,7 @@
     <a routerLink="/app/rebanhos" class="stat">
       <mat-icon class="stat-icon">groups</mat-icon>
       <span class="stat-label">Rebanhos</span>
-      <strong class="stat-value">—</strong>
+      <strong class="stat-value">{{ totalRebanhos() ?? '—' }}</strong>
       <small class="stat-hint">Na fazenda selecionada</small>
       <mat-icon class="stat-go">north_east</mat-icon>
     </a>
@@ -132,29 +132,77 @@
     <a routerLink="/app/animais" class="stat">
       <mat-icon class="stat-icon">pets</mat-icon>
       <span class="stat-label">Animais</span>
-      <strong class="stat-value">—</strong>
+      <strong class="stat-value">{{ totalAnimais() ?? '—' }}</strong>
       <small class="stat-hint">Total cadastrado</small>
       <mat-icon class="stat-go">north_east</mat-icon>
     </a>
 
-    <a routerLink="/app/pesagens" class="stat">
+    <a href="#ultimas-pesagens" (click)="$event.preventDefault(); pesagensSection.scrollIntoView({ behavior: 'smooth' })" class="stat">
       <mat-icon class="stat-icon">monitor_weight</mat-icon>
       <span class="stat-label">Pesagens</span>
-      <strong class="stat-value">—</strong>
+      <strong class="stat-value">{{ totalPesagens() ?? '—' }}</strong>
       <small class="stat-hint">Registros realizados</small>
       <mat-icon class="stat-go">north_east</mat-icon>
     </a>
 
-    <a routerLink="/app/funcionarios" class="stat">
+    <a href="#equipe" (click)="$event.preventDefault(); equipeSection.scrollIntoView({ behavior: 'smooth' })" class="stat">
       <mat-icon class="stat-icon">badge</mat-icon>
       <span class="stat-label">Funcionários</span>
-      <strong class="stat-value">—</strong>
+      <strong class="stat-value">{{ totalFuncionarios() ?? '—' }}</strong>
       <small class="stat-hint">Vinculados à propriedade</small>
       <mat-icon class="stat-go">north_east</mat-icon>
     </a>
 
   </nav>
 
+
+  @for (erro of erros(); track erro) {
+    <p role="alert">{{ erro }}</p>
+  }
+
+  <section #pesagensSection id="ultimas-pesagens" class="shortcuts" aria-labelledby="pesagens-title" [attr.aria-busy]="carregandoPesagens()">
+    <h2 id="pesagens-title">Últimas pesagens</h2>
+    @if (carregandoPesagens()) {
+      <p role="status">Carregando pesagens...</p>
+    } @else if (!fazendaContext.fazendaAtivaId()) {
+      <p>Selecione uma fazenda para consultar as pesagens.</p>
+    } @else if (totalPesagens() !== null) {
+      <div class="shortcut-grid">
+        @for (pesagem of ultimasPesagens(); track pesagem.id) {
+          <a class="shortcut" [routerLink]="['/app/animais', pesagem.animalId]">
+            <mat-icon>monitor_weight</mat-icon>
+            <span class="shortcut-text">
+              <strong>{{ pesagem.identificacaoAnimal }} · {{ pesagem.pesoKg | number:'1.0-2':'pt-BR' }} kg</strong>
+              <span>{{ pesagem.dataRegistro | date:'dd/MM/yyyy HH:mm' }} · {{ pesagem.usuario }}</span>
+            </span>
+          </a>
+        } @empty {
+          <p>Nenhuma pesagem registrada nesta fazenda.</p>
+        }
+      </div>
+    }
+  </section>
+
+  <section #equipeSection id="equipe" class="shortcuts" aria-labelledby="equipe-title">
+    <h2 id="equipe-title">Funcionários da propriedade</h2>
+    @if (!fazendaContext.fazendaAtivaId()) {
+      <p>Selecione uma fazenda para consultar a equipe.</p>
+    } @else if (totalFuncionarios() !== null) {
+      <div class="shortcut-grid">
+        @for (funcionario of funcionarios(); track $index) {
+          <div class="shortcut">
+            <mat-icon>badge</mat-icon>
+            <span class="shortcut-text">
+              <strong>{{ funcionario.nomeUsuario }}</strong>
+              <span>{{ funcionario.cargo }}</span>
+            </span>
+          </div>
+        } @empty {
+          <p>Nenhum funcionário vinculado a esta fazenda.</p>
+        }
+      </div>
+    }
+  </section>
 
   <!-- ===== ATALHOS ===== -->
 
@@ -164,7 +212,7 @@
 
     <div class="shortcut-grid">
 
-      <a routerLink="/app/pesagens" class="shortcut">
+      <a routerLink="/app/animais" class="shortcut">
         <span class="shortcut-icon"><mat-icon>monitor_weight</mat-icon></span>
         <span class="shortcut-text">
           <strong>Registrar pesagem</strong>
@@ -209,10 +257,10 @@
         <mat-icon class="shortcut-go">arrow_forward</mat-icon>
       </a>
 
-      <a routerLink="/app/funcionarios" class="shortcut">
+      <a href="#equipe" (click)="$event.preventDefault(); equipeSection.scrollIntoView({ behavior: 'smooth' })" class="shortcut">
         <span class="shortcut-icon"><mat-icon>badge</mat-icon></span>
         <span class="shortcut-text">
-          <strong>Gerenciar equipe</strong>
+          <strong>Consultar equipe</strong>
           <span>Veja quem trabalha na propriedade.</span>
         </span>
         <mat-icon class="shortcut-go">arrow_forward</mat-icon>

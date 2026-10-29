@@ -1,161 +1,141 @@
-<div class="page">
+<div class="onb-page">
 
-  <!-- =====================================
-       HEADER
-  ====================================== -->
   <header class="topbar">
 
     <a
       routerLink="/onboarding"
       class="logo"
+      aria-label="AgroVision AI, voltar para a configuração"
     >
-      🌱
-      <strong>
-        AgroVision AI
-      </strong>
+      <span class="logo-mark" aria-hidden="true">
+        <mat-icon>grass</mat-icon>
+      </span>
+      <span class="logo-text">AgroVision</span>
+      <span class="logo-badge">AI</span>
     </a>
 
-
-    <span class="step-indicator">
-      Etapa 2 de 3
-    </span>
+    <button type="button" class="logout-button" (click)="sair()">
+      <mat-icon>logout</mat-icon>
+      Sair
+    </button>
 
   </header>
 
 
-  <!-- =====================================
-       CONTEÚDO
-  ====================================== -->
+  <div class="stepper-bar">
+
+    <ol class="stepper" aria-label="Progresso da configuração">
+
+      <li class="done">
+        <span class="dot"><mat-icon>check</mat-icon></span>
+        <span class="name">Conta</span>
+      </li>
+
+      <li class="current" aria-current="step">
+        <span class="dot">2</span>
+        <span class="name">Perfil</span>
+      </li>
+
+      <li>
+        <span class="dot">3</span>
+        <span class="name">Fazenda</span>
+      </li>
+
+    </ol>
+
+  </div>
+
+
   <main class="container">
 
-    <button
-      type="button"
-      class="back-button"
-      (click)="voltar()"
-    >
-
-      <mat-icon>
-        arrow_back
-      </mat-icon>
-
+    <button type="button" class="back-button" (click)="voltar()">
+      <mat-icon>arrow_back</mat-icon>
       Voltar
-
     </button>
 
 
     <section class="header-content">
 
-      <span class="label">
-        PERFIL DE PRODUTOR
-      </span>
-
-      <h1>
-        Conte um pouco sobre você
-      </h1>
+      <h1>Conte um pouco sobre você</h1>
 
       <p>
-        Essas informações serão utilizadas
-        para identificar o responsável pelas
-        propriedades cadastradas no AgroVision.
+        Essas informações identificam o responsável pelas propriedades
+        cadastradas no AgroVision.
       </p>
 
     </section>
 
 
-    <!-- =====================================
-         ERRO
-    ====================================== -->
     @if (errorMessage()) {
 
-      <div class="alert-error">
+      <div class="alert-error" role="alert">
 
-        <mat-icon>
-          error_outline
-        </mat-icon>
+        <mat-icon>error_outline</mat-icon>
 
-        <span>
-          {{ errorMessage() }}
-        </span>
+        <span>{{ errorMessage() }}</span>
 
       </div>
 
     }
 
 
-    <!-- =====================================
-         FORMULÁRIO
-    ====================================== -->
     <form
       class="form-card"
       [formGroup]="produtorForm"
       (ngSubmit)="onSubmit()"
     >
 
+      <div class="form-grid">
 
-      <!-- NOME -->
-      <div class="field full">
+        <!-- NOME -->
 
-        <label for="nomeCompleto">
-          Nome completo
-        </label>
+        <div class="field full">
 
-        <div
-          class="input-wrapper"
-          [class.invalid]="
-            produtorForm.controls.nomeCompleto.invalid &&
-            produtorForm.controls.nomeCompleto.touched
-          "
-        >
+          <label for="nomeCompleto">Nome completo</label>
 
-          <mat-icon>
-            person_outline
-          </mat-icon>
-
-          <input
-            id="nomeCompleto"
-            type="text"
-            formControlName="nomeCompleto"
-            placeholder="Digite seu nome completo"
-            autocomplete="name"
+          <div
+            class="input-wrapper"
+            [class.invalid]="
+              produtorForm.controls.nomeCompleto.invalid &&
+              produtorForm.controls.nomeCompleto.touched
+            "
           >
+
+            <mat-icon>person_outline</mat-icon>
+
+            <input
+              id="nomeCompleto"
+              type="text"
+              formControlName="nomeCompleto"
+              placeholder="Digite seu nome completo"
+              autocomplete="name"
+              autofocus
+            >
+
+          </div>
+
+          @if (produtorForm.controls.nomeCompleto.touched) {
+
+            @if (produtorForm.controls.nomeCompleto.hasError('required')) {
+
+              <small class="field-error">Informe o seu nome completo.</small>
+
+            } @else if (produtorForm.controls.nomeCompleto.hasError('minlength')) {
+
+              <small class="field-error">Informe um nome válido.</small>
+
+            }
+
+          }
 
         </div>
 
 
-        @if (
-          produtorForm.controls.nomeCompleto.touched &&
-          produtorForm.controls.nomeCompleto.hasError('required')
-        ) {
+        <!-- CPF / CNPJ -->
 
-          <small class="field-error">
-            O nome completo é obrigatório.
-          </small>
-
-        }
-
-
-        @if (
-          produtorForm.controls.nomeCompleto.touched &&
-          produtorForm.controls.nomeCompleto.hasError('minlength')
-        ) {
-
-          <small class="field-error">
-            Informe um nome válido.
-          </small>
-
-        }
-
-      </div>
-
-
-      <div class="row">
-
-        <!-- CPF/CNPJ -->
         <div class="field">
 
-          <label for="cpfOrCnpj">
-            CPF ou CNPJ
-          </label>
+          <label for="cpfOrCnpj">CPF ou CNPJ</label>
 
           <div
             class="input-wrapper"
@@ -165,29 +145,32 @@
             "
           >
 
-            <mat-icon>
-              badge
-            </mat-icon>
+            <mat-icon>badge</mat-icon>
 
             <input
               id="cpfOrCnpj"
               type="text"
+              inputmode="numeric"
               formControlName="cpfOrCnpj"
               placeholder="000.000.000-00"
               maxlength="18"
+              autocomplete="off"
               (input)="formatCpfCnpj($event)"
             >
 
           </div>
 
-
           @if (
-            produtorForm.controls.cpfOrCnpj.invalid &&
-            produtorForm.controls.cpfOrCnpj.touched
+            produtorForm.controls.cpfOrCnpj.touched &&
+            produtorForm.controls.cpfOrCnpj.invalid
           ) {
 
             <small class="field-error">
-              Informe seu CPF ou CNPJ.
+              {{
+                produtorForm.controls.cpfOrCnpj.hasError('required')
+                  ? 'Informe o seu CPF ou CNPJ.'
+                  : 'Digite o CPF (11 dígitos) ou o CNPJ (14 dígitos) completo.'
+              }}
             </small>
 
           }
@@ -195,12 +178,11 @@
         </div>
 
 
-        <!-- DATA -->
+        <!-- DATA DE NASCIMENTO -->
+
         <div class="field">
 
-          <label for="dataNascimento">
-            Data de nascimento
-          </label>
+          <label for="dataNascimento">Data de nascimento</label>
 
           <div
             class="input-wrapper"
@@ -210,27 +192,72 @@
             "
           >
 
-            <mat-icon>
-              calendar_today
-            </mat-icon>
+            <mat-icon>calendar_today</mat-icon>
 
             <input
               id="dataNascimento"
               type="date"
               formControlName="dataNascimento"
+              autocomplete="bday"
               [max]="maxBirthDate"
             >
 
           </div>
 
-
           @if (
-            produtorForm.controls.dataNascimento.invalid &&
-            produtorForm.controls.dataNascimento.touched
+            produtorForm.controls.dataNascimento.touched &&
+            produtorForm.controls.dataNascimento.invalid
           ) {
 
             <small class="field-error">
-              Informe sua data de nascimento.
+              Informe a sua data de nascimento.
+            </small>
+
+          }
+
+        </div>
+
+
+        <!-- TELEFONE -->
+
+        <div class="field full">
+
+          <label for="telefone">Telefone</label>
+
+          <div
+            class="input-wrapper"
+            [class.invalid]="
+              produtorForm.controls.telefone.invalid &&
+              produtorForm.controls.telefone.touched
+            "
+          >
+
+            <mat-icon>phone</mat-icon>
+
+            <input
+              id="telefone"
+              type="tel"
+              inputmode="tel"
+              formControlName="telefone"
+              placeholder="(18) 99999-9999"
+              maxlength="15"
+              autocomplete="tel"
+              (input)="formatTelefone($event)"
+            >
+
+          </div>
+
+          @if (
+            produtorForm.controls.telefone.touched &&
+            produtorForm.controls.telefone.invalid
+          ) {
+
+            <small class="field-error">
+              {{
+                produtorForm.controls.telefone.hasError('required')
+                  ? 'Informe o seu telefone.'
+                  : 'Informe o DDD e o número completo.'
+              }}
             </small>
 
           }
@@ -240,69 +267,16 @@
       </div>
 
 
-      <!-- TELEFONE -->
-      <div class="field full">
+      <div class="note">
 
-        <label for="telefone">
-          Telefone
-        </label>
-
-        <div
-          class="input-wrapper"
-          [class.invalid]="
-            produtorForm.controls.telefone.invalid &&
-            produtorForm.controls.telefone.touched
-          "
-        >
-
-          <mat-icon>
-            phone
-          </mat-icon>
-
-          <input
-            id="telefone"
-            type="tel"
-            formControlName="telefone"
-            placeholder="(18) 99999-9999"
-            maxlength="15"
-            autocomplete="tel"
-            (input)="formatTelefone($event)"
-          >
-
-        </div>
-
-
-        @if (
-          produtorForm.controls.telefone.invalid &&
-          produtorForm.controls.telefone.touched
-        ) {
-
-          <small class="field-error">
-            Informe seu telefone.
-          </small>
-
-        }
-
-      </div>
-
-
-      <!-- INFO -->
-      <div class="info-box">
-
-        <mat-icon>
-          info_outline
-        </mat-icon>
+        <mat-icon>lock_outline</mat-icon>
 
         <div>
 
-          <strong>
-            Seus dados permanecem vinculados
-            à sua conta.
-          </strong>
+          <strong>Seus dados ficam vinculados à sua conta.</strong>
 
           <p>
-            Você poderá atualizar essas
-            informações posteriormente nas
+            Você poderá atualizar essas informações depois, nas
             configurações do perfil.
           </p>
 
@@ -311,8 +285,7 @@
       </div>
 
 
-      <!-- BOTÕES -->
-      <div class="actions">
+      <div class="form-actions">
 
         <button
           type="button"
@@ -323,7 +296,6 @@
           Voltar
         </button>
 
-
         <button
           type="submit"
           class="primary-button"
@@ -332,17 +304,13 @@
 
           @if (loading()) {
 
-            <span class="spinner"></span>
-
+            <span class="small-loader"></span>
             Salvando...
 
           } @else {
 
             Continuar
-
-            <mat-icon>
-              arrow_forward
-            </mat-icon>
+            <mat-icon>arrow_forward</mat-icon>
 
           }
 

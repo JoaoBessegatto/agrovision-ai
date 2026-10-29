@@ -32,6 +32,10 @@ import {
 } from '@angular/material/icon';
 
 import {
+  AuthService
+} from '../../core/auth/services/auth.service';
+
+import {
   FazendaService
 } from '../../core/fazenda/services/fazenda.service';
 
@@ -154,6 +158,9 @@ export class OnboardingFazenda
   private readonly contextService =
     inject(UsuarioContextService);
 
+  private readonly authService =
+    inject(AuthService);
+
   private readonly router =
     inject(Router);
 
@@ -161,6 +168,9 @@ export class OnboardingFazenda
   loading = signal(false);
 
   pageLoading = signal(true);
+
+  /** Bloco opcional de localização (começa recolhido). */
+  localizacaoAberta = signal(false);
 
   errorMessage = signal('');
 
@@ -358,7 +368,7 @@ export class OnboardingFazenda
           ) {
 
             this.router.navigate([
-              '/dashboard'
+              '/app'
             ]);
 
           }
@@ -395,6 +405,15 @@ export class OnboardingFazenda
 
       this.fazendaForm
         .markAllAsTouched();
+
+      if (
+        this.fazendaForm.controls.latitude.invalid ||
+        this.fazendaForm.controls.longitude.invalid
+      ) {
+
+        this.localizacaoAberta.set(true);
+
+      }
 
       return;
     }
@@ -462,12 +481,7 @@ export class OnboardingFazenda
 
       .subscribe({
 
-        next: fazenda => {
-
-          console.log(
-            'Fazenda criada:',
-            fazenda
-          );
+        next: () => {
 
           this.router.navigate([
             '/app'
@@ -568,6 +582,26 @@ export class OnboardingFazenda
     return Number.isNaN(parsed)
       ? null
       : parsed;
+  }
+
+
+  alternarLocalizacao(): void {
+
+    this.localizacaoAberta.update(
+      aberta => !aberta
+    );
+
+  }
+
+
+  sair(): void {
+
+    this.authService.logout();
+
+    this.router.navigate([
+      '/login'
+    ]);
+
   }
 
 

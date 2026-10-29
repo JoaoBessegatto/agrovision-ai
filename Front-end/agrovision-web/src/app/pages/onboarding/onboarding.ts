@@ -1,5 +1,6 @@
 import {
   Component,
+  computed,
   inject,
   OnInit,
   signal
@@ -23,12 +24,29 @@ import {
 } from '@angular/material/icon';
 
 import {
+  AuthService
+} from '../../core/auth/services/auth.service';
+
+import {
   UsuarioContextService
 } from '../../core/user/services/user-context.service';
 
 import {
   UsuarioContext
 } from '../../core/user/models/user-context';
+
+
+type EstadoEtapa =
+  'concluida' | 'atual' | 'pendente';
+
+interface EtapaOnboarding {
+  chave: string;
+  titulo: string;
+  descricao: string;
+  icone: string;
+  estado: EstadoEtapa;
+  detalhe?: string;
+}
 
 
 @Component({
@@ -47,6 +65,9 @@ import {
 })
 export class Onboarding implements OnInit {
 
+  private readonly authService =
+    inject(AuthService);
+
   private readonly contextService =
     inject(UsuarioContextService);
 
@@ -62,6 +83,99 @@ export class Onboarding implements OnInit {
 
   errorMessage =
     signal('');
+
+
+  /** As 3 etapas, já com o estado de cada uma. */
+  readonly etapas =
+    computed<EtapaOnboarding[]>(() => {
+
+      const contexto = this.contexto();
+
+      if (!contexto) {
+        return [];
+      }
+
+      const feitas = [
+        true,
+        contexto.possuiPerfilProdutor,
+        contexto.possuiFazenda
+      ];
+
+      const base = [
+        {
+          chave: 'conta',
+          titulo: 'Conta criada',
+          descricao:
+            'Seu acesso ao AgroVision AI está pronto.',
+          icone: 'person',
+          detalhe: contexto.email
+        },
+        {
+          chave: 'produtor',
+          titulo: 'Perfil de produtor',
+          descricao:
+            'Informe seus dados para identificar o responsável pelas propriedades.',
+          icone: 'badge'
+        },
+        {
+          chave: 'fazenda',
+          titulo: 'Primeira propriedade',
+          descricao:
+            'Cadastre sua fazenda para começar a gerenciar o rebanho.',
+          icone: 'agriculture'
+        }
+      ];
+
+      let atualMarcada = false;
+
+      return base.map((etapa, i) => {
+
+        let estado: EstadoEtapa;
+
+        if (feitas[i]) {
+
+          estado = 'concluida';
+
+        } else if (!atualMarcada) {
+
+          estado = 'atual';
+
+          atualMarcada = true;
+
+        } else {
+
+          estado = 'pendente';
+
+        }
+
+        return { ...etapa, estado };
+
+      });
+
+    });
+
+
+  readonly concluidas =
+    computed(() =>
+      this.etapas().filter(
+        etapa => etapa.estado === 'concluida'
+      ).length
+    );
+
+  readonly pendentes =
+    computed(() =>
+      this.etapas().length - this.concluidas()
+    );
+
+  readonly progresso =
+    computed(() =>
+      this.etapas().length
+        ? Math.round(
+            (this.concluidas() /
+              this.etapas().length) * 100
+          )
+        : 0
+    );
 
 
   ngOnInit(): void {
@@ -144,7 +258,7 @@ export class Onboarding implements OnInit {
 
 
     this.router.navigate([
-      '/dashboard'
+      '/app'
     ]);
   }
 
@@ -173,7 +287,36 @@ export class Onboarding implements OnInit {
     }
 
 
-    return 'Acessar dashboard';
+    return 'Acessar o painel';
+  }
+
+
+  rotulo(estado: EstadoEtapa): string {
+
+    switch (estado) {
+
+      case 'concluida':
+        return 'Concluída';
+
+      case 'atual':
+        return 'Próxima etapa';
+
+      default:
+        return 'Pendente';
+
+    }
+
+  }
+
+
+  sair(): void {
+
+    this.authService.logout();
+
+    this.router.navigate([
+      '/login'
+    ]);
+
   }
 
 }

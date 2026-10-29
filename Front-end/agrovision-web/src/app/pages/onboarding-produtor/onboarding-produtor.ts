@@ -9,8 +9,11 @@ import {
 } from '@angular/common';
 
 import {
+  AbstractControl,
   FormBuilder,
   ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
   Validators
 } from '@angular/forms';
 
@@ -28,12 +31,66 @@ import {
 } from '@angular/material/icon';
 
 import {
+  AuthService
+} from '../../core/auth/services/auth.service';
+
+import {
   ProdutorService
 } from '../../core/user/services/produtor.service';
 
 import {
   ProdutorRequest
 } from '../../core/user/models/produtor-request';
+
+
+/** CPF (11 dígitos) ou CNPJ (14 dígitos) completos. */
+function cpfCnpjValidator(): ValidatorFn {
+
+  return (
+    control: AbstractControl
+  ): ValidationErrors | null => {
+
+    const digitos =
+      String(control.value ?? '')
+        .replace(/\D/g, '');
+
+    if (!digitos) {
+      return null;
+    }
+
+    return digitos.length === 11 ||
+           digitos.length === 14
+      ? null
+      : { cpfCnpj: true };
+
+  };
+
+}
+
+
+/** Telefone com DDD: 10 ou 11 dígitos. */
+function telefoneValidator(): ValidatorFn {
+
+  return (
+    control: AbstractControl
+  ): ValidationErrors | null => {
+
+    const digitos =
+      String(control.value ?? '')
+        .replace(/\D/g, '');
+
+    if (!digitos) {
+      return null;
+    }
+
+    return digitos.length === 10 ||
+           digitos.length === 11
+      ? null
+      : { telefone: true };
+
+  };
+
+}
 
 
 @Component({
@@ -59,6 +116,9 @@ export class OnboardingProdutor {
   private readonly produtorService =
     inject(ProdutorService);
 
+  private readonly authService =
+    inject(AuthService);
+
   private readonly router =
     inject(Router);
 
@@ -69,7 +129,10 @@ export class OnboardingProdutor {
 
 
   readonly maxBirthDate =
-    new Date()
+    new Date(
+      Date.now() -
+      new Date().getTimezoneOffset() * 60000
+    )
       .toISOString()
       .split('T')[0];
 
@@ -89,7 +152,8 @@ export class OnboardingProdutor {
       cpfOrCnpj: [
         '',
         [
-          Validators.required
+          Validators.required,
+          cpfCnpjValidator()
         ]
       ],
 
@@ -103,7 +167,8 @@ export class OnboardingProdutor {
       telefone: [
         '',
         [
-          Validators.required
+          Validators.required,
+          telefoneValidator()
         ]
       ]
 
@@ -403,6 +468,17 @@ export class OnboardingProdutor {
       /\D/g,
       ''
     );
+
+  }
+
+
+    sair(): void {
+
+    this.authService.logout();
+
+    this.router.navigate([
+      '/login'
+    ]);
 
   }
 
