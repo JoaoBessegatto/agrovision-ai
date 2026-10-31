@@ -13,6 +13,10 @@ public record RegistroPesoResponseDTO(
 
         String identificacaoAnimal,
 
+        UUID rebanhoId,
+
+        String rebanhoNome,
+
         Double pesoKg,
 
         LocalDateTime dataRegistro,
@@ -23,25 +27,43 @@ public record RegistroPesoResponseDTO(
 
 ) {
 
-    public static RegistroPesoResponseDTO from(RegistroPeso registro) {
+    public static RegistroPesoResponseDTO from(
+            RegistroPeso registro
+    ) {
 
         return new RegistroPesoResponseDTO(
 
                 registro.getId(),
 
-                registro.getAnimal().getId(),
+                registro
+                        .getAnimal()
+                        .getId(),
 
-                registro.getAnimal().getIdentificacao(),
+                registro
+                        .getAnimal()
+                        .getIdentificacao(),
+
+                registro
+                        .getAnimal()
+                        .getRebanho()
+                        .getId(),
+
+                registro
+                        .getAnimal()
+                        .getRebanho()
+                        .getNome(),
 
                 registro.getPesoKg(),
 
                 registro.getDataRegistro(),
 
-                registro.getUsuarioResponsavel().getId(),
+                registro
+                        .getUsuarioResponsavel()
+                        .getId(),
 
-                registro.getUsuarioResponsavel()
+                registro
+                        .getUsuarioResponsavel()
                         .getName()
-
         );
     }
 }

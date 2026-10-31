@@ -13,26 +13,21 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(
-        "/api/animais/{animalId}/pesagens"
-)
+@RequestMapping("/api/animais/{animalId}/pesagens")
 public class RegistroPesoController {
 
-    private final RegistroPesoService
-            registroPesoService;
-
+    private final RegistroPesoService registroPesoService;
 
     public RegistroPesoController(
             RegistroPesoService registroPesoService
     ) {
-
         this.registroPesoService =
                 registroPesoService;
     }
 
 
     // =========================================================
-    // REGISTRAR
+    // REGISTRAR PESAGEM
     // =========================================================
 
     @PostMapping
@@ -40,8 +35,7 @@ public class RegistroPesoController {
     public ResponseEntity<RegistroPesoResponseDTO> registrar(
             @PathVariable UUID animalId,
             @Valid
-            @RequestBody
-            RegistroPesoRequestDTO dto
+            @RequestBody RegistroPesoRequestDTO dto
     ) {
 
         RegistroPesoResponseDTO response =
@@ -50,7 +44,6 @@ public class RegistroPesoController {
                         dto
                 );
 
-
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
@@ -58,7 +51,7 @@ public class RegistroPesoController {
 
 
     // =========================================================
-    // HISTÓRICO
+    // HISTÓRICO DO ANIMAL
     // =========================================================
 
     @GetMapping
@@ -68,7 +61,6 @@ public class RegistroPesoController {
     ) {
 
         return ResponseEntity.ok(
-
                 registroPesoService
                         .listarHistorico(
                                 animalId
@@ -78,7 +70,7 @@ public class RegistroPesoController {
 
 
     // =========================================================
-    // ÚLTIMA PESAGEM
+    // ÚLTIMA PESAGEM DO ANIMAL
     // =========================================================
 
     @GetMapping("/ultima")
@@ -88,7 +80,6 @@ public class RegistroPesoController {
     ) {
 
         return ResponseEntity.ok(
-
                 registroPesoService
                         .buscarUltimaPesagem(
                                 animalId

@@ -16,6 +16,10 @@ public interface RegistroPesoRepository
             UUID animalId
     );
 
+    List<RegistroPeso>
+    findByAnimalRebanhoFazendaIdOrderByDataRegistroDesc(
+            UUID fazendaId
+    );
 
     Optional<RegistroPeso> findFirstByAnimalIdOrderByDataRegistroDesc(
             UUID animalId

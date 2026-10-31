@@ -15,6 +15,7 @@ import com.agrovisionai.agrovision_ai.repository.AnimalRepository;
 import com.agrovisionai.agrovision_ai.repository.RegistroPesoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.agrovisionai.agrovision_ai.repository.FazendaRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,12 +32,13 @@ public class RegistroPesoService {
 
     private final CurrentUserProvider
             currentUserProvider;
-
+    private final FazendaRepository fazendaRepository;
 
     public RegistroPesoService(
             RegistroPesoRepository registroPesoRepository,
             AnimalRepository animalRepository,
-            CurrentUserProvider currentUserProvider
+            CurrentUserProvider currentUserProvider,
+            FazendaRepository fazendaRepository
     ) {
 
         this.registroPesoRepository =
@@ -47,12 +49,10 @@ public class RegistroPesoService {
 
         this.currentUserProvider =
                 currentUserProvider;
+        this.fazendaRepository =
+                fazendaRepository;
     }
 
-
-    // =========================================================
-    // REGISTRAR PESAGEM
-    // =========================================================
 
     public RegistroPesoResponseDTO registrar(
             UUID animalId,
@@ -111,7 +111,42 @@ public class RegistroPesoService {
         return RegistroPesoResponseDTO
                 .from(registro);
     }
+    @Transactional(readOnly = true)
+    public List<RegistroPesoResponseDTO> listarPorFazenda(
+            UUID fazendaId
+    ) {
 
+        Usuario usuario =
+                currentUserProvider
+                        .getUsuarioAtual();
+
+
+        Fazenda fazenda =
+                fazendaRepository
+                        .findById(fazendaId)
+                        .orElseThrow(() ->
+                                new ResouceNotFoundException(
+                                        "Fazenda não encontrada."
+                                )
+                        );
+
+
+        validarPermissao(
+                usuario,
+                fazenda
+        );
+
+
+        return registroPesoRepository
+                .findByAnimalRebanhoFazendaIdOrderByDataRegistroDesc(
+                        fazendaId
+                )
+                .stream()
+                .map(
+                        RegistroPesoResponseDTO::from
+                )
+                .toList();
+    }
 
     // =========================================================
     // HISTÓRICO
