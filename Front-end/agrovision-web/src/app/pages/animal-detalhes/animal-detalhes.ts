@@ -15,6 +15,12 @@ import {
 } from '@angular/router';
 
 import {
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
+
+import {
   MatIconModule
 } from '@angular/material/icon';
 
@@ -41,11 +47,6 @@ import {
 import {
   RebanhoResponse
 } from '../../core/rebanho/models/rebanho-response';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
 
 import {
   RegistroPesoService
@@ -54,6 +55,7 @@ import {
 import {
   RegistroPesoResponse
 } from '../../core/pesagem/models/registro-peso-response';
+
 
 @Component({
   selector: 'app-animal-detalhes',
@@ -71,6 +73,10 @@ import {
 })
 export class AnimalDetalhes {
 
+  // =========================================================
+  // DEPENDÊNCIAS
+  // =========================================================
+
   private readonly route =
     inject(ActivatedRoute);
 
@@ -83,55 +89,54 @@ export class AnimalDetalhes {
   private readonly rebanhoService =
     inject(RebanhoService);
 
-  readonly fazendaContext =
-    inject(FazendaContextService);
+  private readonly registroPesoService =
+    inject(RegistroPesoService);
 
   private readonly formBuilder =
     inject(FormBuilder);
 
-  private readonly registroPesoService =
-    inject(RegistroPesoService);
+  readonly fazendaContext =
+    inject(FazendaContextService);
 
-  // ==========================================
-  // ESTADO
-  // ==========================================
+
+  // =========================================================
+  // IDENTIFICAÇÃO DO ANIMAL
+  // =========================================================
+
+  private readonly animalId: string;
+
+
+  // =========================================================
+  // ESTADO DO ANIMAL
+  // =========================================================
 
   animal =
     signal<AnimalResponse | null>(null);
 
-  rebanhos =
-    signal<RebanhoResponse[]>([]);
-
   loading =
     signal(true);
 
-  carregandoRebanhos =
-    signal(false);
-
   alterandoStatus =
-    signal(false);
-
-  transferindo =
     signal(false);
 
   errorMessage =
     signal('');
 
-  pesagens =
-    signal<RegistroPesoResponse[]>([]);
+
+  // =========================================================
+  // REBANHOS
+  // =========================================================
+
+  rebanhos =
+    signal<RebanhoResponse[]>([]);
+
+  carregandoRebanhos =
+    signal(false);
 
 
-  loadingPesagens = signal(false);
-
-
-  modalPesagem = signal(false);
-
-
-  salvandoPesagem = signal(false);
-
-  // ==========================================
+  // =========================================================
   // TRANSFERÊNCIA
-  // ==========================================
+  // =========================================================
 
   modalTransferencia =
     signal(false);
@@ -139,22 +144,49 @@ export class AnimalDetalhes {
   novoRebanhoId =
     signal('');
 
+  transferindo =
+    signal(false);
 
-  private readonly animalId: string;
+
+  // =========================================================
+  // PESAGENS
+  // =========================================================
+
+  pesagens =
+    signal<RegistroPesoResponse[]>([]);
+
+  loadingPesagens =
+    signal(false);
+
+  modalPesagem =
+    signal(false);
+
+  salvandoPesagem =
+    signal(false);
+
+
+  // =========================================================
+  // FORMULÁRIO DE PESAGEM
+  // =========================================================
 
   pesagemForm =
-  this.formBuilder.group({
+    this.formBuilder.group({
 
-    pesoKg: [
-      null as number | null,
-      [
-        Validators.required,
-        Validators.min(0.1),
-        Validators.max(1500)
+      pesoKg: [
+        null as number | null,
+        [
+          Validators.required,
+          Validators.min(0.1),
+          Validators.max(1500)
+        ]
       ]
-    ]
 
-  });
+    });
+
+
+  // =========================================================
+  // CONSTRUTOR
+  // =========================================================
 
   constructor() {
 
@@ -166,25 +198,32 @@ export class AnimalDetalhes {
 
     if (!id) {
 
+      this.animalId = '';
+
       this.router.navigate([
         '/app/animais'
       ]);
 
-      this.animalId = '';
-
       return;
-
     }
 
 
     this.animalId = id;
 
+
+    /*
+     * Carrega os dados principais
+     * do animal.
+     */
     this.carregarAnimal();
 
 
     /*
-     * Reage à fazenda selecionada
-     * na topbar.
+     * Sempre que a fazenda ativa mudar,
+     * recarregamos os rebanhos disponíveis.
+     *
+     * Eles são utilizados principalmente
+     * na transferência do animal.
      */
     effect(() => {
 
@@ -198,7 +237,6 @@ export class AnimalDetalhes {
         this.rebanhos.set([]);
 
         return;
-
       }
 
 
@@ -211,9 +249,9 @@ export class AnimalDetalhes {
   }
 
 
-  // ==========================================
+  // =========================================================
   // CARREGAR ANIMAL
-  // ==========================================
+  // =========================================================
 
   carregarAnimal(): void {
 
@@ -249,7 +287,16 @@ export class AnimalDetalhes {
           this.animal.set(
             animal
           );
+
+
+          /*
+           * Depois que sabemos que o
+           * animal existe e pode ser
+           * acessado, carregamos seu
+           * histórico de pesagens.
+           */
           this.carregarPesagens();
+
         },
 
 
@@ -273,278 +320,459 @@ export class AnimalDetalhes {
       });
 
   }
+
+
+  // =========================================================
+  // ATUALIZAR ANIMAL SEM RECARREGAR A TELA
+  // =========================================================
+
+  private atualizarAnimalSilenciosamente(): void {
+
+    if (!this.animalId) {
+      return;
+    }
+
+
+    this.animalService
+      .buscarPorId(
+        this.animalId
+      )
+
+      .subscribe({
+
+        next: animal => {
+
+          this.animal.set(
+            animal
+          );
+
+        },
+
+
+        error: error => {
+
+          console.error(
+            'Erro ao atualizar os dados do animal:',
+            error
+          );
+
+        }
+
+      });
+
+  }
+
+
+  // =========================================================
+  // PESAGENS - CARREGAR HISTÓRICO
+  // =========================================================
+
   carregarPesagens(): void {
 
-  if (!this.animalId) {
-    return;
+    if (!this.animalId) {
+      return;
+    }
+
+
+    this.loadingPesagens.set(
+      true
+    );
+
+
+    this.registroPesoService
+      .listarHistorico(
+        this.animalId
+      )
+
+      .pipe(
+
+        finalize(() => {
+
+          this.loadingPesagens.set(
+            false
+          );
+
+        })
+
+      )
+
+      .subscribe({
+
+        next: registros => {
+
+          this.pesagens.set(
+            registros
+          );
+
+        },
+
+
+        error: error => {
+
+          console.error(
+            'Erro ao carregar pesagens:',
+            error
+          );
+
+
+          this.pesagens.set([]);
+
+
+          this.errorMessage.set(
+            this.extrairMensagemErro(
+              error,
+              'Não foi possível carregar o histórico de pesagens.'
+            )
+          );
+
+        }
+
+      });
+
   }
 
 
-  this.loadingPesagens.set(
-    true
-  );
+  // =========================================================
+  // PESAGENS - ABRIR MODAL
+  // =========================================================
+
+  abrirNovaPesagem(): void {
+
+    const animal =
+      this.animal();
 
 
-  this.registroPesoService
-    .listarHistorico(
-      this.animalId
-    )
-
-    .pipe(
-
-      finalize(() => {
-
-        this.loadingPesagens.set(
-          false
-        );
-
-      })
-
-    )
-
-    .subscribe({
-
-      next: registros => {
-
-        this.pesagens.set(
-          registros
-        );
-
-      },
+    if (!animal) {
+      return;
+    }
 
 
-      error: error => {
+    /*
+     * Backend também possui essa
+     * validação, mas bloqueamos no
+     * frontend para melhorar a UX.
+     */
+    if (
+      animal.situacao !== 'ATIVO'
+    ) {
 
-        console.error(
-          'Erro ao carregar pesagens:',
-          error
-        );
+      this.errorMessage.set(
+        'Somente animais ativos podem receber novas pesagens.'
+      );
 
-        this.pesagens.set([]);
+      return;
+    }
 
-      }
+
+    this.errorMessage.set('');
+
+
+    this.pesagemForm.reset({
+
+      pesoKg: null
 
     });
-}
-abrirNovaPesagem(): void {
-
-  const animal =
-    this.animal();
 
 
-  if (!animal) {
-    return;
-  }
-
-
-  if (
-    animal.situacao !== 'ATIVO'
-  ) {
-
-    this.errorMessage.set(
-      'Somente animais ativos podem receber novas pesagens.'
+    this.modalPesagem.set(
+      true
     );
 
-    return;
   }
 
 
-  this.pesagemForm.reset({
+  // =========================================================
+  // PESAGENS - FECHAR MODAL
+  // =========================================================
 
-    pesoKg: null
+  fecharPesagem(): void {
 
-  });
-
-
-  this.modalPesagem.set(
-    true
-  );
-
-}
-fecharPesagem(): void {
-
-  if (this.salvandoPesagem()) {
-    return;
-  }
+    if (this.salvandoPesagem()) {
+      return;
+    }
 
 
-  this.modalPesagem.set(
-    false
-  );
-
-
-  this.pesagemForm.reset({
-
-    pesoKg: null
-
-  });
-
-}
-registrarPesagem(): void {
-
-  if (
-    this.pesagemForm.invalid
-  ) {
-
-    this.pesagemForm
-      .markAllAsTouched();
-
-    return;
-
-  }
-
-
-  const animal =
-    this.animal();
-
-
-  if (!animal) {
-    return;
-  }
-
-
-  const form =
-    this.pesagemForm
-      .getRawValue();
-
-
-  const peso =
-    Number(
-      form.pesoKg
+    this.modalPesagem.set(
+      false
     );
 
 
-  this.salvandoPesagem.set(
-    true
-  );
+    this.pesagemForm.reset({
 
-  this.errorMessage.set('');
+      pesoKg: null
 
+    });
 
-  this.registroPesoService
-    .registrar(
-      animal.id,
-      {
-        pesoKg: peso
-      }
-    )
-
-    .pipe(
-
-      finalize(() => {
-
-        this.salvandoPesagem.set(
-          false
-        );
-
-      })
-
-    )
-
-    .subscribe({
-
-      next: registro => {
-
-        this.modalPesagem.set(
-          false
-        );
+  }
 
 
-        /*
-         * Como o backend já retorna
-         * o registro recém-criado,
-         * podemos colocá-lo imediatamente
-         * no topo do histórico.
-         */
-        this.pesagens.update(
-          lista => [
-            registro,
-            ...lista
-          ]
-        );
+  // =========================================================
+  // PESAGENS - REGISTRAR
+  // =========================================================
+
+  registrarPesagem(): void {
+
+    this.errorMessage.set('');
 
 
-        /*
-         * Atualiza os dados do Animal,
-         * principalmente pesoAtual.
-         */
-        this.carregarAnimal();
+    /*
+     * Validação do formulário.
+     */
+    if (
+      this.pesagemForm.invalid
+    ) {
+
+      this.pesagemForm
+        .markAllAsTouched();
+
+      return;
+    }
 
 
-        this.pesagemForm.reset({
+    const animal =
+      this.animal();
 
-          pesoKg: null
 
+    if (!animal) {
+      return;
+    }
+
+
+    /*
+     * Segurança adicional.
+     */
+    if (
+      animal.situacao !== 'ATIVO'
+    ) {
+
+      this.modalPesagem.set(
+        false
+      );
+
+
+      this.errorMessage.set(
+        'Somente animais ativos podem receber novas pesagens.'
+      );
+
+      return;
+    }
+
+
+    const form =
+      this.pesagemForm
+        .getRawValue();
+
+
+    const pesoKg =
+      Number(
+        form.pesoKg
+      );
+
+
+    /*
+     * Segurança contra NaN,
+     * infinito ou valores fora
+     * do limite definido.
+     */
+    if (
+      !Number.isFinite(pesoKg) ||
+      pesoKg <= 0 ||
+      pesoKg > 1500
+    ) {
+
+      this.pesagemForm
+        .controls
+        .pesoKg
+        .setErrors({
+          pesoInvalido: true
         });
 
-      },
+
+      this.pesagemForm
+        .controls
+        .pesoKg
+        .markAsTouched();
+
+      return;
+    }
 
 
-      error: error => {
-
-        console.error(
-          'Erro ao registrar pesagem:',
-          error
-        );
+    this.salvandoPesagem.set(
+      true
+    );
 
 
-        this.errorMessage.set(
-          this.extrairMensagemErro(
-            error,
-            'Não foi possível registrar a pesagem.'
-          )
-        );
+    this.registroPesoService
+      .registrar(
+        animal.id,
+        {
+          pesoKg
+        }
+      )
 
-      }
+      .pipe(
 
-    });
+        finalize(() => {
 
-}
-calcularVariacao(
-  index: number
-): number | null {
+          this.salvandoPesagem.set(
+            false
+          );
 
-  const registros =
-    this.pesagens();
+        })
+
+      )
+
+      .subscribe({
+
+        next: registro => {
+
+          /*
+           * Fecha o modal.
+           */
+          this.modalPesagem.set(
+            false
+          );
 
 
-  /*
-   * Como a lista vem:
-   *
-   * mais recente
-   * ↓
-   * mais antiga
-   *
-   * precisamos comparar o registro atual
-   * com o próximo da lista.
-   */
-  if (
-    index >= registros.length - 1
-  ) {
+          /*
+           * O backend retorna o registro
+           * recém-criado.
+           *
+           * Como o histórico vem ordenado
+           * do mais recente para o mais
+           * antigo, colocamos o registro
+           * na primeira posição.
+           */
+          this.pesagens.update(
+            lista => [
+              registro,
+              ...lista
+            ]
+          );
 
-    return null;
+
+          /*
+           * O backend também atualiza
+           * Animal.pesoAtual.
+           *
+           * Atualizamos o signal local
+           * imediatamente, evitando uma
+           * nova chamada apenas para
+           * atualizar o card da tela.
+           */
+          this.animal.update(
+            atual => {
+
+              if (!atual) {
+                return atual;
+              }
+
+
+              return {
+
+                ...atual,
+
+                pesoAtual:
+                  registro.pesoKg
+
+              };
+
+            }
+          );
+
+
+          /*
+           * Limpa formulário.
+           */
+          this.pesagemForm.reset({
+
+            pesoKg: null
+
+          });
+
+        },
+
+
+        error: error => {
+
+          console.error(
+            'Erro ao registrar pesagem:',
+            error
+          );
+
+
+          this.errorMessage.set(
+            this.extrairMensagemErro(
+              error,
+              'Não foi possível registrar a pesagem.'
+            )
+          );
+
+        }
+
+      });
 
   }
 
 
-  const atual =
-    registros[index];
+  // =========================================================
+  // PESAGENS - CALCULAR VARIAÇÃO
+  // =========================================================
 
-  const anterior =
-    registros[index + 1];
+  calcularVariacao(
+    index: number
+  ): number | null {
 
-
-  return (
-    atual.pesoKg -
-    anterior.pesoKg
-  );
-
-}
+    const registros =
+      this.pesagens();
 
 
-  // ==========================================
+    /*
+     * A API retorna:
+     *
+     * [0] mais recente
+     * [1] anterior
+     * [2] mais antiga
+     *
+     * Portanto comparamos a pesagem
+     * atual com a próxima posição.
+     */
+    if (
+      index < 0 ||
+      index >= registros.length - 1
+    ) {
+
+      return null;
+    }
+
+
+    const atual =
+      registros[index];
+
+
+    const anterior =
+      registros[index + 1];
+
+
+    /*
+     * Evita problemas visuais de
+     * precisão de ponto flutuante.
+     */
+    const diferenca =
+      atual.pesoKg -
+      anterior.pesoKg;
+
+
+    return Number(
+      diferenca.toFixed(2)
+    );
+
+  }
+
+
+  // =========================================================
   // REBANHOS
-  // ==========================================
+  // =========================================================
 
   carregarRebanhos(
     fazendaId: string
@@ -576,6 +804,21 @@ calcularVariacao(
 
         next: rebanhos => {
 
+          /*
+           * Evita salvar uma resposta
+           * antiga caso o usuário troque
+           * de fazenda rapidamente.
+           */
+          if (
+            this.fazendaContext
+              .fazendaAtivaId() !==
+            fazendaId
+          ) {
+
+            return;
+          }
+
+
           this.rebanhos.set(
             rebanhos
           );
@@ -590,6 +833,7 @@ calcularVariacao(
             error
           );
 
+
           this.rebanhos.set([]);
 
         }
@@ -599,9 +843,9 @@ calcularVariacao(
   }
 
 
-  // ==========================================
+  // =========================================================
   // VOLTAR
-  // ==========================================
+  // =========================================================
 
   voltar(): void {
 
@@ -612,9 +856,9 @@ calcularVariacao(
   }
 
 
-  // ==========================================
-  // STATUS
-  // ==========================================
+  // =========================================================
+  // ALTERAR STATUS
+  // =========================================================
 
   alterarStatus(): void {
 
@@ -633,7 +877,6 @@ calcularVariacao(
     ) {
 
       return;
-
     }
 
 
@@ -676,12 +919,43 @@ calcularVariacao(
 
         next: () => {
 
-          this.carregarAnimal();
+          /*
+           * Alteramos imediatamente no
+           * frontend sem precisar mostrar
+           * loading da página inteira.
+           */
+          this.animal.update(
+            atual => {
+
+              if (!atual) {
+                return atual;
+              }
+
+
+              return {
+
+                ...atual,
+
+                situacao:
+                  atual.situacao === 'ATIVO'
+                    ? 'INATIVO'
+                    : 'ATIVO'
+
+              };
+
+            }
+          );
 
         },
 
 
         error: error => {
+
+          console.error(
+            'Erro ao alterar situação do animal:',
+            error
+          );
+
 
           this.errorMessage.set(
             this.extrairMensagemErro(
@@ -697,9 +971,9 @@ calcularVariacao(
   }
 
 
-  // ==========================================
-  // TRANSFERÊNCIA
-  // ==========================================
+  // =========================================================
+  // TRANSFERÊNCIA - ABRIR
+  // =========================================================
 
   abrirTransferencia(): void {
 
@@ -712,6 +986,25 @@ calcularVariacao(
     }
 
 
+    if (
+      this.rebanhos().length === 0
+    ) {
+
+      this.errorMessage.set(
+        'Nenhum rebanho disponível para transferência.'
+      );
+
+      return;
+    }
+
+
+    this.errorMessage.set('');
+
+
+    /*
+     * O select inicia apontando
+     * para o rebanho atual.
+     */
     this.novoRebanhoId.set(
       animal.rebanhoId
     );
@@ -724,6 +1017,10 @@ calcularVariacao(
   }
 
 
+  // =========================================================
+  // TRANSFERÊNCIA - FECHAR
+  // =========================================================
+
   fecharTransferencia(): void {
 
     if (this.transferindo()) {
@@ -735,10 +1032,15 @@ calcularVariacao(
       false
     );
 
+
     this.novoRebanhoId.set('');
 
   }
 
+
+  // =========================================================
+  // TRANSFERÊNCIA - ALTERAR SELECT
+  // =========================================================
 
   alterarNovoRebanho(
     event: Event
@@ -755,10 +1057,15 @@ calcularVariacao(
   }
 
 
+  // =========================================================
+  // TRANSFERÊNCIA - CONFIRMAR
+  // =========================================================
+
   confirmarTransferencia(): void {
 
     const animal =
       this.animal();
+
 
     const rebanhoId =
       this.novoRebanhoId();
@@ -768,10 +1075,15 @@ calcularVariacao(
       !animal ||
       !rebanhoId
     ) {
+
       return;
     }
 
 
+    /*
+     * Não faz requisição caso o
+     * rebanho continue o mesmo.
+     */
     if (
       rebanhoId ===
       animal.rebanhoId
@@ -780,7 +1092,30 @@ calcularVariacao(
       this.fecharTransferencia();
 
       return;
+    }
 
+
+    /*
+     * Procura o rebanho selecionado
+     * para conseguirmos atualizar
+     * nome e ID localmente.
+     */
+    const novoRebanho =
+      this.rebanhos()
+        .find(
+          rebanho =>
+            rebanho.id ===
+            rebanhoId
+        );
+
+
+    if (!novoRebanho) {
+
+      this.errorMessage.set(
+        'Rebanho selecionado não foi encontrado.'
+      );
+
+      return;
     }
 
 
@@ -813,18 +1148,61 @@ calcularVariacao(
 
         next: () => {
 
+          /*
+           * Fecha modal.
+           */
           this.modalTransferencia.set(
             false
           );
 
+
           this.novoRebanhoId.set('');
 
-          this.carregarAnimal();
+
+          /*
+           * Atualiza o animal na tela
+           * imediatamente.
+           */
+          this.animal.update(
+            atual => {
+
+              if (!atual) {
+                return atual;
+              }
+
+
+              return {
+
+                ...atual,
+
+                rebanhoId:
+                  novoRebanho.id,
+
+                rebanhoNome:
+                  novoRebanho.nome
+
+              };
+
+            }
+          );
+
+
+          /*
+           * Atualiza silenciosamente com
+           * os dados oficiais do backend.
+           */
+          this.atualizarAnimalSilenciosamente();
 
         },
 
 
         error: error => {
+
+          console.error(
+            'Erro ao transferir animal:',
+            error
+          );
+
 
           this.errorMessage.set(
             this.extrairMensagemErro(
@@ -840,20 +1218,33 @@ calcularVariacao(
   }
 
 
-  // ==========================================
-  // FORMATADORES
-  // ==========================================
+  // =========================================================
+  // FORMATAR SEXO
+  // =========================================================
 
   formatarSexo(
     sexo: string
   ): string {
 
-    return sexo === 'MACHO'
-      ? 'Macho'
-      : 'Fêmea';
+    switch (sexo) {
+
+      case 'MACHO':
+        return 'Macho';
+
+      case 'FEMEA':
+        return 'Fêmea';
+
+      default:
+        return sexo;
+
+    }
 
   }
 
+
+  // =========================================================
+  // FORMATAR SITUAÇÃO
+  // =========================================================
 
   formatarSituacao(
     situacao: string
@@ -881,13 +1272,30 @@ calcularVariacao(
   }
 
 
+  // =========================================================
+  // FORMATAR IDADE
+  // =========================================================
+
   formatarIdade(
     meses: number
   ): string {
 
-    if (meses < 12) {
+    if (
+      meses === 0
+    ) {
 
-      return `${meses} meses`;
+      return 'Menos de 1 mês';
+
+    }
+
+
+    if (
+      meses < 12
+    ) {
+
+      return meses === 1
+        ? '1 mês'
+        : `${meses} meses`;
 
     }
 
@@ -896,6 +1304,7 @@ calcularVariacao(
       Math.floor(
         meses / 12
       );
+
 
     const mesesRestantes =
       meses % 12;
@@ -912,10 +1321,26 @@ calcularVariacao(
     }
 
 
-    return `${anos} anos e ${mesesRestantes} meses`;
+    const textoAnos =
+      anos === 1
+        ? '1 ano'
+        : `${anos} anos`;
+
+
+    const textoMeses =
+      mesesRestantes === 1
+        ? '1 mês'
+        : `${mesesRestantes} meses`;
+
+
+    return `${textoAnos} e ${textoMeses}`;
 
   }
 
+
+  // =========================================================
+  // ERRO
+  // =========================================================
 
   limparErro(): void {
 
@@ -924,11 +1349,18 @@ calcularVariacao(
   }
 
 
+  // =========================================================
+  // EXTRAIR MENSAGEM DO BACKEND
+  // =========================================================
+
   private extrairMensagemErro(
     error: any,
     fallback: string
   ): string {
 
+    /*
+     * Backend retornando texto puro.
+     */
     if (
       typeof error?.error === 'string' &&
       error.error.trim()
@@ -939,6 +1371,13 @@ calcularVariacao(
     }
 
 
+    /*
+     * Backend retornando:
+     *
+     * {
+     *   "message": "..."
+     * }
+     */
     if (
       error?.error?.message
     ) {
@@ -948,11 +1387,66 @@ calcularVariacao(
     }
 
 
+    /*
+     * Alguns handlers usam:
+     *
+     * {
+     *   "mensagem": "..."
+     * }
+     */
     if (
-      error.status === 0
+      error?.error?.mensagem
+    ) {
+
+      return error.error.mensagem;
+
+    }
+
+
+    /*
+     * Servidor indisponível.
+     */
+    if (
+      error?.status === 0
     ) {
 
       return 'Não foi possível conectar ao servidor.';
+
+    }
+
+
+    /*
+     * Não autenticado.
+     */
+    if (
+      error?.status === 401
+    ) {
+
+      return 'Sua sessão expirou. Faça login novamente.';
+
+    }
+
+
+    /*
+     * Sem autorização.
+     */
+    if (
+      error?.status === 403
+    ) {
+
+      return 'Você não possui permissão para realizar esta operação.';
+
+    }
+
+
+    /*
+     * Recurso inexistente.
+     */
+    if (
+      error?.status === 404
+    ) {
+
+      return 'O recurso solicitado não foi encontrado.';
 
     }
 

@@ -29,41 +29,76 @@ export class RegistroPesoService {
     inject(HttpClient);
 
 
-  private readonly API_URL =
+  private readonly ANIMAIS_API =
     'http://localhost:8080/api/animais';
 
+
+  private readonly PESAGENS_API =
+    'http://localhost:8080/api/pesagens';
+
+
+  // =========================================================
+  // REGISTRAR PESAGEM
+  // =========================================================
 
   registrar(
     animalId: string,
     request: RegistroPesoRequest
   ): Observable<RegistroPesoResponse> {
 
-    return this.http.post<RegistroPesoResponse>(
-      `${this.API_URL}/${animalId}/pesagens`,
-      request
-    );
+    return this.http
+      .post<RegistroPesoResponse>(
+        `${this.ANIMAIS_API}/${animalId}/pesagens`,
+        request
+      );
 
   }
 
+
+  // =========================================================
+  // HISTÓRICO DE UM ANIMAL
+  // =========================================================
 
   listarHistorico(
     animalId: string
   ): Observable<RegistroPesoResponse[]> {
 
-    return this.http.get<RegistroPesoResponse[]>(
-      `${this.API_URL}/${animalId}/pesagens`
-    );
+    return this.http
+      .get<RegistroPesoResponse[]>(
+        `${this.ANIMAIS_API}/${animalId}/pesagens`
+      );
 
   }
 
+
+  // =========================================================
+  // ÚLTIMA PESAGEM DE UM ANIMAL
+  // =========================================================
 
   buscarUltima(
     animalId: string
   ): Observable<RegistroPesoResponse> {
 
-    return this.http.get<RegistroPesoResponse>(
-      `${this.API_URL}/${animalId}/pesagens/ultima`
-    );
+    return this.http
+      .get<RegistroPesoResponse>(
+        `${this.ANIMAIS_API}/${animalId}/pesagens/ultima`
+      );
+
+  }
+
+
+  // =========================================================
+  // PESAGENS DE UMA FAZENDA
+  // =========================================================
+
+  listarPorFazenda(
+    fazendaId: string
+  ): Observable<RegistroPesoResponse[]> {
+
+    return this.http
+      .get<RegistroPesoResponse[]>(
+        `${this.PESAGENS_API}/fazenda/${fazendaId}`
+      );
 
   }
 

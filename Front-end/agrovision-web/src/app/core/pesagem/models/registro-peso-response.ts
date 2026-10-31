@@ -6,6 +6,10 @@ export interface RegistroPesoResponse {
 
   identificacaoAnimal: string;
 
+  rebanhoId: string;
+
+  rebanhoNome: string;
+
   pesoKg: number;
 
   dataRegistro: string;
