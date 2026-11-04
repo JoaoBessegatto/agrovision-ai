@@ -132,4 +132,25 @@ public class AnimalController {
                 .noContent()
                 .build();
     }
+    @PatchMapping("{animalId}/vender")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> vender(
+            @PathVariable UUID animalId
+    ){
+        animalService.marcarComoVendido(animalId);
+
+        return ResponseEntity
+                .noContent()
+                .build();
+    }
+    @PatchMapping("{animalId}/registrar-morte")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> registrarMorte(
+            @PathVariable UUID animalId
+    ){
+        animalService.marcarComoMorto(animalId);
+        return ResponseEntity
+                .noContent()
+                .build();
+    }
 }

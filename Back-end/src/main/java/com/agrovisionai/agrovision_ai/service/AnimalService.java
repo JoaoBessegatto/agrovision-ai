@@ -199,6 +199,29 @@ public class AnimalService {
 
         animal.ativar();
     }
+    public void marcarComoVendido(
+            UUID animalId
+    ) {
+
+        Animal animal =
+                buscarAnimalAutorizado(
+                        animalId
+                );
+
+        animal.marcarComoVendido();
+    }
+
+    public void marcarComoMorto(
+            UUID animalId
+    ) {
+
+        Animal animal =
+                buscarAnimalAutorizado(
+                        animalId
+                );
+
+        animal.marcarComoMorto();
+    }
 
     private Animal buscarAnimalAutorizado(
             UUID animalId

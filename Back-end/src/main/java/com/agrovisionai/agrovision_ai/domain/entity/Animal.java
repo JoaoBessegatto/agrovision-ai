@@ -223,6 +223,28 @@ public class Animal {
         }
 
 
+        if (
+                this.situacao ==
+                        SituacaoAnimal.VENDIDO
+        ) {
+
+            throw new BusinessException(
+                    "Um animal vendido não pode ser inativado."
+            );
+        }
+
+
+        if (
+                this.situacao ==
+                        SituacaoAnimal.MORTO
+        ) {
+
+            throw new BusinessException(
+                    "Um animal registrado como morto não pode ser inativado."
+            );
+        }
+
+
         this.situacao =
                 SituacaoAnimal.INATIVO;
     }
@@ -238,8 +260,69 @@ public class Animal {
         }
 
 
+        if (
+                this.situacao ==
+                        SituacaoAnimal.VENDIDO
+        ) {
+
+            throw new BusinessException(
+                    "Um animal vendido não pode ser reativado."
+            );
+        }
+
+
+        if (
+                this.situacao ==
+                        SituacaoAnimal.MORTO
+        ) {
+
+            throw new BusinessException(
+                    "Um animal registrado como morto não pode ser reativado."
+            );
+        }
+
+
         this.situacao =
                 SituacaoAnimal.ATIVO;
+    }
+    public void marcarComoVendido() {
+
+        if (this.situacao == SituacaoAnimal.VENDIDO
+        ) {
+            return;
+        }
+        if (
+                this.situacao == SituacaoAnimal.MORTO
+        ) {
+            throw new BusinessException(
+                    "Um animal registrado como morto não pode ser marcado como vendido."
+            );
+        }
+        this.situacao =
+                SituacaoAnimal.VENDIDO;
+    }
+    public void marcarComoMorto() {
+
+        if (
+                this.situacao ==
+                        SituacaoAnimal.MORTO
+        ) {
+            return;
+        }
+
+
+        if (
+                this.situacao ==
+                        SituacaoAnimal.VENDIDO
+        ) {
+
+            throw new BusinessException(
+                    "Um animal vendido não pode ser registrado como morto."
+            );
+        }
+
+        this.situacao =
+                SituacaoAnimal.MORTO;
     }
 
     public int getIdadeMeses() {
@@ -259,6 +342,12 @@ public class Animal {
     public void mudarRebanho(
             Rebanho novoRebanho
     ) {
+        if(this.situacao == SituacaoAnimal.INATIVO){
+            throw new BusinessException("O animal deve ser ativo.");
+        }
+        if(this.situacao == SituacaoAnimal.MORTO){
+            throw new BusinessException("O animal deve ser vivo.");
+        }
 
         if (novoRebanho == null) {
 
@@ -266,7 +355,6 @@ public class Animal {
                     "Novo rebanho inválido."
             );
         }
-
 
         if (
                 this.rebanho != null &&
