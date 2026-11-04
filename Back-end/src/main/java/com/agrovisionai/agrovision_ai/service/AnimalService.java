@@ -2,6 +2,7 @@ package com.agrovisionai.agrovision_ai.service;
 
 import com.agrovisionai.agrovision_ai.auth.CurrentUserProvider;
 import com.agrovisionai.agrovision_ai.auth.Usuario;
+import com.agrovisionai.agrovision_ai.auth.UsuarioRepository;
 import com.agrovisionai.agrovision_ai.domain.dto.request.AnimalRequestDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.AnimalResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.entity.Animal;
@@ -13,6 +14,8 @@ import com.agrovisionai.agrovision_ai.exception.UnauthorizedException;
 import com.agrovisionai.agrovision_ai.repository.AnimalRepository;
 import com.agrovisionai.agrovision_ai.repository.FazendaRepository;
 import com.agrovisionai.agrovision_ai.repository.RebanhoRepository;
+import com.agrovisionai.agrovision_ai.domain.entity.RegistroPeso;
+import com.agrovisionai.agrovision_ai.repository.RegistroPesoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,23 +30,32 @@ public class AnimalService {
     private final RebanhoRepository rebanhoRepository;
     private final FazendaRepository fazendaRepository;
     private final CurrentUserProvider currentUserProvider;
+    private final RegistroPesoRepository registroPesoRepository;
+
 
     public AnimalService(
             AnimalRepository animalRepository,
             RebanhoRepository rebanhoRepository,
             FazendaRepository fazendaRepository,
-            CurrentUserProvider currentUserProvider
+            CurrentUserProvider currentUserProvider,
+            RegistroPesoRepository registroPesoRepository
     ) {
         this.animalRepository = animalRepository;
         this.rebanhoRepository = rebanhoRepository;
         this.fazendaRepository = fazendaRepository;
         this.currentUserProvider = currentUserProvider;
+        this.registroPesoRepository = registroPesoRepository;
     }
 
 
     public AnimalResponseDTO cadastrar(
             AnimalRequestDTO dto
     ) {
+
+        Usuario usuario =
+                currentUserProvider
+                        .getUsuarioAtual();
+
 
         Rebanho rebanho =
                 buscarRebanhoAutorizado(
@@ -76,7 +88,20 @@ public class AnimalService {
 
 
         Animal animalSalvo =
-                animalRepository.save(animal);
+                animalRepository.save(
+                        animal
+                );
+
+        RegistroPeso registroPesoInicial =
+                new RegistroPeso(
+                        animalSalvo,
+                        usuario,
+                        dto.pesoAtual()
+                );
+
+        registroPesoRepository.save(
+                registroPesoInicial
+        );
 
 
         return AnimalResponseDTO.from(
