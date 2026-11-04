@@ -53,7 +53,20 @@ public class AnimalController {
                 animalService.buscarPorId(id)
         );
     }
+    @GetMapping("/fazenda/{fazendaId}/buscar")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<AnimalResponseDTO> buscarPorIdentificacao(
+            @PathVariable UUID fazendaId,
+            @RequestParam String identificacao
+    ) {
 
+        return ResponseEntity.ok(
+                animalService.buscarPorIdentificacao(
+                        fazendaId,
+                        identificacao
+                )
+        );
+    }
 
     @GetMapping("/fazenda/{fazendaId}")
     @PreAuthorize("isAuthenticated()")

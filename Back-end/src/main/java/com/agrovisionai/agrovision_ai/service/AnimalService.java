@@ -63,22 +63,31 @@ public class AnimalService {
                 );
 
 
+        UUID fazendaId =
+                rebanho
+                        .getFazenda()
+                        .getId();
+
+
+        String identificacao =
+                dto.identificacao().trim().toUpperCase();
         if (
                 animalRepository
-                        .existsByIdentificacao(
-                                dto.identificacao()
+                        .existsByIdentificacaoIgnoreCaseAndRebanhoFazendaId(
+                                identificacao,
+                                rebanho.getFazenda().getId()
                         )
         ) {
 
             throw new BusinessException(
-                    "Já existe um animal com essa identificação."
+                    "Já existe um animal com essa identificação nesta fazenda."
             );
         }
 
 
         Animal animal =
                 new Animal(
-                        dto.identificacao().trim(),
+                        identificacao,
                         dto.raca().trim(),
                         dto.sexo(),
                         dto.dataNascimento(),
@@ -119,6 +128,51 @@ public class AnimalService {
                 buscarAnimalAutorizado(
                         animalId
                 )
+        );
+    }
+    @Transactional(readOnly = true)
+    public AnimalResponseDTO buscarPorIdentificacao(
+            UUID fazendaId,
+            String identificacao
+    ) {
+
+        buscarFazendaAutorizada(
+                fazendaId
+        );
+
+
+        if (
+                identificacao == null ||
+                        identificacao.isBlank()
+        ) {
+
+            throw new BusinessException(
+                    "Identificação do animal é obrigatória."
+            );
+        }
+
+
+        String identificacaoNormalizada =
+                identificacao
+                        .trim()
+                        .toUpperCase();
+
+
+        Animal animal =
+                animalRepository
+                        .findByIdentificacaoIgnoreCaseAndRebanhoFazendaId(
+                                identificacaoNormalizada,
+                                fazendaId
+                        )
+                        .orElseThrow(() ->
+                                new ResouceNotFoundException(
+                                        "Animal não encontrado nesta fazenda."
+                                )
+                        );
+
+
+        return AnimalResponseDTO.from(
+                animal
         );
     }
 

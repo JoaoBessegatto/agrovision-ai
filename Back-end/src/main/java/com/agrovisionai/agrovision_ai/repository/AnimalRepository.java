@@ -11,21 +11,29 @@ import java.util.UUID;
 public interface AnimalRepository
         extends JpaRepository<Animal, UUID> {
 
-    boolean existsByIdentificacao(
-            String identificacao
+
+    boolean existsByIdentificacaoIgnoreCaseAndRebanhoFazendaId(
+            String identificacao,
+            UUID fazendaId
     );
 
-    Optional<Animal> findByIdentificacao(
-            String identificacao
+
+    Optional<Animal>
+    findByIdentificacaoIgnoreCaseAndRebanhoFazendaId(
+            String identificacao,
+            UUID fazendaId
     );
+
 
     List<Animal> findByRebanhoId(
             UUID rebanhoId
     );
 
+
     List<Animal> findByRebanhoFazendaId(
             UUID fazendaId
     );
+
 
     List<Animal> findBySituacao(
             SituacaoAnimal situacao
