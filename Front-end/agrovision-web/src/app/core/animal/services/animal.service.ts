@@ -107,4 +107,18 @@ export class AnimalService {
       {}
     );
   }
+
+  vender(animalId: string): Observable<void> {
+  return this.http.patch<void>(
+    `${this.API_URL}/${animalId}/vender`,
+    {}
+  );
+  }
+
+  registrarMorte(animalId: string): Observable<void> {
+  return this.http.patch<void>(
+    `${this.API_URL}/${animalId}/registrar-morte`,
+    {}
+  );
+  }
 }

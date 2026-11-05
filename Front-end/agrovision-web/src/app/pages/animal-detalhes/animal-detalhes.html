@@ -9,13 +9,8 @@
     class="back-button"
     (click)="voltar()"
   >
-
-    <mat-icon>
-      arrow_back
-    </mat-icon>
-
+    <mat-icon>arrow_back</mat-icon>
     Voltar para animais
-
   </button>
 
 
@@ -27,9 +22,7 @@
 
     <div class="alert-error">
 
-      <mat-icon>
-        error_outline
-      </mat-icon>
+      <mat-icon>error_outline</mat-icon>
 
       <span>
         {{ errorMessage() }}
@@ -39,11 +32,7 @@
         type="button"
         (click)="limparErro()"
       >
-
-        <mat-icon>
-          close
-        </mat-icon>
-
+        <mat-icon>close</mat-icon>
       </button>
 
     </div>
@@ -88,13 +77,8 @@
       <div class="animal-header-main">
 
         <div class="animal-icon">
-
-          <mat-icon>
-            pets
-          </mat-icon>
-
+          <mat-icon>pets</mat-icon>
         </div>
-
 
         <div>
 
@@ -102,44 +86,35 @@
             ANIMAL
           </span>
 
-
           <div class="title-line">
 
             <h1>
               {{ animal.identificacao }}
             </h1>
 
-
             <span
               class="status-badge"
-
               [class.ativo]="
                 animal.situacao === 'ATIVO'
               "
-
               [class.inativo]="
                 animal.situacao === 'INATIVO'
               "
-
               [class.vendido]="
                 animal.situacao === 'VENDIDO'
               "
-
               [class.morto]="
                 animal.situacao === 'MORTO'
               "
             >
-
               {{
                 formatarSituacao(
                   animal.situacao
                 )
               }}
-
             </span>
 
           </div>
-
 
           <p>
 
@@ -174,20 +149,28 @@
 
       <div class="header-actions">
 
-        <button
-          type="button"
-          class="secondary-button"
-          (click)="abrirTransferencia()"
-        >
+        <!-- Transferência somente para ativo -->
 
-          <mat-icon>
-            swap_horiz
-          </mat-icon>
+        @if (
+          animal.situacao === 'ATIVO'
+        ) {
 
-          Transferir rebanho
+          <button
+            type="button"
+            class="secondary-button"
+            (click)="abrirTransferencia()"
+          >
+            <mat-icon>
+              swap_horiz
+            </mat-icon>
 
-        </button>
+            Transferir rebanho
+          </button>
 
+        }
+
+
+        <!-- Ações permitidas em ATIVO / INATIVO -->
 
         @if (
           animal.situacao === 'ATIVO' ||
@@ -197,14 +180,14 @@
           <button
             type="button"
             class="status-button"
-
             [class.activate]="
               animal.situacao === 'INATIVO'
             "
-
             (click)="alterarStatus()"
-
-            [disabled]="alterandoStatus()"
+            [disabled]="
+              alterandoStatus() ||
+              processandoSituacaoFinal()
+            "
           >
 
             <mat-icon>
@@ -234,6 +217,37 @@
 
           </button>
 
+
+          <button
+            type="button"
+            class="sale-button"
+            (click)="abrirVenda()"
+            [disabled]="
+              alterandoStatus() ||
+              processandoSituacaoFinal()
+            "
+          >
+            <mat-icon>sell</mat-icon>
+            Registrar venda
+          </button>
+
+
+          <button
+            type="button"
+            class="danger-button"
+            (click)="abrirRegistroMorte()"
+            [disabled]="
+              alterandoStatus() ||
+              processandoSituacaoFinal()
+            "
+          >
+            <mat-icon>
+              heart_broken
+            </mat-icon>
+
+            Registrar morte
+          </button>
+
         }
 
       </div>
@@ -247,18 +261,13 @@
 
     <section class="metrics">
 
-      <!-- PESO -->
-
       <article class="metric-card">
 
         <div class="metric-icon">
-
           <mat-icon>
             monitor_weight
           </mat-icon>
-
         </div>
-
 
         <div>
 
@@ -273,9 +282,7 @@
                 | number:'1.0-2'
             }}
 
-            <small>
-              kg
-            </small>
+            <small>kg</small>
 
           </strong>
 
@@ -288,18 +295,13 @@
       </article>
 
 
-      <!-- IDADE -->
-
       <article class="metric-card">
 
         <div class="metric-icon">
-
           <mat-icon>
             calendar_today
           </mat-icon>
-
         </div>
-
 
         <div>
 
@@ -308,13 +310,11 @@
           </span>
 
           <strong>
-
             {{
               formatarIdade(
                 animal.idadeMeses
               )
             }}
-
           </strong>
 
           <p>
@@ -326,18 +326,13 @@
       </article>
 
 
-      <!-- REBANHO -->
-
       <article class="metric-card">
 
         <div class="metric-icon">
-
           <mat-icon>
             groups
           </mat-icon>
-
         </div>
-
 
         <div>
 
@@ -386,7 +381,6 @@
 
           </div>
 
-
           <mat-icon>
             info_outline
           </mat-icon>
@@ -395,8 +389,6 @@
 
 
         <div class="info-grid">
-
-          <!-- IDENTIFICAÇÃO -->
 
           <div class="info-item">
 
@@ -411,8 +403,6 @@
           </div>
 
 
-          <!-- RAÇA -->
-
           <div class="info-item">
 
             <span>
@@ -426,8 +416,6 @@
           </div>
 
 
-          <!-- SEXO -->
-
           <div class="info-item">
 
             <span>
@@ -435,19 +423,15 @@
             </span>
 
             <strong>
-
               {{
                 formatarSexo(
                   animal.sexo
                 )
               }}
-
             </strong>
 
           </div>
 
-
-          <!-- NASCIMENTO -->
 
           <div class="info-item">
 
@@ -456,18 +440,14 @@
             </span>
 
             <strong>
-
               {{
                 animal.dataNascimento
                   | date:'dd/MM/yyyy'
               }}
-
             </strong>
 
           </div>
 
-
-          <!-- SITUAÇÃO -->
 
           <div class="info-item">
 
@@ -476,19 +456,15 @@
             </span>
 
             <strong>
-
               {{
                 formatarSituacao(
                   animal.situacao
                 )
               }}
-
             </strong>
 
           </div>
 
-
-          <!-- REBANHO -->
 
           <div class="info-item">
 
@@ -508,7 +484,7 @@
 
 
       <!-- ==================================
-           HISTÓRICO DE PESAGENS
+           HISTÓRICO
       =================================== -->
 
       <section class="card weight-card">
@@ -537,23 +513,14 @@
               class="primary-button compact"
               (click)="abrirNovaPesagem()"
             >
-
-              <mat-icon>
-                add
-              </mat-icon>
-
+              <mat-icon>add</mat-icon>
               Registrar pesagem
-
             </button>
 
           }
 
         </div>
 
-
-        <!-- ==================================
-             LOADING PESAGENS
-        =================================== -->
 
         @if (loadingPesagens()) {
 
@@ -570,10 +537,6 @@
         }
 
 
-        <!-- ==================================
-             SEM PESAGENS
-        =================================== -->
-
         @else if (
           pesagens().length === 0
         ) {
@@ -588,11 +551,9 @@
 
             </div>
 
-
             <h3>
               Nenhuma pesagem registrada
             </h3>
-
 
             <p>
               Registre a primeira pesagem
@@ -610,13 +571,9 @@
                 class="secondary-button"
                 (click)="abrirNovaPesagem()"
               >
-
-                <mat-icon>
-                  add
-                </mat-icon>
+                <mat-icon>add</mat-icon>
 
                 Registrar primeira pesagem
-
               </button>
 
             }
@@ -625,10 +582,6 @@
 
         }
 
-
-        <!-- ==================================
-             HISTÓRICO
-        =================================== -->
 
         @else {
 
@@ -643,10 +596,7 @@
               @let variacao =
                 calcularVariacao(i);
 
-
               <article class="weight-record">
-
-                <!-- TIMELINE -->
 
                 <div class="timeline">
 
@@ -655,9 +605,7 @@
                     [class.latest]="
                       i === 0
                     "
-                  >
-                  </div>
-
+                  ></div>
 
                   @if (
                     i <
@@ -671,8 +619,6 @@
 
                 </div>
 
-
-                <!-- CONTEÚDO -->
 
                 <div class="weight-record-content">
 
@@ -700,15 +646,12 @@
 
                         <span
                           class="variation"
-
                           [class.positive]="
                             variacao > 0
                           "
-
                           [class.negative]="
                             variacao < 0
                           "
-
                           [class.neutral]="
                             variacao === 0
                           "
@@ -744,7 +687,6 @@
 
                           }
 
-
                           {{
                             variacao
                               | number:'1.0-2'
@@ -767,12 +709,10 @@
                       }}
 
                       <small>
-
                         {{
                           registro.dataRegistro
                             | date:'HH:mm'
                         }}
-
                       </small>
 
                     </time>
@@ -790,6 +730,7 @@
 
                       <span>
                         Registrado por
+
                         <strong>
                           {{ registro.usuario }}
                         </strong>
@@ -798,7 +739,9 @@
                     </div>
 
 
-                    @if (i === 0) {
+                    @if (
+                      i === 0
+                    ) {
 
                       <span class="latest-badge">
                         Mais recente
@@ -861,17 +804,12 @@
 
         </div>
 
-
         <button
           type="button"
           class="close-button"
           (click)="fecharTransferencia()"
         >
-
-          <mat-icon>
-            close
-          </mat-icon>
-
+          <mat-icon>close</mat-icon>
         </button>
 
       </div>
@@ -880,13 +818,8 @@
       <div class="transfer-animal">
 
         <div class="animal-mini-icon">
-
-          <mat-icon>
-            pets
-          </mat-icon>
-
+          <mat-icon>pets</mat-icon>
         </div>
-
 
         <div>
 
@@ -914,24 +847,14 @@
           Novo rebanho
         </label>
 
-
         <div class="select-wrapper">
 
-          <mat-icon>
-            groups
-          </mat-icon>
-
+          <mat-icon>groups</mat-icon>
 
           <select
             id="novoRebanho"
-
-            [value]="
-              novoRebanhoId()
-            "
-
-            (change)="
-              alterarNovoRebanho($event)
-            "
+            [value]="novoRebanhoId()"
+            (change)="alterarNovoRebanho($event)"
           >
 
             @for (
@@ -970,29 +893,16 @@
         <button
           type="button"
           class="secondary-button"
-
-          (click)="
-            fecharTransferencia()
-          "
-
-          [disabled]="
-            transferindo()
-          "
+          (click)="fecharTransferencia()"
+          [disabled]="transferindo()"
         >
-
           Cancelar
-
         </button>
-
 
         <button
           type="button"
           class="primary-button"
-
-          (click)="
-            confirmarTransferencia()
-          "
-
+          (click)="confirmarTransferencia()"
           [disabled]="
             transferindo() ||
             novoRebanhoId() ===
@@ -1000,7 +910,9 @@
           "
         >
 
-          @if (transferindo()) {
+          @if (
+            transferindo()
+          ) {
 
             <span class="small-loader">
             </span>
@@ -1048,8 +960,6 @@
       (click)="$event.stopPropagation()"
     >
 
-      <!-- HEADER -->
-
       <div class="modal-header">
 
         <div>
@@ -1064,34 +974,22 @@
 
         </div>
 
-
         <button
           type="button"
           class="close-button"
           (click)="fecharPesagem()"
         >
-
-          <mat-icon>
-            close
-          </mat-icon>
-
+          <mat-icon>close</mat-icon>
         </button>
 
       </div>
 
 
-      <!-- ANIMAL -->
-
       <div class="weighing-animal">
 
         <div class="animal-mini-icon">
-
-          <mat-icon>
-            pets
-          </mat-icon>
-
+          <mat-icon>pets</mat-icon>
         </div>
-
 
         <div>
 
@@ -1121,8 +1019,6 @@
       </div>
 
 
-      <!-- FORM -->
-
       <form
         [formGroup]="pesagemForm"
         (ngSubmit)="registrarPesagem()"
@@ -1134,10 +1030,8 @@
             Novo peso
           </label>
 
-
           <div
             class="weight-input"
-
             [class.invalid]="
               pesagemForm.controls
                 .pesoKg.invalid &&
@@ -1150,23 +1044,15 @@
               monitor_weight
             </mat-icon>
 
-
             <input
               id="pesoKg"
-
               type="number"
-
               formControlName="pesoKg"
-
               min="0.1"
-
               max="1500"
-
               step="0.1"
-
               placeholder="Ex.: 425.5"
             >
-
 
             <span>
               kg
@@ -1183,10 +1069,8 @@
           ) {
 
             <small class="field-error">
-
               Informe um peso válido
               entre 0,1 e 1500 kg.
-
             </small>
 
           }
@@ -1194,59 +1078,42 @@
         </div>
 
 
-        <!-- INFORMAÇÃO -->
-
         <div class="weight-info">
 
           <mat-icon>
             info_outline
           </mat-icon>
 
-
           <p>
-
             O novo peso será adicionado ao
             histórico de pesagens e também
             passará a ser o peso atual
             deste animal.
-
           </p>
 
         </div>
 
-
-        <!-- AÇÕES -->
 
         <div class="modal-actions">
 
           <button
             type="button"
             class="secondary-button"
-
-            (click)="
-              fecharPesagem()
-            "
-
-            [disabled]="
-              salvandoPesagem()
-            "
+            (click)="fecharPesagem()"
+            [disabled]="salvandoPesagem()"
           >
-
             Cancelar
-
           </button>
-
 
           <button
             type="submit"
             class="primary-button"
-
-            [disabled]="
-              salvandoPesagem()
-            "
+            [disabled]="salvandoPesagem()"
           >
 
-            @if (salvandoPesagem()) {
+            @if (
+              salvandoPesagem()
+            ) {
 
               <span class="small-loader">
               </span>
@@ -1268,6 +1135,246 @@
         </div>
 
       </form>
+
+    </div>
+
+  </div>
+
+}
+
+
+<!-- ==========================================
+     MODAL VENDA
+=========================================== -->
+
+@if (
+  modalVenda() &&
+  animal();
+  as animal
+) {
+
+  <div
+    class="modal-overlay"
+    (click)="fecharVenda()"
+  >
+
+    <div
+      class="modal action-confirm-modal"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="venda-animal-titulo"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="sale-icon">
+        <mat-icon>sell</mat-icon>
+      </div>
+
+      <span class="eyebrow">
+        SAÍDA DO PLANTEL
+      </span>
+
+      <h2 id="venda-animal-titulo">
+        Registrar venda?
+      </h2>
+
+      <p>
+        O animal
+        <strong>
+          {{ animal.identificacao }}
+        </strong>
+        será marcado como vendido.
+      </p>
+
+
+      <div class="warning-box">
+
+        <mat-icon>
+          warning_amber
+        </mat-icon>
+
+        <div>
+
+          <strong>
+            Esta é uma situação final.
+          </strong>
+
+          <span>
+            Depois da venda, o animal não poderá
+            receber novas pesagens, ser transferido,
+            inativado ou reativado.
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="fecharVenda()"
+          [disabled]="
+            processandoSituacaoFinal()
+          "
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="sale-button"
+          (click)="confirmarVenda()"
+          [disabled]="
+            processandoSituacaoFinal()
+          "
+        >
+
+          @if (
+            processandoSituacaoFinal()
+          ) {
+
+            <span class="small-loader">
+            </span>
+
+            Registrando...
+
+          } @else {
+
+            <mat-icon>sell</mat-icon>
+
+            Confirmar venda
+
+          }
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+}
+
+
+<!-- ==========================================
+     MODAL MORTE
+=========================================== -->
+
+@if (
+  modalMorte() &&
+  animal();
+  as animal
+) {
+
+  <div
+    class="modal-overlay"
+    (click)="fecharRegistroMorte()"
+  >
+
+    <div
+      class="modal action-confirm-modal"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="morte-animal-titulo"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="danger-icon">
+
+        <mat-icon>
+          heart_broken
+        </mat-icon>
+
+      </div>
+
+      <span class="eyebrow">
+        BAIXA DO ANIMAL
+      </span>
+
+      <h2 id="morte-animal-titulo">
+        Registrar morte?
+      </h2>
+
+      <p>
+        O animal
+        <strong>
+          {{ animal.identificacao }}
+        </strong>
+        será registrado como morto.
+      </p>
+
+
+      <div class="warning-box danger">
+
+        <mat-icon>
+          warning_amber
+        </mat-icon>
+
+        <div>
+
+          <strong>
+            Esta ação é definitiva.
+          </strong>
+
+          <span>
+            Depois do registro, o animal não poderá
+            receber novas pesagens, ser transferido,
+            vendido ou retornar ao status ativo.
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="fecharRegistroMorte()"
+          [disabled]="
+            processandoSituacaoFinal()
+          "
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="danger-button"
+          (click)="confirmarRegistroMorte()"
+          [disabled]="
+            processandoSituacaoFinal()
+          "
+        >
+
+          @if (
+            processandoSituacaoFinal()
+          ) {
+
+            <span class="small-loader">
+            </span>
+
+            Registrando...
+
+          } @else {
+
+            <mat-icon>
+              heart_broken
+            </mat-icon>
+
+            Confirmar morte
+
+          }
+
+        </button>
+
+      </div>
 
     </div>
 

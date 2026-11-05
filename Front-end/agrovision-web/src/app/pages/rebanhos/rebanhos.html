@@ -32,7 +32,9 @@
 
       } @else {
 
-        <p>Selecione uma fazenda para ver seus rebanhos.</p>
+        <p>
+          Selecione uma fazenda para ver seus rebanhos.
+        </p>
 
       }
 
@@ -56,11 +58,16 @@
 
   @if (errorMessage()) {
 
-    <div class="alert-error" role="alert">
+    <div
+      class="alert-error"
+      role="alert"
+    >
 
       <mat-icon>error_outline</mat-icon>
 
-      <span>{{ errorMessage() }}</span>
+      <span>
+        {{ errorMessage() }}
+      </span>
 
       <button
         type="button"
@@ -79,11 +86,16 @@
 
   @if (loading()) {
 
-    <div class="loading-state" role="status">
+    <div
+      class="loading-state"
+      role="status"
+    >
 
       <div class="loader"></div>
 
-      <p>Carregando rebanhos...</p>
+      <p>
+        Carregando rebanhos...
+      </p>
 
     </div>
 
@@ -100,7 +112,9 @@
         <mat-icon>agriculture</mat-icon>
       </div>
 
-      <h2>Nenhuma fazenda selecionada</h2>
+      <h2>
+        Nenhuma fazenda selecionada
+      </h2>
 
       <p>
         Escolha uma propriedade no topo da página
@@ -122,7 +136,9 @@
         <mat-icon>groups</mat-icon>
       </div>
 
-      <h2>Nenhum rebanho cadastrado</h2>
+      <h2>
+        Nenhum rebanho cadastrado
+      </h2>
 
       <p>
         Crie o primeiro rebanho para depois
@@ -147,40 +163,80 @@
 
   @else {
 
-    <section class="rebanhos-grid" aria-label="Lista de rebanhos">
+    <section
+      class="rebanhos-grid"
+      aria-label="Lista de rebanhos"
+    >
 
-      @for (rebanho of rebanhos(); track rebanho.id) {
+      @for (
+        rebanho of rebanhos();
+        track rebanho.id
+      ) {
 
         <article class="rebanho-card">
 
           <div class="card-head">
 
-            <h2>{{ rebanho.nome }}</h2>
+            <h2>
+              {{ rebanho.nome }}
+            </h2>
 
             <div class="card-actions">
+
+              <!-- VENDA DO LOTE -->
+
+              @if (rebanho.quantidadeAnimais > 0) {
+
+                <button
+                  type="button"
+                  class="sell"
+                  title="Vender lote"
+                  [attr.aria-label]="
+                    'Vender lote ' + rebanho.nome
+                  "
+                  (click)="abrirVendaRebanho(rebanho)"
+                >
+                  <mat-icon>sell</mat-icon>
+                </button>
+
+              }
+
+
+              <!-- EDITAR -->
 
               <button
                 type="button"
                 title="Editar rebanho"
-                [attr.aria-label]="'Editar ' + rebanho.nome"
+                [attr.aria-label]="
+                  'Editar ' + rebanho.nome
+                "
                 (click)="abrirEdicao(rebanho)"
               >
                 <mat-icon>edit</mat-icon>
               </button>
 
+
+              <!-- EXCLUIR -->
+
               <button
                 type="button"
                 class="delete"
-                [class.blocked]="rebanho.quantidadeAnimais > 0"
+                [class.blocked]="
+                  rebanho.quantidadeAnimais > 0
+                "
                 [title]="
                   rebanho.quantidadeAnimais > 0
                     ? 'Rebanhos com animais não podem ser excluídos'
                     : 'Excluir rebanho'
                 "
-                [attr.aria-label]="'Excluir ' + rebanho.nome"
+                [attr.aria-label]="
+                  'Excluir ' + rebanho.nome
+                "
                 (click)="solicitarExclusao(rebanho)"
               >
-                <mat-icon>delete_outline</mat-icon>
+                <mat-icon>
+                  delete_outline
+                </mat-icon>
               </button>
 
             </div>
@@ -192,16 +248,25 @@
             class="description"
             [class.empty]="!rebanho.descricao"
           >
-            {{ rebanho.descricao || 'Sem descrição.' }}
+            {{
+              rebanho.descricao ||
+              'Sem descrição.'
+            }}
           </p>
 
 
           <div class="card-count">
 
-            <strong>{{ rebanho.quantidadeAnimais }}</strong>
+            <strong>
+              {{ rebanho.quantidadeAnimais }}
+            </strong>
 
             <span>
-              {{ rebanho.quantidadeAnimais === 1 ? 'animal' : 'animais' }}
+              {{
+                rebanho.quantidadeAnimais === 1
+                  ? 'animal'
+                  : 'animais'
+              }}
             </span>
 
           </div>
@@ -211,11 +276,19 @@
 
             <div class="share">
 
-              <div class="share-bar" aria-hidden="true">
-                <span [style.width.%]="participacao(rebanho)"></span>
+              <div
+                class="share-bar"
+                aria-hidden="true"
+              >
+                <span
+                  [style.width.%]="participacao(rebanho)"
+                ></span>
               </div>
 
-              <small>{{ participacao(rebanho) }}% do plantel</small>
+              <small>
+                {{ participacao(rebanho) }}%
+                do plantel
+              </small>
 
             </div>
 
@@ -227,7 +300,9 @@
             <a
               class="card-link"
               routerLink="/app/animais"
-              [queryParams]="{ rebanho: rebanho.id }"
+              [queryParams]="{
+                rebanho: rebanho.id
+              }"
             >
               Ver animais
               <mat-icon>arrow_forward</mat-icon>
@@ -235,7 +310,10 @@
 
           } @else {
 
-            <a class="card-link" routerLink="/app/animais">
+            <a
+              class="card-link"
+              routerLink="/app/animais"
+            >
               Cadastrar animais
               <mat-icon>arrow_forward</mat-icon>
             </a>
@@ -251,11 +329,14 @@
   }
 
 
-  <!-- ===== MODAL: CADASTRO / EDIÇÃO ===== -->
+  <!-- ===== MODAL CADASTRO / EDIÇÃO ===== -->
 
   @if (modalAberto()) {
 
-    <div class="modal-overlay" (click)="fecharModal()">
+    <div
+      class="modal-overlay"
+      (click)="fecharModal()"
+    >
 
       <div
         class="modal"
@@ -268,7 +349,11 @@
         <div class="modal-header">
 
           <h2 id="modal-titulo">
-            {{ editando() ? 'Editar rebanho' : 'Novo rebanho' }}
+            {{
+              editando()
+                ? 'Editar rebanho'
+                : 'Novo rebanho'
+            }}
           </h2>
 
           <button
@@ -283,21 +368,39 @@
         </div>
 
 
-        @if (fazendaContext.fazendaAtiva(); as fazenda) {
+        @if (
+          fazendaContext.fazendaAtiva();
+          as fazenda
+        ) {
 
           <div class="modal-farm">
-            <mat-icon>agriculture</mat-icon>
-            <span>Na fazenda <strong>{{ fazenda.nome }}</strong></span>
+
+            <mat-icon>
+              agriculture
+            </mat-icon>
+
+            <span>
+              Na fazenda
+              <strong>
+                {{ fazenda.nome }}
+              </strong>
+            </span>
+
           </div>
 
         }
 
 
-        <form [formGroup]="rebanhoForm" (ngSubmit)="salvar()">
+        <form
+          [formGroup]="rebanhoForm"
+          (ngSubmit)="salvar()"
+        >
 
           <div class="field">
 
-            <label for="nome">Nome do rebanho</label>
+            <label for="nome">
+              Nome do rebanho
+            </label>
 
             <div
               class="input-wrapper"
@@ -320,6 +423,7 @@
 
             </div>
 
+
             @if (
               rebanhoForm.controls.nome.touched &&
               rebanhoForm.controls.nome.hasError('required')
@@ -330,6 +434,7 @@
               </small>
 
             }
+
 
             @if (
               rebanhoForm.controls.nome.touched &&
@@ -361,7 +466,10 @@
             ></textarea>
 
             <div class="character-count">
-              {{ rebanhoForm.controls.descricao.value.length }}/500
+              {{
+                rebanhoForm.controls
+                  .descricao.value.length
+              }}/500
             </div>
 
           </div>
@@ -392,7 +500,12 @@
               } @else {
 
                 <mat-icon>save</mat-icon>
-                {{ editando() ? 'Salvar alterações' : 'Criar rebanho' }}
+
+                {{
+                  editando()
+                    ? 'Salvar alterações'
+                    : 'Criar rebanho'
+                }}
 
               }
 
@@ -409,11 +522,17 @@
   }
 
 
-  <!-- ===== MODAL: CONFIRMAR EXCLUSÃO ===== -->
+  <!-- ===== MODAL EXCLUSÃO ===== -->
 
-  @if (rebanhoParaExcluir(); as rebanho) {
+  @if (
+    rebanhoParaExcluir();
+    as rebanho
+  ) {
 
-    <div class="modal-overlay" (click)="cancelarExclusao()">
+    <div
+      class="modal-overlay"
+      (click)="cancelarExclusao()"
+    >
 
       <div
         class="confirm-modal"
@@ -427,10 +546,13 @@
           <mat-icon>delete_outline</mat-icon>
         </div>
 
-        <h2 id="excluir-titulo">Excluir rebanho?</h2>
+        <h2 id="excluir-titulo">
+          Excluir rebanho?
+        </h2>
 
         <p>
-          O rebanho <strong>{{ rebanho.nome }}</strong>
+          O rebanho
+          <strong>{{ rebanho.nome }}</strong>
           será excluído e essa ação não pode ser desfeita.
         </p>
 
@@ -451,10 +573,232 @@
             (click)="confirmarExclusao()"
             [disabled]="excluindo()"
           >
-            {{ excluindo() ? 'Excluindo...' : 'Excluir rebanho' }}
+            {{
+              excluindo()
+                ? 'Excluindo...'
+                : 'Excluir rebanho'
+            }}
           </button>
 
         </div>
+
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- ===== MODAL VENDA DO LOTE ===== -->
+
+  @if (
+    modalVendaRebanho() &&
+    rebanhoVendaSelecionado();
+    as rebanho
+  ) {
+
+    <div
+      class="modal-overlay"
+      (click)="fecharVendaRebanho()"
+    >
+
+      <div
+        class="confirm-modal sale-herd-modal"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="vender-rebanho-titulo"
+        (click)="$event.stopPropagation()"
+      >
+
+        @if (!resultadoVenda()) {
+
+          <div class="sale-icon">
+            <mat-icon>sell</mat-icon>
+          </div>
+
+          <span class="eyebrow">
+            VENDA EM LOTE
+          </span>
+
+          <h2 id="vender-rebanho-titulo">
+            Vender {{ rebanho.nome }}?
+          </h2>
+
+          <p>
+            Todos os animais elegíveis deste
+            rebanho serão marcados como vendidos.
+          </p>
+
+
+          <div class="warning-box">
+
+            <mat-icon>
+              warning_amber
+            </mat-icon>
+
+            <div>
+
+              <strong>
+                Esta ação afeta todo o lote.
+              </strong>
+
+              <span>
+                Animais mortos serão ignorados e
+                animais já vendidos permanecerão
+                com o mesmo status.
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <div class="sale-summary">
+
+            <mat-icon>
+              groups
+            </mat-icon>
+
+            <div>
+
+              <span>
+                Rebanho selecionado
+              </span>
+
+              <strong>
+                {{ rebanho.nome }}
+              </strong>
+
+              <small>
+
+                {{ rebanho.quantidadeAnimais }}
+
+                {{
+                  rebanho.quantidadeAnimais === 1
+                    ? 'animal cadastrado'
+                    : 'animais cadastrados'
+                }}
+
+              </small>
+
+            </div>
+
+          </div>
+
+
+          <div class="modal-actions">
+
+            <button
+              type="button"
+              class="secondary-button"
+              (click)="fecharVendaRebanho()"
+              [disabled]="vendendoRebanho()"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="button"
+              class="sale-button"
+              (click)="confirmarVendaRebanho()"
+              [disabled]="vendendoRebanho()"
+            >
+
+              @if (vendendoRebanho()) {
+
+                <span class="small-loader"></span>
+                Processando...
+
+              } @else {
+
+                <mat-icon>sell</mat-icon>
+                Confirmar venda
+
+              }
+
+            </button>
+
+          </div>
+
+        }
+
+        @else if (
+          resultadoVenda();
+          as resultado
+        ) {
+
+          <div class="sale-result">
+
+            <div class="success-icon">
+              <mat-icon>check_circle</mat-icon>
+            </div>
+
+            <span class="eyebrow">
+              VENDA CONCLUÍDA
+            </span>
+
+            <h2>
+              Lote atualizado
+            </h2>
+
+            <p>
+              A operação no rebanho
+              <strong>
+                {{ resultado.rebanhoNome }}
+              </strong>
+              foi concluída.
+            </p>
+
+
+            <div class="result-grid">
+
+              <div>
+                <span>Animais do rebanho</span>
+                <strong>
+                  {{ resultado.totalAnimais }}
+                </strong>
+              </div>
+
+              <div>
+                <span>Vendidos agora</span>
+                <strong>
+                  {{ resultado.animaisVendidos }}
+                </strong>
+              </div>
+
+              <div>
+                <span>Já vendidos</span>
+                <strong>
+                  {{ resultado.jaVendidos }}
+                </strong>
+              </div>
+
+              <div>
+                <span>Mortos ignorados</span>
+                <strong>
+                  {{ resultado.mortosIgnorados }}
+                </strong>
+              </div>
+
+            </div>
+
+
+            <div class="modal-actions single-action">
+
+              <button
+                type="button"
+                class="primary-button"
+                (click)="fecharVendaRebanho()"
+              >
+                <mat-icon>check</mat-icon>
+                Concluir
+              </button>
+
+            </div>
+
+          </div>
+
+        }
 
       </div>
 

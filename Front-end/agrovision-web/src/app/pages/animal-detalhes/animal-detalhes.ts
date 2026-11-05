@@ -165,6 +165,12 @@ export class AnimalDetalhes {
     signal(false);
 
 
+  modalVenda = signal(false);
+
+  modalMorte = signal(false);
+
+  processandoSituacaoFinal = signal(false);
+
   // =========================================================
   // FORMULÁRIO DE PESAGEM
   // =========================================================
@@ -319,9 +325,151 @@ export class AnimalDetalhes {
 
       });
 
+  } 
+
+  abrirVenda(): void {
+
+  const animal = this.animal();
+
+  if (!animal) {
+    return;
   }
 
+  if (
+    animal.situacao === 'VENDIDO' ||
+    animal.situacao === 'MORTO'
+  ) {
+    return;
+  }
 
+  this.modalVenda.set(true);
+}
+
+
+fecharVenda(): void {
+
+  if (this.processandoSituacaoFinal()) {
+    return;
+  }
+
+  this.modalVenda.set(false);
+}
+
+
+confirmarVenda(): void {
+
+  const animal = this.animal();
+
+  if (!animal) {
+    return;
+  }
+
+  this.processandoSituacaoFinal.set(true);
+  this.errorMessage.set('');
+
+  this.animalService
+    .vender(animal.id)
+
+    .pipe(
+      finalize(() => {
+        this.processandoSituacaoFinal.set(false);
+      })
+    )
+
+    .subscribe({
+
+      next: () => {
+
+        this.modalVenda.set(false);
+
+        this.carregarAnimal();
+      },
+
+      error: error => {
+
+        this.errorMessage.set(
+          this.extrairMensagemErro(
+            error,
+            'Não foi possível registrar a venda do animal.'
+          )
+        );
+
+      }
+
+    });
+  }
+
+  abrirRegistroMorte(): void {
+
+  const animal = this.animal();
+
+  if (!animal) {
+    return;
+  }
+
+  if (
+    animal.situacao === 'MORTO' ||
+    animal.situacao === 'VENDIDO'
+  ) {
+    return;
+  }
+
+  this.modalMorte.set(true);
+}
+
+
+fecharRegistroMorte(): void {
+
+  if (this.processandoSituacaoFinal()) {
+    return;
+  }
+
+  this.modalMorte.set(false);
+}
+
+
+confirmarRegistroMorte(): void {
+
+  const animal = this.animal();
+
+  if (!animal) {
+    return;
+  }
+
+  this.processandoSituacaoFinal.set(true);
+  this.errorMessage.set('');
+
+  this.animalService
+    .registrarMorte(animal.id)
+
+    .pipe(
+      finalize(() => {
+        this.processandoSituacaoFinal.set(false);
+      })
+    )
+
+    .subscribe({
+
+      next: () => {
+
+        this.modalMorte.set(false);
+
+        this.carregarAnimal();
+      },
+
+      error: error => {
+
+        this.errorMessage.set(
+          this.extrairMensagemErro(
+            error,
+            'Não foi possível registrar a morte do animal.'
+          )
+        );
+
+      }
+
+    });
+  }
   // =========================================================
   // ATUALIZAR ANIMAL SEM RECARREGAR A TELA
   // =========================================================
@@ -977,44 +1125,34 @@ export class AnimalDetalhes {
 
   abrirTransferencia(): void {
 
-    const animal =
-      this.animal();
+  const animal =
+    this.animal();
 
-
-    if (!animal) {
-      return;
-    }
-
-
-    if (
-      this.rebanhos().length === 0
-    ) {
-
-      this.errorMessage.set(
-        'Nenhum rebanho disponível para transferência.'
-      );
-
-      return;
-    }
-
-
-    this.errorMessage.set('');
-
-
-    /*
-     * O select inicia apontando
-     * para o rebanho atual.
-     */
-    this.novoRebanhoId.set(
-      animal.rebanhoId
-    );
-
-
-    this.modalTransferencia.set(
-      true
-    );
-
+  if (!animal) {
+    return;
   }
+
+
+  if (
+    animal.situacao !== 'ATIVO'
+  ) {
+
+    this.errorMessage.set(
+      'Somente animais ativos podem ser transferidos entre rebanhos.'
+    );
+
+    return;
+  }
+
+
+  this.novoRebanhoId.set(
+    animal.rebanhoId
+  );
+
+  this.modalTransferencia.set(
+    true
+  );
+}
 
 
   // =========================================================

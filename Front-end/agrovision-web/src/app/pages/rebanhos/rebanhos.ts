@@ -37,6 +37,10 @@ import {
   RebanhoRequest
 } from '../../core/rebanho/models/rebanho-request';
 
+import {
+  VendaRebanhoResponse
+} from '../../core/rebanho/models/venda-rebanho-response';
+
 
 @Component({
   selector: 'app-rebanhos',
@@ -98,6 +102,17 @@ export class Rebanhos {
   rebanhoEditando =
     signal<RebanhoResponse | null>(null);
 
+  rebanhoVendaSelecionado =
+  signal<RebanhoResponse | null>(null);
+
+  modalVendaRebanho =
+    signal(false);
+
+  vendendoRebanho =
+    signal(false);
+
+  resultadoVenda =
+    signal<VendaRebanhoResponse | null>(null);
 
   // ========================================
   // MODAL EXCLUSÃO
@@ -599,6 +614,95 @@ export class Rebanhos {
 
       });
 
+  }
+
+  abrirVendaRebanho(
+    rebanho: RebanhoResponse
+    ): void {
+
+  this.rebanhoVendaSelecionado.set(
+    rebanho
+  );
+
+  this.resultadoVenda.set(null);
+
+  this.modalVendaRebanho.set(true); 
+  
+  }
+
+  fecharVendaRebanho(): void {
+
+    if (this.vendendoRebanho()) {
+      return;
+  }
+
+  this.modalVendaRebanho.set(false);
+
+  this.rebanhoVendaSelecionado.set(null);
+
+  this.resultadoVenda.set(null);
+  
+  }
+  
+  confirmarVendaRebanho(): void {
+
+  const rebanho =
+    this.rebanhoVendaSelecionado();
+
+  if (!rebanho) {
+    return;
+  }
+
+  this.vendendoRebanho.set(true);
+
+  this.errorMessage.set('');
+
+
+  this.rebanhoService
+    .venderRebanho(
+      rebanho.id
+    )
+
+    .pipe(
+      finalize(() => {
+        this.vendendoRebanho.set(false);
+      })
+    )
+
+    .subscribe({
+
+      next: resultado => {
+
+        this.resultadoVenda.set(
+          resultado
+        );
+
+
+        const fazendaId =
+          this.fazendaContext
+            .fazendaAtivaId();
+
+        if (fazendaId) {
+          this.carregarRebanhos(
+            fazendaId
+          );
+        }
+
+      },
+
+
+      error: error => {
+
+        this.errorMessage.set(
+          this.extrairMensagemErro(
+            error,
+            'Não foi possível realizar a venda do rebanho.'
+          )
+        );
+
+      }
+
+    });
   }
 
 

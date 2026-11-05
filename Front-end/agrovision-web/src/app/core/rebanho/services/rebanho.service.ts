@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 
 import type { RebanhoRequest } from '../models/rebanho-request';
 import { RebanhoResponse } from '../models/rebanho-response';
+import { VendaRebanhoResponse } from '../models/venda-rebanho-response';
 
 @Injectable({
   providedIn: 'root'
@@ -45,7 +46,16 @@ export class RebanhoService {
       request
     );
   }
+  
+  venderRebanho(
+  rebanhoId: string
+): Observable<VendaRebanhoResponse> {
 
+  return this.http.patch<VendaRebanhoResponse>(
+    `${this.API_URL}/${rebanhoId}/vender`,
+    {}
+  );
+  }
 
   atualizar(
     rebanhoId: string,
