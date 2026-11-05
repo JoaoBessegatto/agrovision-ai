@@ -2,7 +2,9 @@ package com.agrovisionai.agrovision_ai.controller;
 
 import com.agrovisionai.agrovision_ai.domain.dto.request.RebanhoRequestDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.RebanhoResponseDTO;
+import com.agrovisionai.agrovision_ai.repository.RebanhoRepository;
 import com.agrovisionai.agrovision_ai.service.RebanhoService;
+import com.agrovisionai.agrovision_ai.domain.dto.response.VendaRebanhoResponseDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +22,8 @@ public class RebanhoController {
 
 
     public RebanhoController(
-            RebanhoService rebanhoService
+            RebanhoService rebanhoService,
+            RebanhoRepository rebanhoRepository
     ) {
         this.rebanhoService = rebanhoService;
     }
@@ -40,6 +43,22 @@ public class RebanhoController {
                 .body(rebanho);
     }
 
+    @PatchMapping("/{id}/vender")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<VendaRebanhoResponseDTO> venderRebanho(
+            @PathVariable UUID id
+    ) {
+
+        VendaRebanhoResponseDTO response =
+                rebanhoService.venderRebanho(
+                        id
+                );
+
+
+        return ResponseEntity.ok(
+                response
+        );
+    }
 
     @GetMapping("/fazenda/{fazendaId}")
     @PreAuthorize("isAuthenticated()")
