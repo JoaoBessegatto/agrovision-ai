@@ -24,14 +24,16 @@
 
         <p>
           Indicadores produtivos da
-          <strong>{{ fazenda.nome }}</strong>.
+          <strong>
+            {{ fazenda.nome }}
+          </strong>.
         </p>
 
       } @else {
 
         <p>
           Selecione uma fazenda para visualizar
-          os indicadores produtivos.
+          seus indicadores produtivos.
         </p>
 
       }
@@ -81,7 +83,10 @@
 
   @if (loading()) {
 
-    <section class="loading-state">
+    <section
+      class="loading-state"
+      role="status"
+    >
 
       <div class="loader"></div>
 
@@ -105,9 +110,11 @@
     <section class="empty-state">
 
       <div class="empty-icon">
+
         <mat-icon>
           dashboard
         </mat-icon>
+
       </div>
 
       <h2>
@@ -115,9 +122,9 @@
       </h2>
 
       <p>
-        Escolha uma propriedade no topo
-        da página para visualizar os
-        indicadores do plantel.
+        Escolha uma propriedade no topo da
+        página para visualizar os indicadores
+        do plantel.
       </p>
 
     </section>
@@ -148,10 +155,13 @@
       <article class="kpi-card">
 
         <div class="kpi-icon animals">
+
           <mat-icon>
             pets
           </mat-icon>
+
         </div>
+
 
         <div class="kpi-content">
 
@@ -178,10 +188,13 @@
       <article class="kpi-card">
 
         <div class="kpi-icon weight">
+
           <mat-icon>
             monitor_weight
           </mat-icon>
+
         </div>
+
 
         <div class="kpi-content">
 
@@ -196,12 +209,14 @@
                 | number:'1.0-2'
             }}
 
-            <small>kg</small>
+            <small>
+              kg
+            </small>
 
           </strong>
 
           <small>
-            Animais ativos
+            Média dos animais ativos
           </small>
 
         </div>
@@ -214,10 +229,13 @@
       <article class="kpi-card">
 
         <div class="kpi-icon herds">
+
           <mat-icon>
             groups
           </mat-icon>
+
         </div>
+
 
         <div class="kpi-content">
 
@@ -243,10 +261,13 @@
       <article class="kpi-card">
 
         <div class="kpi-icon weighing">
+
           <mat-icon>
             scale
           </mat-icon>
+
         </div>
+
 
         <div class="kpi-content">
 
@@ -270,7 +291,7 @@
 
 
     <!-- =================================
-         SEGUNDA LINHA
+         GRÁFICOS SUPERIORES
     ================================== -->
 
     <div class="dashboard-grid">
@@ -279,7 +300,7 @@
            SITUAÇÃO DO PLANTEL
       ================================ -->
 
-      <section class="dashboard-card">
+      <section class="dashboard-card status-card">
 
         <div class="card-header">
 
@@ -292,6 +313,11 @@
             <h2>
               Situação dos animais
             </h2>
+
+            <p>
+              Distribuição atual dos animais
+              cadastrados na propriedade.
+            </p>
 
           </div>
 
@@ -306,130 +332,169 @@
           dados.totalAnimais > 0
         ) {
 
-          <div class="status-list">
+          <div class="status-chart-layout">
 
-            <!-- ATIVOS -->
+            <!-- GRÁFICO -->
 
-            <div class="status-row">
+            <div class="donut-wrapper">
 
-              <div class="status-info">
+              <div
+                echarts
+                [options]="graficoSituacao()"
+                class="chart chart-donut"
+              >
+              </div>
 
-                <span class="status-dot active">
+
+              <div class="donut-center">
+
+                <strong>
+                  {{ dados.totalAnimais }}
+                </strong>
+
+                <span>
+                  animais
                 </span>
+
+              </div>
+
+            </div>
+
+
+            <!-- LEGENDA -->
+
+            <div class="status-legend">
+
+              <!-- ATIVOS -->
+
+              <div class="legend-item">
+
+                <span
+                  class="legend-color active"
+                ></span>
 
                 <div>
 
-                  <strong>
+                  <span>
                     Ativos
-                  </strong>
+                  </span>
 
-                  <small>
-                    {{ percentualSituacao(dados.animaisAtivos) }}%
-                  </small>
+                  <strong>
+                    {{ dados.animaisAtivos }}
+                  </strong>
 
                 </div>
 
+                <small>
+                  {{
+                    percentualSituacao(
+                      dados.animaisAtivos
+                    )
+                  }}%
+                </small>
+
               </div>
 
-              <strong class="status-value">
-                {{ dados.animaisAtivos }}
-              </strong>
 
-            </div>
+              <!-- INATIVOS -->
 
+              <div class="legend-item">
 
-            <!-- INATIVOS -->
-
-            <div class="status-row">
-
-              <div class="status-info">
-
-                <span class="status-dot inactive">
-                </span>
+                <span
+                  class="legend-color inactive"
+                ></span>
 
                 <div>
 
-                  <strong>
+                  <span>
                     Inativos
-                  </strong>
+                  </span>
 
-                  <small>
-                    {{ percentualSituacao(dados.animaisInativos) }}%
-                  </small>
+                  <strong>
+                    {{ dados.animaisInativos }}
+                  </strong>
 
                 </div>
 
+                <small>
+                  {{
+                    percentualSituacao(
+                      dados.animaisInativos
+                    )
+                  }}%
+                </small>
+
               </div>
 
-              <strong class="status-value">
-                {{ dados.animaisInativos }}
-              </strong>
 
-            </div>
+              <!-- VENDIDOS -->
 
+              <div class="legend-item">
 
-            <!-- VENDIDOS -->
-
-            <div class="status-row">
-
-              <div class="status-info">
-
-                <span class="status-dot sold">
-                </span>
+                <span
+                  class="legend-color sold"
+                ></span>
 
                 <div>
 
-                  <strong>
+                  <span>
                     Vendidos
-                  </strong>
+                  </span>
 
-                  <small>
-                    {{ percentualSituacao(dados.animaisVendidos) }}%
-                  </small>
+                  <strong>
+                    {{ dados.animaisVendidos }}
+                  </strong>
 
                 </div>
 
+                <small>
+                  {{
+                    percentualSituacao(
+                      dados.animaisVendidos
+                    )
+                  }}%
+                </small>
+
               </div>
 
-              <strong class="status-value">
-                {{ dados.animaisVendidos }}
-              </strong>
 
-            </div>
+              <!-- MORTOS -->
 
+              <div class="legend-item">
 
-            <!-- MORTOS -->
-
-            <div class="status-row">
-
-              <div class="status-info">
-
-                <span class="status-dot dead">
-                </span>
+                <span
+                  class="legend-color dead"
+                ></span>
 
                 <div>
 
-                  <strong>
+                  <span>
                     Mortos
-                  </strong>
+                  </span>
 
-                  <small>
-                    {{ percentualSituacao(dados.animaisMortos) }}%
-                  </small>
+                  <strong>
+                    {{ dados.animaisMortos }}
+                  </strong>
 
                 </div>
 
-              </div>
+                <small>
+                  {{
+                    percentualSituacao(
+                      dados.animaisMortos
+                    )
+                  }}%
+                </small>
 
-              <strong class="status-value">
-                {{ dados.animaisMortos }}
-              </strong>
+              </div>
 
             </div>
 
           </div>
 
-        } @else {
+        }
+
+        @else {
 
           <div class="card-empty">
 
@@ -449,10 +514,10 @@
 
 
       <!-- ===============================
-           DISTRIBUIÇÃO POR REBANHO
+           REBANHOS
       ================================ -->
 
-      <section class="dashboard-card">
+      <section class="dashboard-card herd-chart-card">
 
         <div class="card-header">
 
@@ -466,10 +531,15 @@
               Distribuição do plantel
             </h2>
 
+            <p>
+              Quantidade de animais
+              cadastrados em cada rebanho.
+            </p>
+
           </div>
 
           <mat-icon>
-            groups
+            bar_chart
           </mat-icon>
 
         </div>
@@ -479,50 +549,16 @@
           dados.rebanhos.length > 0
         ) {
 
-          <div class="herd-list">
-
-            @for (
-              rebanho of dados.rebanhos;
-              track rebanho.rebanhoId
-            ) {
-
-              <div class="herd-row">
-
-                <div class="herd-title">
-
-                  <strong>
-                    {{ rebanho.nome }}
-                  </strong>
-
-                  <span>
-                    {{ rebanho.quantidadeAnimais }}
-                    {{
-                      rebanho.quantidadeAnimais === 1
-                        ? 'animal'
-                        : 'animais'
-                    }}
-                  </span>
-
-                </div>
-
-
-                <div class="herd-bar">
-
-                  <span
-                    [style.width.%]="
-                      percentualRebanho(rebanho)
-                    "
-                  ></span>
-
-                </div>
-
-              </div>
-
-            }
-
+          <div
+            echarts
+            [options]="graficoRebanhos()"
+            class="chart chart-herds"
+          >
           </div>
 
-        } @else {
+        }
+
+        @else {
 
           <div class="card-empty">
 
@@ -579,55 +615,16 @@
         dados.evolucaoPeso.length > 0
       ) {
 
-        <div class="evolution-list">
-
-          @for (
-            registro of dados.evolucaoPeso;
-            track registro.periodo
-          ) {
-
-            <div class="evolution-row">
-
-              <span class="period">
-                {{
-                  formatarPeriodo(
-                    registro.periodo
-                  )
-                }}
-              </span>
-
-
-              <div class="evolution-bar">
-
-                <span
-                  [style.width.%]="
-                    percentualPeso(
-                      registro.pesoMedio
-                    )
-                  "
-                ></span>
-
-              </div>
-
-
-              <strong>
-
-                {{
-                  registro.pesoMedio
-                    | number:'1.0-2'
-                }}
-
-                kg
-
-              </strong>
-
-            </div>
-
-          }
-
+        <div
+          echarts
+          [options]="graficoEvolucaoPeso()"
+          class="chart chart-evolution"
+        >
         </div>
 
-      } @else {
+      }
+
+      @else {
 
         <div class="card-empty">
 
@@ -648,7 +645,7 @@
 
 
     <!-- =================================
-         DESEMPENHO DOS REBANHOS
+         TABELA POR REBANHO
     ================================== -->
 
     <section class="dashboard-card herd-performance">
@@ -664,6 +661,11 @@
           <h2>
             Desempenho por rebanho
           </h2>
+
+          <p>
+            Visão detalhada dos principais
+            indicadores de cada lote.
+          </p>
 
         </div>
 
@@ -699,6 +701,10 @@
                 </th>
 
                 <th class="numeric">
+                  % ativos
+                </th>
+
+                <th class="numeric">
                   Peso médio
                 </th>
 
@@ -718,28 +724,83 @@
 
                   <td>
 
-                    <strong>
-                      {{ rebanho.nome }}
-                    </strong>
+                    <div class="herd-name">
+
+                      <span class="herd-marker">
+                      </span>
+
+                      <strong>
+                        {{ rebanho.nome }}
+                      </strong>
+
+                    </div>
 
                   </td>
 
-                  <td class="numeric">
-                    {{ rebanho.quantidadeAnimais }}
-                  </td>
-
-                  <td class="numeric">
-                    {{ rebanho.animaisAtivos }}
-                  </td>
 
                   <td class="numeric">
 
                     {{
-                      rebanho.pesoMedio
-                        | number:'1.0-2'
+                      rebanho.quantidadeAnimais
                     }}
 
-                    kg
+                  </td>
+
+
+                  <td class="numeric">
+
+                    {{
+                      rebanho.animaisAtivos
+                    }}
+
+                  </td>
+
+
+                  <td class="numeric">
+
+                    @if (
+                      rebanho.quantidadeAnimais > 0
+                    ) {
+
+                      {{
+                        (
+                          rebanho.animaisAtivos /
+                          rebanho.quantidadeAnimais
+                        ) * 100
+                          | number:'1.0-0'
+                      }}%
+
+                    } @else {
+
+                      —
+
+                    }
+
+                  </td>
+
+
+                  <td class="numeric">
+
+                    @if (
+                      rebanho.animaisAtivos > 0
+                    ) {
+
+                      <strong>
+
+                        {{
+                          rebanho.pesoMedio
+                            | number:'1.0-2'
+                        }}
+
+                        kg
+
+                      </strong>
+
+                    } @else {
+
+                      —
+
+                    }
 
                   </td>
 
@@ -753,12 +814,19 @@
 
         </div>
 
-      } @else {
+      }
+
+      @else {
 
         <div class="card-empty">
 
+          <mat-icon>
+            groups
+          </mat-icon>
+
           <p>
-            Nenhum rebanho disponível.
+            Nenhum rebanho disponível
+            para comparação.
           </p>
 
         </div>
@@ -769,7 +837,7 @@
 
 
     <!-- =================================
-         ÚLTIMA ATUALIZAÇÃO
+         RODAPÉ
     ================================== -->
 
     <footer class="dashboard-footer">
@@ -778,25 +846,33 @@
         schedule
       </mat-icon>
 
-      @if (dados.ultimaPesagem) {
+
+      @if (
+        dados.ultimaPesagem
+      ) {
 
         <span>
 
           Última pesagem registrada em
 
           <strong>
+
             {{
               dados.ultimaPesagem
                 | date:'dd/MM/yyyy HH:mm'
             }}
+
           </strong>
 
         </span>
 
-      } @else {
+      }
+
+      @else {
 
         <span>
-          Nenhuma pesagem registrada nesta fazenda.
+          Nenhuma pesagem registrada
+          nesta fazenda.
         </span>
 
       }

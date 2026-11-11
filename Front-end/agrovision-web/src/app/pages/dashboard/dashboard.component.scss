@@ -634,5 +634,19 @@ tbody tr:hover {
   .dashboard-card {
     padding: 18px;
   }
+  .chart {
+  width: 100%;
+  }
 
+  .chart-donut {
+    height: 280px;
+  }
+
+  .chart-herds {
+    height: 320px;
+  }
+
+  .chart-evolution {
+    height: 360px;
+  }
 }
