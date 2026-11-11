@@ -588,6 +588,16 @@ tbody tr:hover {
   }
 
 }
+.field-hint {
+  margin-top: 6px;
+
+  display: block;
+
+  color: var(--av-muted);
+
+  font-size: 12px;
+  line-height: 1.4;
+}
 
 @media (max-width: 650px) {
 

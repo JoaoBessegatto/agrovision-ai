@@ -711,42 +711,73 @@
             </div>
 
 
-            <div class="field">
+                  <div class="field">
 
-              <label for="pesoAtual">Peso atual</label>
+        <label for="pesoAtual">
+          Peso inicial
+        </label>
 
-              <div
-                class="input-wrapper"
-                [class.invalid]="
-                  animalForm.controls.pesoAtual.invalid &&
-                  animalForm.controls.pesoAtual.touched
-                "
-              >
-                <mat-icon>monitor_weight</mat-icon>
+        <div
+          class="input-wrapper"
+          [class.invalid]="
+            animalForm.controls.pesoAtual.invalid &&
+            animalForm.controls.pesoAtual.touched
+          "
+        >
 
-                <input
-                  id="pesoAtual"
-                  type="number"
-                  inputmode="decimal"
-                  step="0.1"
-                  min="0.1"
-                  formControlName="pesoAtual"
-                  placeholder="Ex.: 320"
-                >
+          <mat-icon>monitor_weight</mat-icon>
 
-                <span class="unit">kg</span>
-              </div>
+          <input
+            id="pesoAtual"
+            type="number"
+            inputmode="decimal"
+            step="0.1"
+            min="0.1"
+            max="1500"
+            formControlName="pesoAtual"
+            placeholder="Ex.: 320"
+          >
 
-              @if (
-                animalForm.controls.pesoAtual.touched &&
-                animalForm.controls.pesoAtual.invalid
-              ) {
-                <small class="field-error">
-                  Informe um peso maior que zero.
-                </small>
-              }
+          <span class="unit">
+            kg
+          </span>
 
-            </div>
+        </div>
+
+
+        <small class="field-hint">
+          Peso do animal no momento do cadastro.
+          Ele será registrado como a primeira pesagem.
+        </small>
+
+
+        @if (
+          animalForm.controls.pesoAtual.touched &&
+          animalForm.controls.pesoAtual.hasError('required')
+        ) {
+
+          <small class="field-error">
+            Informe o peso inicial do animal.
+          </small>
+
+        }
+
+
+        @if (
+          animalForm.controls.pesoAtual.touched &&
+          (
+            animalForm.controls.pesoAtual.hasError('min') ||
+            animalForm.controls.pesoAtual.hasError('max')
+          )
+        ) {
+
+          <small class="field-error">
+            Informe um peso entre 0,1 e 1500 kg.
+          </small>
+
+        }
+
+      </div>
 
 
             <div class="field full">

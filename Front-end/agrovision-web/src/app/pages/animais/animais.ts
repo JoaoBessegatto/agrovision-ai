@@ -343,7 +343,8 @@ export class Animais {
         null as number | null,
         [
           Validators.required,
-          Validators.min(0.1)
+          Validators.min(0.1),
+          Validators.max(1500)
         ]
       ],
 

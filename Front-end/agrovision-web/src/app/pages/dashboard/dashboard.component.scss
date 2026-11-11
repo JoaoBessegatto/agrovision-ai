@@ -1,0 +1,638 @@
+@use '../../shared/styles/page-shared';
+
+
+// =====================================
+// DASHBOARD
+// =====================================
+
+.dashboard-page {
+  max-width: 1400px;
+
+  margin: 0 auto;
+}
+
+
+// =====================================
+// EYEBROW
+// =====================================
+
+.eyebrow {
+  color: var(--av-green-600);
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 1.3px;
+
+  text-transform: uppercase;
+}
+
+
+// =====================================
+// KPIs
+// =====================================
+
+.kpi-grid {
+  margin-bottom: 20px;
+
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 14px;
+}
+
+
+.kpi-card {
+  min-height: 125px;
+
+  padding: 20px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 15px;
+
+  border: 1px solid var(--av-line);
+  border-radius: 14px;
+
+  background: var(--av-surface);
+}
+
+
+.kpi-icon {
+  width: 47px;
+  height: 47px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 11px;
+}
+
+
+.kpi-icon mat-icon {
+  width: 24px;
+  height: 24px;
+
+  font-size: 24px;
+}
+
+
+.kpi-icon.animals {
+  background: #e5f2e8;
+
+  color: #34784a;
+}
+
+
+.kpi-icon.weight {
+  background: #edf1e7;
+
+  color: #657a35;
+}
+
+
+.kpi-icon.herds {
+  background: #fff2d8;
+
+  color: #986815;
+}
+
+
+.kpi-icon.weighing {
+  background: #e7eff4;
+
+  color: #3f6b81;
+}
+
+
+.kpi-content {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+
+.kpi-content > span {
+  color: var(--av-muted);
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+.kpi-content > strong {
+  margin-top: 3px;
+
+  color: var(--av-ink);
+
+  font-family: var(--av-font-display);
+
+  font-size: 29px;
+  font-weight: 800;
+
+  line-height: 1.1;
+}
+
+
+.kpi-content > strong small {
+  font-family: var(--av-font-body);
+
+  font-size: 12px;
+  font-weight: 600;
+
+  color: var(--av-muted);
+}
+
+
+.kpi-content > small {
+  margin-top: 5px;
+
+  color: #89948d;
+
+  font-size: 10px;
+}
+
+
+// =====================================
+// GRID PRINCIPAL
+// =====================================
+
+.dashboard-grid {
+  margin-bottom: 16px;
+
+  display: grid;
+  grid-template-columns:
+    minmax(0, 0.85fr)
+    minmax(0, 1.15fr);
+
+  gap: 16px;
+}
+
+
+// =====================================
+// CARDS
+// =====================================
+
+.dashboard-card {
+  padding: 22px;
+
+  border: 1px solid var(--av-line);
+  border-radius: 14px;
+
+  background: var(--av-surface);
+}
+
+
+.card-header {
+  margin-bottom: 22px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 15px;
+}
+
+
+.card-header h2 {
+  margin: 4px 0 0;
+
+  font-family: var(--av-font-display);
+
+  font-size: 18px;
+  font-weight: 750;
+
+  color: var(--av-ink);
+}
+
+
+.card-header p {
+  margin: 5px 0 0;
+
+  color: var(--av-muted);
+
+  font-size: 11px;
+}
+
+
+.card-header > mat-icon {
+  color: #92a098;
+}
+
+
+// =====================================
+// SITUAÇÃO
+// =====================================
+
+.status-list {
+  display: flex;
+  flex-direction: column;
+}
+
+
+.status-row {
+  min-height: 62px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  border-bottom: 1px solid #edf1ee;
+}
+
+
+.status-row:last-child {
+  border-bottom: 0;
+}
+
+
+.status-info {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+}
+
+
+.status-info > div {
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+
+.status-info strong {
+  font-size: 12px;
+}
+
+
+.status-info small {
+  color: var(--av-muted);
+
+  font-size: 10px;
+}
+
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+
+  border-radius: 50%;
+}
+
+
+.status-dot.active {
+  background: #338052;
+}
+
+
+.status-dot.inactive {
+  background: #909a94;
+}
+
+
+.status-dot.sold {
+  background: #507ba0;
+}
+
+
+.status-dot.dead {
+  background: #a94747;
+}
+
+
+.status-value {
+  font-family: var(--av-font-display);
+
+  font-size: 21px;
+}
+
+
+// =====================================
+// REBANHOS
+// =====================================
+
+.herd-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 17px;
+}
+
+
+.herd-title {
+  margin-bottom: 6px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+}
+
+
+.herd-title strong {
+  overflow: hidden;
+
+  font-size: 12px;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+
+.herd-title span {
+  flex-shrink: 0;
+
+  color: var(--av-muted);
+
+  font-size: 10px;
+}
+
+
+.herd-bar {
+  height: 7px;
+
+  overflow: hidden;
+
+  border-radius: 30px;
+
+  background: #e9eeea;
+}
+
+
+.herd-bar span {
+  display: block;
+
+  height: 100%;
+
+  border-radius: inherit;
+
+  background: var(--av-green-600);
+
+  transition: width 0.3s ease;
+}
+
+
+// =====================================
+// EVOLUÇÃO
+// =====================================
+
+.evolution-card {
+  margin-bottom: 16px;
+}
+
+
+.evolution-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 14px;
+}
+
+
+.evolution-row {
+  display: grid;
+  grid-template-columns:
+    80px
+    minmax(100px, 1fr)
+    85px;
+
+  align-items: center;
+
+  gap: 13px;
+}
+
+
+.period {
+  color: var(--av-muted);
+
+  font-size: 11px;
+  font-weight: 600;
+
+  text-transform: capitalize;
+}
+
+
+.evolution-bar {
+  height: 9px;
+
+  overflow: hidden;
+
+  border-radius: 20px;
+
+  background: #e9eeea;
+}
+
+
+.evolution-bar span {
+  display: block;
+
+  height: 100%;
+
+  border-radius: inherit;
+
+  background: var(--av-green-600);
+
+  transition: width 0.3s ease;
+}
+
+
+.evolution-row > strong {
+  font-size: 11px;
+
+  text-align: right;
+
+  white-space: nowrap;
+}
+
+
+// =====================================
+// TABELA
+// =====================================
+
+.herd-performance {
+  margin-bottom: 16px;
+}
+
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+
+table {
+  width: 100%;
+
+  border-collapse: collapse;
+}
+
+
+th {
+  height: 42px;
+
+  padding: 0 12px;
+
+  border-bottom: 1px solid var(--av-line);
+
+  background: #f7f9f6;
+
+  color: var(--av-muted);
+
+  font-size: 11px;
+  font-weight: 600;
+
+  text-align: left;
+}
+
+
+td {
+  height: 52px;
+
+  padding: 0 12px;
+
+  border-bottom: 1px solid #edf1ee;
+
+  font-size: 12px;
+}
+
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+
+tbody tr:hover {
+  background: #fafcfa;
+}
+
+
+.numeric {
+  text-align: right;
+
+  font-variant-numeric: tabular-nums;
+}
+
+
+// =====================================
+// VAZIO
+// =====================================
+
+.card-empty {
+  min-height: 160px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  color: var(--av-muted);
+
+  text-align: center;
+}
+
+
+.card-empty mat-icon {
+  width: 28px;
+  height: 28px;
+
+  font-size: 28px;
+
+  color: #a2ada6;
+}
+
+
+.card-empty p {
+  margin: 0;
+
+  font-size: 11px;
+}
+
+
+// =====================================
+// FOOTER
+// =====================================
+
+.dashboard-footer {
+  padding: 12px 4px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  color: var(--av-muted);
+
+  font-size: 10px;
+}
+
+
+.dashboard-footer mat-icon {
+  width: 16px;
+  height: 16px;
+
+  font-size: 16px;
+}
+
+
+.dashboard-footer strong {
+  color: var(--av-ink);
+}
+
+
+// =====================================
+// RESPONSIVO
+// =====================================
+
+@media (max-width: 1100px) {
+
+  .kpi-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+
+@media (max-width: 650px) {
+
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .kpi-card {
+    min-height: 105px;
+  }
+
+
+  .evolution-row {
+    grid-template-columns:
+      62px
+      minmax(80px, 1fr)
+      76px;
+
+    gap: 8px;
+  }
+
+
+  .dashboard-card {
+    padding: 18px;
+  }
+
+}
