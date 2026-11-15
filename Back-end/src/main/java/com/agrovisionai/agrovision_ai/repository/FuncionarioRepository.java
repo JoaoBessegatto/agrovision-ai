@@ -8,9 +8,16 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface FuncionarioRepository extends JpaRepository<Funcionario, UUID> {
+
     boolean existsByUsuarioIdAndFazendaId(UUID usuarioId, UUID fazendaId);
-    Optional<Funcionario> findByUsuarioIdAndFazendaId(UUID usuarioID, UUID fazendaId);
+
+    boolean existsByUsuarioIdAndAtivoTrue(UUID usuarioId);
+
+    Optional<Funcionario> findByUsuarioIdAndFazendaId(UUID usuarioId, UUID fazendaId);
+
     List<Funcionario> findByFazendaId(UUID fazendaId);
+
+    List<Funcionario> findByUsuarioIdAndAtivoTrue(UUID usuarioId);
 
     long countByFazendaId(UUID fazendaId);
 }
