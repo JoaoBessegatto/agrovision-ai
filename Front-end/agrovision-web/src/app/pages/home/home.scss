@@ -216,7 +216,10 @@ a:focus-visible {
   margin: -44px 24px 0;
 
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(220px, 1fr)
+  );
   gap: 1px;
 
   overflow: hidden;
