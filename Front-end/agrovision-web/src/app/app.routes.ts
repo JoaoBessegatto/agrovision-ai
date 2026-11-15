@@ -6,10 +6,6 @@ import {
 
 export const routes: Routes = [
 
-  // =====================================
-  // LANDING
-  // =====================================
-
   {
     path: '',
 
@@ -18,10 +14,6 @@ export const routes: Routes = [
         .then(m => m.Landing)
   },
 
-
-  // =====================================
-  // LOGIN
-  // =====================================
 
   {
     path: 'login',
@@ -32,10 +24,6 @@ export const routes: Routes = [
   },
 
 
-  // =====================================
-  // CADASTRO
-  // =====================================
-
   {
     path: 'cadastro',
 
@@ -45,9 +33,40 @@ export const routes: Routes = [
   },
 
 
-  // =====================================
-  // ONBOARDING
-  // =====================================
+  /*
+   * O convite precisa ser público para
+   * que o destinatário consiga validar
+   * o link antes de possuir uma conta.
+   */
+  {
+    path: 'convite-funcionario',
+
+    loadComponent: () =>
+      import(
+        './pages/convite-funcionario/convite-funcionario'
+      )
+        .then(
+          m => m.ConviteFuncionario
+        )
+  },
+
+
+  {
+    path: 'acesso-suspenso',
+
+    canActivate: [
+      authGuard
+    ],
+
+    loadComponent: () =>
+      import(
+        './pages/acesso-suspenso/acesso-suspenso'
+      )
+        .then(
+          m => m.AcessoSuspenso
+        )
+  },
+
 
   {
     path: 'onboarding',
@@ -96,10 +115,6 @@ export const routes: Routes = [
   },
 
 
-  // =====================================
-  // SISTEMA
-  // =====================================
-
   {
     path: 'app',
 
@@ -117,7 +132,6 @@ export const routes: Routes = [
 
     children: [
 
-      // INÍCIO
       {
         path: '',
 
@@ -127,7 +141,6 @@ export const routes: Routes = [
       },
 
 
-      // DASHBOARD
       {
         path: 'dashboard',
 
@@ -139,41 +152,63 @@ export const routes: Routes = [
               m => m.Dashboard
             )
       },
+
+
       {
         path: 'rebanhos',
 
-         loadComponent: () =>
+        loadComponent: () =>
           import('./pages/rebanhos/rebanhos')
-          .then(m => m.Rebanhos)
+            .then(m => m.Rebanhos)
       },
+
+
       {
         path: 'animais',
 
-          loadComponent: () =>
-            import('./pages/animais/animais')
+        loadComponent: () =>
+          import('./pages/animais/animais')
             .then(m => m.Animais)
       },
+
+
       {
         path: 'animais/:id',
 
-          loadComponent: () =>
-           import( './pages/animal-detalhes/animal-detalhes')
-            .then(m => m.AnimalDetalhes)
+        loadComponent: () =>
+          import(
+            './pages/animal-detalhes/animal-detalhes'
+          )
+            .then(
+              m => m.AnimalDetalhes
+            )
       },
+
+
       {
         path: 'pesagens',
 
-          loadComponent: () =>
-            import('./pages/pesagens/pesagens')
-              .then(m => m.Pesagens)
+        loadComponent: () =>
+          import('./pages/pesagens/pesagens')
+            .then(m => m.Pesagens)
       },
+
+
+      {
+        path: 'funcionarios',
+
+        loadComponent: () =>
+          import(
+            './pages/funcionarios/funcionarios'
+          )
+            .then(
+              m => m.Funcionarios
+            )
+      }
+
     ]
   },
 
-
-  // =====================================
-  // FALLBACK
-  // =====================================
 
   {
     path: '**',
