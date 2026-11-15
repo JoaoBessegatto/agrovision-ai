@@ -8,7 +8,11 @@ import {
 import { finalize } from 'rxjs';
 
 import { FazendaService } from './fazenda.service';
-import { FazendaResponse } from '../models/fazenda-response';
+
+import {
+  FazendaAcessivelResponse,
+  PermissaoFuncionario
+} from '../models/fazenda-acessivel-response';
 
 @Injectable({
   providedIn: 'root'
@@ -22,15 +26,11 @@ export class FazendaContextService {
     'fazendaAtivaId';
 
 
-  // ==========================================
-  // ESTADO
-  // ==========================================
-
   private readonly _fazendas =
-    signal<FazendaResponse[]>([]);
+    signal<FazendaAcessivelResponse[]>([]);
 
   private readonly _fazendaAtiva =
-    signal<FazendaResponse | null>(null);
+    signal<FazendaAcessivelResponse | null>(null);
 
   private readonly _loading =
     signal(false);
@@ -38,10 +38,6 @@ export class FazendaContextService {
   private readonly _carregado =
     signal(false);
 
-
-  // ==========================================
-  // ESTADO PÚBLICO
-  // ==========================================
 
   readonly fazendas =
     this._fazendas.asReadonly();
@@ -55,10 +51,6 @@ export class FazendaContextService {
   readonly carregado =
     this._carregado.asReadonly();
 
-
-  // ==========================================
-  // COMPUTED
-  // ==========================================
 
   readonly fazendaAtivaId =
     computed(() =>
@@ -75,17 +67,31 @@ export class FazendaContextService {
       this._fazendas().length > 1
     );
 
+  readonly ehProprietario =
+    computed(() => {
+      const acesso =
+        this._fazendaAtiva()?.tipoAcesso;
 
-  // ==========================================
-  // CARREGAR FAZENDAS
-  // ==========================================
+      return (
+        acesso === 'PROPRIETARIO' ||
+        acesso === 'ADMIN'
+      );
+    });
+
+  readonly ehFuncionario =
+    computed(() =>
+      this._fazendaAtiva()?.tipoAcesso
+        === 'FUNCIONARIO'
+    );
+
+  readonly cargoAtivo =
+    computed(() =>
+      this._fazendaAtiva()?.cargo ?? null
+    );
+
 
   carregarFazendas(): void {
 
-    /*
-     * Impede requisições desnecessárias
-     * se o contexto já tiver sido carregado.
-     */
     if (this._carregado()) {
       return;
     }
@@ -93,7 +99,7 @@ export class FazendaContextService {
     this._loading.set(true);
 
     this.fazendaService
-      .listarMinhasFazendas()
+      .listarFazendasAcessiveis()
 
       .pipe(
         finalize(() => {
@@ -108,34 +114,64 @@ export class FazendaContextService {
 
           this._fazendas.set(fazendas);
 
-          this.definirFazendaInicial(fazendas);
-
+          this.definirFazendaInicial(
+            fazendas
+          );
         },
 
         error: error => {
 
           console.error(
-            'Erro ao carregar fazendas:',
+            'Erro ao carregar fazendas acessíveis:',
             error
           );
 
           this._fazendas.set([]);
 
           this._fazendaAtiva.set(null);
-
         }
 
       });
-
   }
 
 
-  // ==========================================
-  // DEFINIR FAZENDA ATIVA
-  // ==========================================
+  possuiPermissao(
+    permissao: PermissaoFuncionario
+  ): boolean {
+
+    const fazenda =
+      this._fazendaAtiva();
+
+    if (!fazenda) {
+      return false;
+    }
+
+    if (
+      fazenda.tipoAcesso === 'PROPRIETARIO' ||
+      fazenda.tipoAcesso === 'ADMIN'
+    ) {
+      return true;
+    }
+
+    return fazenda.permissoes
+      .includes(permissao);
+  }
+
+
+  podeGerenciarFuncionarios(): boolean {
+
+    return this.ehProprietario();
+  }
+
+
+  podeVender(): boolean {
+
+    return this.ehProprietario();
+  }
+
 
   selecionarFazenda(
-    fazenda: FazendaResponse
+    fazenda: FazendaAcessivelResponse
   ): void {
 
     this._fazendaAtiva.set(fazenda);
@@ -144,13 +180,8 @@ export class FazendaContextService {
       this.STORAGE_KEY,
       fazenda.id
     );
-
   }
 
-
-  // ==========================================
-  // SELECIONAR POR ID
-  // ==========================================
 
   selecionarFazendaPorId(
     fazendaId: string
@@ -164,36 +195,20 @@ export class FazendaContextService {
         );
 
     if (!fazenda) {
-
-      console.warn(
-        'Fazenda não encontrada no contexto:',
-        fazendaId
-      );
-
       return;
     }
 
     this.selecionarFazenda(fazenda);
-
   }
 
-
-  // ==========================================
-  // ATUALIZAR LISTA
-  // ==========================================
 
   recarregarFazendas(): void {
 
     this._carregado.set(false);
 
     this.carregarFazendas();
-
   }
 
-
-  // ==========================================
-  // LIMPAR CONTEXTO
-  // ==========================================
 
   limpar(): void {
 
@@ -206,16 +221,11 @@ export class FazendaContextService {
     localStorage.removeItem(
       this.STORAGE_KEY
     );
-
   }
 
 
-  // ==========================================
-  // FAZENDA INICIAL
-  // ==========================================
-
   private definirFazendaInicial(
-    fazendas: FazendaResponse[]
+    fazendas: FazendaAcessivelResponse[]
   ): void {
 
     if (fazendas.length === 0) {
@@ -230,10 +240,6 @@ export class FazendaContextService {
     }
 
 
-    /*
-     * Primeiro tenta recuperar
-     * a última fazenda utilizada.
-     */
     const fazendaSalvaId =
       localStorage.getItem(
         this.STORAGE_KEY
@@ -256,20 +262,12 @@ export class FazendaContextService {
         );
 
         return;
-
       }
-
     }
 
 
-    /*
-     * Se nunca selecionou uma,
-     * usa a primeira da lista.
-     */
     this.selecionarFazenda(
       fazendas[0]
     );
-
   }
-
 }
