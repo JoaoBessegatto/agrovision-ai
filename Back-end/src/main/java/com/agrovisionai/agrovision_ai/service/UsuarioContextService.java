@@ -51,6 +51,10 @@ public class UsuarioContextService {
 
         boolean possuiVinculoFuncionario =
                 funcionarioRepository
+                        .existsByUsuarioId(usuario.getId());
+
+        boolean possuiVinculoFuncionarioAtivo =
+                funcionarioRepository
                         .existsByUsuarioIdAndAtivoTrue(usuario.getId());
 
         boolean admin =
@@ -59,7 +63,7 @@ public class UsuarioContextService {
         boolean possuiAcessoFazenda =
                 admin ||
                 possuiFazenda ||
-                possuiVinculoFuncionario;
+                possuiVinculoFuncionarioAtivo;
 
         return new UsuarioContextResponseDTO(
                 usuario.getId(),
