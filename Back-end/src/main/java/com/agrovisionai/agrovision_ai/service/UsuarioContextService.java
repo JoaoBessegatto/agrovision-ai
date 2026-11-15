@@ -6,6 +6,7 @@ import com.agrovisionai.agrovision_ai.auth.Usuario;
 import com.agrovisionai.agrovision_ai.domain.dto.response.UsuarioContextResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.entity.Produtor;
 import com.agrovisionai.agrovision_ai.repository.FazendaRepository;
+import com.agrovisionai.agrovision_ai.repository.FuncionarioRepository;
 import com.agrovisionai.agrovision_ai.repository.ProdutorRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,22 +19,24 @@ public class UsuarioContextService {
     private final CurrentUserProvider currentUserProvider;
     private final ProdutorRepository produtorRepository;
     private final FazendaRepository fazendaRepository;
+    private final FuncionarioRepository funcionarioRepository;
 
     public UsuarioContextService(
             CurrentUserProvider currentUserProvider,
             ProdutorRepository produtorRepository,
-            FazendaRepository fazendaRepository
+            FazendaRepository fazendaRepository,
+            FuncionarioRepository funcionarioRepository
     ) {
         this.currentUserProvider = currentUserProvider;
         this.produtorRepository = produtorRepository;
         this.fazendaRepository = fazendaRepository;
+        this.funcionarioRepository = funcionarioRepository;
     }
 
     @Transactional(readOnly = true)
     public UsuarioContextResponseDTO getContextoAtual() {
 
-        Usuario usuario =
-                currentUserProvider.getUsuarioAtual();
+        Usuario usuario = currentUserProvider.getUsuarioAtual();
 
         Optional<Produtor> produtor =
                 produtorRepository.findByUsuario(usuario);
@@ -46,8 +49,17 @@ public class UsuarioContextService {
                         .map(fazendaRepository::existsByProdutor)
                         .orElse(false);
 
+        boolean possuiVinculoFuncionario =
+                funcionarioRepository
+                        .existsByUsuarioIdAndAtivoTrue(usuario.getId());
+
         boolean admin =
                 usuario.getRole() == Role.ADMIN;
+
+        boolean possuiAcessoFazenda =
+                admin ||
+                possuiFazenda ||
+                possuiVinculoFuncionario;
 
         return new UsuarioContextResponseDTO(
                 usuario.getId(),
@@ -55,7 +67,9 @@ public class UsuarioContextService {
                 usuario.getEmail(),
                 admin,
                 possuiPerfilProdutor,
-                possuiFazenda
+                possuiFazenda,
+                possuiVinculoFuncionario,
+                possuiAcessoFazenda
         );
     }
 }
