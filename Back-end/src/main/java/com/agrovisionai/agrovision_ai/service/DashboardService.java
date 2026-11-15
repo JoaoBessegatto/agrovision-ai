@@ -1,21 +1,12 @@
 package com.agrovisionai.agrovision_ai.service;
 
-import com.agrovisionai.agrovision_ai.auth.CurrentUserProvider;
-import com.agrovisionai.agrovision_ai.auth.Usuario;
-
 import com.agrovisionai.agrovision_ai.domain.dto.response.DashboardEvolucaoPesoDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.DashboardRebanhoDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.DashboardResponseDTO;
 
-import com.agrovisionai.agrovision_ai.domain.entity.Fazenda;
-
 import com.agrovisionai.agrovision_ai.domain.enums.SituacaoAnimal;
 
-import com.agrovisionai.agrovision_ai.exception.ResouceNotFoundException;
-import com.agrovisionai.agrovision_ai.exception.UnauthorizedException;
-
 import com.agrovisionai.agrovision_ai.repository.AnimalRepository;
-import com.agrovisionai.agrovision_ai.repository.FazendaRepository;
 import com.agrovisionai.agrovision_ai.repository.RebanhoRepository;
 import com.agrovisionai.agrovision_ai.repository.RegistroPesoRepository;
 
@@ -40,17 +31,14 @@ public class DashboardService {
 
     private final RegistroPesoRepository registroPesoRepository;
 
-    private final FazendaRepository fazendaRepository;
-
-    private final CurrentUserProvider currentUserProvider;
+    private final FazendaAccessService fazendaAccessService;
 
 
     public DashboardService(
             AnimalRepository animalRepository,
             RebanhoRepository rebanhoRepository,
             RegistroPesoRepository registroPesoRepository,
-            FazendaRepository fazendaRepository,
-            CurrentUserProvider currentUserProvider
+            FazendaAccessService fazendaAccessService
     ) {
 
         this.animalRepository =
@@ -62,11 +50,8 @@ public class DashboardService {
         this.registroPesoRepository =
                 registroPesoRepository;
 
-        this.fazendaRepository =
-                fazendaRepository;
-
-        this.currentUserProvider =
-                currentUserProvider;
+        this.fazendaAccessService =
+                fazendaAccessService;
     }
 
 
@@ -83,7 +68,7 @@ public class DashboardService {
          * garante que a fazenda existe
          * e pertence ao usuário atual.
          */
-        buscarFazendaAutorizada(
+        fazendaAccessService.exigirVisualizacao(
                 fazendaId
         );
 
@@ -371,52 +356,6 @@ public class DashboardService {
                 })
 
                 .toList();
-    }
-
-
-    // =========================================================
-    // AUTORIZAÇÃO
-    // =========================================================
-
-    private Fazenda buscarFazendaAutorizada(
-            UUID fazendaId
-    ) {
-
-        Fazenda fazenda =
-                fazendaRepository
-                        .findById(
-                                fazendaId
-                        )
-
-                        .orElseThrow(() ->
-                                new ResouceNotFoundException(
-                                        "Fazenda não encontrada."
-                                )
-                        );
-
-
-        Usuario usuario =
-                currentUserProvider
-                        .getUsuarioAtual();
-
-
-        if (
-                !fazenda
-                        .getProdutor()
-                        .getUsuario()
-                        .getId()
-                        .equals(
-                                usuario.getId()
-                        )
-        ) {
-
-            throw new UnauthorizedException(
-                    "Usuário não possui acesso a esta fazenda."
-            );
-        }
-
-
-        return fazenda;
     }
 
 
