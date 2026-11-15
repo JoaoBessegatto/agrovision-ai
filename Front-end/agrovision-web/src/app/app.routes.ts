@@ -4,6 +4,10 @@ import {
   authGuard
 } from './core/auth/guards/auth.guard';
 
+import {
+  appAccessGuard
+} from './core/auth/guards/app-access.guard';
+
 export const routes: Routes = [
 
   {
@@ -119,7 +123,8 @@ export const routes: Routes = [
     path: 'app',
 
     canActivate: [
-      authGuard
+      authGuard,
+      appAccessGuard
     ],
 
     loadComponent: () =>
