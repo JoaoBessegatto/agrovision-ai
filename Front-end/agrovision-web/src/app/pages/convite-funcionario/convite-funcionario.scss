@@ -419,3 +419,32 @@ footer {
     margin-left: 62px;
   }
 }
+
+
+.account-warning {
+  margin-bottom: 14px;
+  padding: 13px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  border: 1px solid #ead7ad;
+  border-radius: 11px;
+
+  background: #fff9ec;
+  color: #815f18;
+}
+
+.account-warning p {
+  margin: 0;
+
+  color: inherit;
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.account-warning strong {
+  color: #5f4511;
+}
