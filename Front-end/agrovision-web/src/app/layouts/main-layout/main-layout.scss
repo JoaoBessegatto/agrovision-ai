@@ -616,3 +616,64 @@ button:focus-visible {
   }
 
 }
+
+/* ==========================================
+   CONTEXTO DE ACESSO
+========================================== */
+
+.access-badge {
+  margin-left: 4px;
+  padding: 5px 8px;
+
+  border-radius: 999px;
+
+  background: var(--av-green-100);
+  color: var(--av-green-600);
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+
+  white-space: nowrap;
+}
+
+.access-badge.employee {
+  background: #f7eedb;
+  color: #8a651b;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.user-info small {
+  color: var(--av-muted);
+
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.mobile-access {
+  width: fit-content;
+
+  margin-top: 8px;
+  padding: 4px 7px;
+
+  border-radius: 999px;
+
+  background: rgba(226, 168, 46, 0.14);
+  color: var(--av-gold);
+
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+@media (max-width: 1100px) {
+  .access-badge {
+    display: none;
+  }
+}
