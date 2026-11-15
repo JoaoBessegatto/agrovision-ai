@@ -63,6 +63,14 @@ export class AuthService {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
 
+    /*
+     * Evita reaproveitar a fazenda ativa
+     * ao trocar de conta no mesmo navegador.
+     */
+    localStorage.removeItem(
+      'fazendaAtivaId'
+    );
+
   }
 
 
