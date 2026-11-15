@@ -44,7 +44,9 @@ public class SecurityConfig  {
         http
                 .csrf(AbstractHttpConfigurer::disable )
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers( "/api/auth/login", "/api/auth/cadastrar", "/api/auth/cadastrar-admin").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/cadastrar", "/api/auth/cadastrar-admin").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/convites/funcionarios/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/convites/funcionarios/cadastrar").permitAll()
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
@@ -60,7 +62,14 @@ public class SecurityConfig  {
 		config.setAllowCredentials(true);
 		config.setAllowedOriginPatterns(Arrays.asList("*"));
 		config.setAllowedHeaders(Arrays.asList(HttpHeaders.AUTHORIZATION,HttpHeaders.CONTENT_TYPE,HttpHeaders.ACCEPT));
-		config.setAllowedMethods(Arrays.asList(HttpMethod.GET.name(),HttpMethod.POST.name(),HttpMethod.PUT.name(),HttpMethod.DELETE.name()));
+		config.setAllowedMethods(Arrays.asList(
+                HttpMethod.GET.name(),
+                HttpMethod.POST.name(),
+                HttpMethod.PUT.name(),
+                HttpMethod.PATCH.name(),
+                HttpMethod.DELETE.name(),
+                HttpMethod.OPTIONS.name()
+        ));
 		config.setMaxAge(3600L);
 		source.registerCorsConfiguration("/**", config);
 		FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<CorsFilter>(new CorsFilter(source));
