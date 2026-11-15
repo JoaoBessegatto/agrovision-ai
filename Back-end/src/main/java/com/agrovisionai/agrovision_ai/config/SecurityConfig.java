@@ -45,7 +45,7 @@ public class SecurityConfig  {
         http
                 .csrf(AbstractHttpConfigurer::disable )
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/api/auth/login", "/api/auth/cadastrar", "/api/auth/cadastrar-admin").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/cadastrar").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/convites/funcionarios/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/convites/funcionarios/cadastrar").permitAll()
                         .anyRequest().authenticated())
