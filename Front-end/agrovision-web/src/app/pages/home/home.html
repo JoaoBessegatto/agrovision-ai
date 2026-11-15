@@ -1,10 +1,14 @@
 <div class="home">
 
-  <!-- ===== BANNER DA FAZENDA ===== -->
+  @if (
+    fazendaContext.fazendaAtiva();
+    as fazenda
+  ) {
 
-  @if (fazendaContext.fazendaAtiva(); as fazenda) {
-
-    <section class="hero" aria-labelledby="hero-title">
+    <section
+      class="hero"
+      aria-labelledby="hero-title"
+    >
 
       <div class="hero-top">
 
@@ -12,15 +16,38 @@
           {{ saudacao }}@if (nomeUsuario()) {, {{ nomeUsuario() }}}
         </p>
 
-        <time class="hero-date">{{ dataHoje }}</time>
+        <time class="hero-date">
+          {{ dataHoje }}
+        </time>
 
       </div>
+
 
       <div class="hero-main">
 
         <div class="hero-title">
 
-          <h1 id="hero-title">{{ fazenda.nome }}</h1>
+          <div class="hero-access-line">
+
+            <h1 id="hero-title">
+              {{ fazenda.nome }}
+            </h1>
+
+            <span
+              class="access-chip"
+              [class.employee]="
+                fazenda.tipoAcesso === 'FUNCIONARIO'
+              "
+            >
+              {{
+                fazenda.tipoAcesso === 'FUNCIONARIO'
+                  ? (fazenda.cargo ?? 'Funcionário')
+                  : 'Proprietário'
+              }}
+            </span>
+
+          </div>
+
 
           <ul class="hero-facts">
 
@@ -43,16 +70,38 @@
 
         </div>
 
+
         <div class="hero-actions">
 
-          <a routerLink="/app/rebanhos" class="btn btn-primary">
-            <mat-icon>add</mat-icon>
-            Novo rebanho
-          </a>
+          @if (
+            fazendaContext.possuiPermissao(
+              'GERENCIAR_REBANHO'
+            )
+          ) {
 
-          <a routerLink="/app/fazendas" class="btn btn-ghost">
-            Gerenciar propriedade
-          </a>
+            <a
+              routerLink="/app/rebanhos"
+              class="btn btn-primary"
+            >
+              <mat-icon>add</mat-icon>
+              Novo rebanho
+            </a>
+
+          }
+
+
+          @if (
+            fazendaContext.podeGerenciarFuncionarios()
+          ) {
+
+            <a
+              routerLink="/app/funcionarios"
+              class="btn btn-ghost"
+            >
+              Gerenciar equipe
+            </a>
+
+          }
 
         </div>
 
@@ -60,14 +109,21 @@
 
     </section>
 
-  } @else if (fazendaContext.loading()) {
+  } @else if (
+    fazendaContext.loading()
+  ) {
 
-    <section class="hero" aria-busy="true">
+    <section
+      class="hero"
+      aria-busy="true"
+    >
 
       <div class="hero-main">
 
         <div class="hero-title">
-          <h1>Carregando propriedade...</h1>
+          <h1>
+            Carregando propriedade...
+          </h1>
         </div>
 
       </div>
@@ -76,37 +132,20 @@
 
   } @else {
 
-    <section class="hero" aria-labelledby="hero-title">
-
-      <div class="hero-top">
-
-        <p class="hero-greeting">
-          {{ saudacao }}@if (nomeUsuario()) {, {{ nomeUsuario() }}}
-        </p>
-
-        <time class="hero-date">{{ dataHoje }}</time>
-
-      </div>
+    <section class="hero">
 
       <div class="hero-main">
 
         <div class="hero-title">
 
-          <h1 id="hero-title">Nenhuma propriedade selecionada</h1>
+          <h1>
+            Nenhuma propriedade disponível
+          </h1>
 
           <p class="hero-empty">
-            Escolha uma fazenda no topo da página
-            ou cadastre a primeira para começar.
+            Sua conta não possui acesso ativo a
+            nenhuma fazenda neste momento.
           </p>
-
-        </div>
-
-        <div class="hero-actions">
-
-          <a routerLink="/app/fazendas" class="btn btn-primary">
-            <mat-icon>add</mat-icon>
-            Cadastrar propriedade
-          </a>
 
         </div>
 
@@ -117,154 +156,486 @@
   }
 
 
-  <!-- ===== RESUMO (CADA ITEM ABRE SUA TELA) ===== -->
+  <nav
+    class="stats"
+    aria-label="Resumo da propriedade"
+  >
 
-  <nav class="stats" aria-label="Resumo da propriedade">
+    <a
+      routerLink="/app/rebanhos"
+      class="stat"
+    >
+      <mat-icon class="stat-icon">
+        groups
+      </mat-icon>
 
-    <a routerLink="/app/rebanhos" class="stat">
-      <mat-icon class="stat-icon">groups</mat-icon>
-      <span class="stat-label">Rebanhos</span>
-      <strong class="stat-value">{{ totalRebanhos() ?? '—' }}</strong>
-      <small class="stat-hint">Na fazenda selecionada</small>
-      <mat-icon class="stat-go">north_east</mat-icon>
+      <span class="stat-label">
+        Rebanhos
+      </span>
+
+      <strong class="stat-value">
+        {{ totalRebanhos() ?? '—' }}
+      </strong>
+
+      <small class="stat-hint">
+        Na fazenda selecionada
+      </small>
+
+      <mat-icon class="stat-go">
+        north_east
+      </mat-icon>
     </a>
 
-    <a routerLink="/app/animais" class="stat">
-      <mat-icon class="stat-icon">pets</mat-icon>
-      <span class="stat-label">Animais</span>
-      <strong class="stat-value">{{ totalAnimais() ?? '—' }}</strong>
-      <small class="stat-hint">Total cadastrado</small>
-      <mat-icon class="stat-go">north_east</mat-icon>
+
+    <a
+      routerLink="/app/animais"
+      class="stat"
+    >
+      <mat-icon class="stat-icon">
+        pets
+      </mat-icon>
+
+      <span class="stat-label">
+        Animais
+      </span>
+
+      <strong class="stat-value">
+        {{ totalAnimais() ?? '—' }}
+      </strong>
+
+      <small class="stat-hint">
+        Total cadastrado
+      </small>
+
+      <mat-icon class="stat-go">
+        north_east
+      </mat-icon>
     </a>
 
-    <a href="#ultimas-pesagens" (click)="$event.preventDefault(); pesagensSection.scrollIntoView({ behavior: 'smooth' })" class="stat">
-      <mat-icon class="stat-icon">monitor_weight</mat-icon>
-      <span class="stat-label">Pesagens</span>
-      <strong class="stat-value">{{ totalPesagens() ?? '—' }}</strong>
-      <small class="stat-hint">Registros realizados</small>
-      <mat-icon class="stat-go">north_east</mat-icon>
+
+    <a
+      href="#ultimas-pesagens"
+      class="stat"
+      (click)="
+        $event.preventDefault();
+        pesagensSection.scrollIntoView({
+          behavior: 'smooth'
+        })
+      "
+    >
+      <mat-icon class="stat-icon">
+        monitor_weight
+      </mat-icon>
+
+      <span class="stat-label">
+        Pesagens
+      </span>
+
+      <strong class="stat-value">
+        {{ totalPesagens() ?? '—' }}
+      </strong>
+
+      <small class="stat-hint">
+        Registros realizados
+      </small>
+
+      <mat-icon class="stat-go">
+        north_east
+      </mat-icon>
     </a>
 
-    <a href="#equipe" (click)="$event.preventDefault(); equipeSection.scrollIntoView({ behavior: 'smooth' })" class="stat">
-      <mat-icon class="stat-icon">badge</mat-icon>
-      <span class="stat-label">Funcionários</span>
-      <strong class="stat-value">{{ totalFuncionarios() ?? '—' }}</strong>
-      <small class="stat-hint">Vinculados à propriedade</small>
-      <mat-icon class="stat-go">north_east</mat-icon>
-    </a>
+
+    @if (
+      fazendaContext.podeGerenciarFuncionarios()
+    ) {
+
+      <a
+        routerLink="/app/funcionarios"
+        class="stat"
+      >
+        <mat-icon class="stat-icon">
+          badge
+        </mat-icon>
+
+        <span class="stat-label">
+          Funcionários
+        </span>
+
+        <strong class="stat-value">
+          {{ totalFuncionarios() ?? '—' }}
+        </strong>
+
+        <small class="stat-hint">
+          Vinculados à propriedade
+        </small>
+
+        <mat-icon class="stat-go">
+          north_east
+        </mat-icon>
+      </a>
+
+    }
 
   </nav>
 
 
-  @for (erro of erros(); track erro) {
-    <p role="alert">{{ erro }}</p>
+  @for (
+    erro of erros();
+    track erro
+  ) {
+
+    <p role="alert">
+      {{ erro }}
+    </p>
+
   }
 
-  <section #pesagensSection id="ultimas-pesagens" class="shortcuts" aria-labelledby="pesagens-title" [attr.aria-busy]="carregandoPesagens()">
-    <h2 id="pesagens-title">Últimas pesagens</h2>
-    @if (carregandoPesagens()) {
-      <p role="status">Carregando pesagens...</p>
-    } @else if (!fazendaContext.fazendaAtivaId()) {
-      <p>Selecione uma fazenda para consultar as pesagens.</p>
-    } @else if (totalPesagens() !== null) {
+
+  <section
+    #pesagensSection
+    id="ultimas-pesagens"
+    class="shortcuts"
+    aria-labelledby="pesagens-title"
+    [attr.aria-busy]="carregandoPesagens()"
+  >
+
+    <h2 id="pesagens-title">
+      Últimas pesagens
+    </h2>
+
+
+    @if (
+      carregandoPesagens()
+    ) {
+
+      <p role="status">
+        Carregando pesagens...
+      </p>
+
+    } @else if (
+      !fazendaContext.fazendaAtivaId()
+    ) {
+
+      <p>
+        Selecione uma fazenda para consultar as pesagens.
+      </p>
+
+    } @else if (
+      totalPesagens() !== null
+    ) {
+
       <div class="shortcut-grid">
-        @for (pesagem of ultimasPesagens(); track pesagem.id) {
-          <a class="shortcut" [routerLink]="['/app/animais', pesagem.animalId]">
-            <mat-icon>monitor_weight</mat-icon>
+
+        @for (
+          pesagem of ultimasPesagens();
+          track pesagem.id
+        ) {
+
+          <a
+            class="shortcut"
+            [routerLink]="[
+              '/app/animais',
+              pesagem.animalId
+            ]"
+          >
+
+            <mat-icon>
+              monitor_weight
+            </mat-icon>
+
             <span class="shortcut-text">
-              <strong>{{ pesagem.identificacaoAnimal }} · {{ pesagem.pesoKg | number:'1.0-2':'pt-BR' }} kg</strong>
-              <span>{{ pesagem.dataRegistro | date:'dd/MM/yyyy HH:mm' }} · {{ pesagem.usuario }}</span>
+
+              <strong>
+                {{ pesagem.identificacaoAnimal }}
+                ·
+                {{
+                  pesagem.pesoKg
+                    | number:'1.0-2':'pt-BR'
+                }}
+                kg
+              </strong>
+
+              <span>
+                {{
+                  pesagem.dataRegistro
+                    | date:'dd/MM/yyyy HH:mm'
+                }}
+                ·
+                {{ pesagem.usuario }}
+              </span>
+
             </span>
+
           </a>
+
         } @empty {
-          <p>Nenhuma pesagem registrada nesta fazenda.</p>
+
+          <p>
+            Nenhuma pesagem registrada nesta fazenda.
+          </p>
+
         }
+
       </div>
+
     }
+
   </section>
 
-  <section #equipeSection id="equipe" class="shortcuts" aria-labelledby="equipe-title">
-    <h2 id="equipe-title">Funcionários da propriedade</h2>
-    @if (!fazendaContext.fazendaAtivaId()) {
-      <p>Selecione uma fazenda para consultar a equipe.</p>
-    } @else if (totalFuncionarios() !== null) {
-      <div class="shortcut-grid">
-        @for (funcionario of funcionarios(); track $index) {
-          <div class="shortcut">
-            <mat-icon>badge</mat-icon>
-            <span class="shortcut-text">
-              <strong>{{ funcionario.nomeUsuario }}</strong>
-              <span>{{ funcionario.cargo }}</span>
-            </span>
-          </div>
-        } @empty {
-          <p>Nenhum funcionário vinculado a esta fazenda.</p>
-        }
+
+  @if (
+    fazendaContext.podeGerenciarFuncionarios()
+  ) {
+
+    <section
+      class="shortcuts"
+      aria-labelledby="equipe-title"
+    >
+
+      <div class="section-heading">
+
+        <h2 id="equipe-title">
+          Funcionários da propriedade
+        </h2>
+
+        <a
+          routerLink="/app/funcionarios"
+          class="section-link"
+        >
+          Gerenciar equipe
+          <mat-icon>arrow_forward</mat-icon>
+        </a>
+
       </div>
-    }
-  </section>
 
-  <!-- ===== ATALHOS ===== -->
 
-  <section class="shortcuts" aria-labelledby="shortcuts-title">
+      @if (
+        totalFuncionarios() !== null
+      ) {
 
-    <h2 id="shortcuts-title">O que você quer fazer hoje?</h2>
+        <div class="shortcut-grid">
+
+          @for (
+            funcionario of funcionarios();
+            track $index
+          ) {
+
+            <div class="shortcut">
+
+              <mat-icon>
+                badge
+              </mat-icon>
+
+              <span class="shortcut-text">
+
+                <strong>
+                  {{ funcionario.nomeUsuario }}
+                </strong>
+
+                <span>
+                  {{ funcionario.cargo }}
+                </span>
+
+              </span>
+
+            </div>
+
+          } @empty {
+
+            <p>
+              Nenhum funcionário vinculado a esta fazenda.
+            </p>
+
+          }
+
+        </div>
+
+      }
+
+    </section>
+
+  }
+
+
+  <section
+    class="shortcuts"
+    aria-labelledby="shortcuts-title"
+  >
+
+    <h2 id="shortcuts-title">
+      O que você quer fazer hoje?
+    </h2>
+
 
     <div class="shortcut-grid">
 
-      <a routerLink="/app/animais" class="shortcut">
-        <span class="shortcut-icon"><mat-icon>monitor_weight</mat-icon></span>
-        <span class="shortcut-text">
-          <strong>Registrar pesagem</strong>
-          <span>Anote o peso e acompanhe a evolução.</span>
+      @if (
+        fazendaContext.possuiPermissao(
+          'REGISTRAR_PESO'
+        )
+      ) {
+
+        <a
+          routerLink="/app/pesagens"
+          class="shortcut"
+        >
+          <span class="shortcut-icon">
+            <mat-icon>
+              monitor_weight
+            </mat-icon>
+          </span>
+
+          <span class="shortcut-text">
+            <strong>
+              Registrar pesagem
+            </strong>
+
+            <span>
+              Anote o peso e acompanhe a evolução.
+            </span>
+          </span>
+
+          <mat-icon class="shortcut-go">
+            arrow_forward
+          </mat-icon>
+        </a>
+
+      }
+
+
+      <a
+        routerLink="/app/animais"
+        class="shortcut"
+      >
+        <span class="shortcut-icon">
+          <mat-icon>pets</mat-icon>
         </span>
-        <mat-icon class="shortcut-go">arrow_forward</mat-icon>
+
+        <span class="shortcut-text">
+          <strong>
+            Consultar animais
+          </strong>
+
+          <span>
+            Consulte os animais da propriedade.
+          </span>
+        </span>
+
+        <mat-icon class="shortcut-go">
+          arrow_forward
+        </mat-icon>
       </a>
 
-      <a routerLink="/app/animais" class="shortcut">
-        <span class="shortcut-icon"><mat-icon>pets</mat-icon></span>
-        <span class="shortcut-text">
-          <strong>Consultar animais</strong>
-          <span>Busque, edite e cadastre animais.</span>
+
+      @if (
+        fazendaContext.possuiPermissao(
+          'GERENCIAR_REBANHO'
+        )
+      ) {
+
+        <a
+          routerLink="/app/rebanhos"
+          class="shortcut"
+        >
+          <span class="shortcut-icon">
+            <mat-icon>groups</mat-icon>
+          </span>
+
+          <span class="shortcut-text">
+            <strong>
+              Organizar rebanhos
+            </strong>
+
+            <span>
+              Crie e organize os lotes da propriedade.
+            </span>
+          </span>
+
+          <mat-icon class="shortcut-go">
+            arrow_forward
+          </mat-icon>
+        </a>
+
+      } @else {
+
+        <a
+          routerLink="/app/rebanhos"
+          class="shortcut"
+        >
+          <span class="shortcut-icon">
+            <mat-icon>groups</mat-icon>
+          </span>
+
+          <span class="shortcut-text">
+            <strong>
+              Consultar rebanhos
+            </strong>
+
+            <span>
+              Visualize os lotes e seus animais.
+            </span>
+          </span>
+
+          <mat-icon class="shortcut-go">
+            arrow_forward
+          </mat-icon>
+        </a>
+
+      }
+
+
+      <a
+        routerLink="/app/dashboard"
+        class="shortcut"
+      >
+        <span class="shortcut-icon">
+          <mat-icon>dashboard</mat-icon>
         </span>
-        <mat-icon class="shortcut-go">arrow_forward</mat-icon>
+
+        <span class="shortcut-text">
+          <strong>
+            Ver indicadores
+          </strong>
+
+          <span>
+            Acompanhe o desempenho da fazenda.
+          </span>
+        </span>
+
+        <mat-icon class="shortcut-go">
+          arrow_forward
+        </mat-icon>
       </a>
 
-      <a routerLink="/app/rebanhos" class="shortcut">
-        <span class="shortcut-icon"><mat-icon>groups</mat-icon></span>
-        <span class="shortcut-text">
-          <strong>Organizar rebanhos</strong>
-          <span>Separe os animais em lotes.</span>
-        </span>
-        <mat-icon class="shortcut-go">arrow_forward</mat-icon>
-      </a>
 
-      <a routerLink="/app/dashboard" class="shortcut">
-        <span class="shortcut-icon"><mat-icon>dashboard</mat-icon></span>
-        <span class="shortcut-text">
-          <strong>Ver indicadores</strong>
-          <span>Acompanhe o desempenho da fazenda.</span>
-        </span>
-        <mat-icon class="shortcut-go">arrow_forward</mat-icon>
-      </a>
+      @if (
+        fazendaContext.podeGerenciarFuncionarios()
+      ) {
 
-      <a routerLink="/app/relatorios" class="shortcut">
-        <span class="shortcut-icon"><mat-icon>assessment</mat-icon></span>
-        <span class="shortcut-text">
-          <strong>Gerar relatório</strong>
-          <span>Consulte resultados por período.</span>
-        </span>
-        <mat-icon class="shortcut-go">arrow_forward</mat-icon>
-      </a>
+        <a
+          routerLink="/app/funcionarios"
+          class="shortcut"
+        >
+          <span class="shortcut-icon">
+            <mat-icon>badge</mat-icon>
+          </span>
 
-      <a href="#equipe" (click)="$event.preventDefault(); equipeSection.scrollIntoView({ behavior: 'smooth' })" class="shortcut">
-        <span class="shortcut-icon"><mat-icon>badge</mat-icon></span>
-        <span class="shortcut-text">
-          <strong>Consultar equipe</strong>
-          <span>Veja quem trabalha na propriedade.</span>
-        </span>
-        <mat-icon class="shortcut-go">arrow_forward</mat-icon>
-      </a>
+          <span class="shortcut-text">
+            <strong>
+              Gerenciar equipe
+            </strong>
+
+            <span>
+              Convide pessoas e controle acessos.
+            </span>
+          </span>
+
+          <mat-icon class="shortcut-go">
+            arrow_forward
+          </mat-icon>
+        </a>
+
+      }
 
     </div>
 
