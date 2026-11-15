@@ -10,6 +10,10 @@ import {
   FazendaResponse
 } from '../models/fazenda-response';
 
+import {
+  FazendaAcessivelResponse
+} from '../models/fazenda-acessivel-response';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -62,11 +66,22 @@ export class FazendaService {
       `${this.API_URL}/${id}`
     );
   }
+
+
   listarMinhasFazendas():
   Observable<FazendaResponse[]> {
 
-  return this.http.get<FazendaResponse[]>(
-    `${this.API_URL}/minhas`
-  );
+    return this.http.get<FazendaResponse[]>(
+      `${this.API_URL}/minhas`
+    );
+  }
+
+
+  listarFazendasAcessiveis():
+  Observable<FazendaAcessivelResponse[]> {
+
+    return this.http.get<FazendaAcessivelResponse[]>(
+      `${this.API_URL}/acessiveis`
+    );
   }
 }
