@@ -17,8 +17,17 @@ import {
   tap
 } from 'rxjs/operators';
 
-import { AuthService } from '../../core/auth/services/auth.service';
-import { UsuarioContextService } from '../../core/user/services/user-context.service';
+import {
+  AuthService
+} from '../../core/auth/services/auth.service';
+
+import {
+  UsuarioContextService
+} from '../../core/user/services/user-context.service';
+
+import {
+  FazendaContextService
+} from '../../core/fazenda/services/fazenda-context.service';
 
 import { MatIconModule } from '@angular/material/icon';
 
@@ -39,7 +48,8 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class LoginComponent {
 
-  private readonly formBuilder = inject(FormBuilder);
+  private readonly formBuilder =
+    inject(FormBuilder);
 
   private readonly authService =
     inject(AuthService);
@@ -47,23 +57,24 @@ export class LoginComponent {
   private readonly usuarioContextService =
     inject(UsuarioContextService);
 
+  private readonly fazendaContext =
+    inject(FazendaContextService);
+
   private readonly router =
     inject(Router);
 
   private readonly route =
     inject(ActivatedRoute);
 
+
   readonly anoAtual =
     new Date().getFullYear();
 
-  /** Vindo do cadastro: /login?cadastrado=true */
   readonly contaCriada =
     signal(
       this.route.snapshot.queryParamMap
         .get('cadastrado') === 'true'
     );
-
-  
 
   loading = signal(false);
 
@@ -98,7 +109,6 @@ export class LoginComponent {
 
     this.clearError();
 
-
     if (this.loginForm.invalid) {
 
       this.loginForm.markAllAsTouched();
@@ -109,8 +119,8 @@ export class LoginComponent {
 
     this.loading.set(true);
 
-
     const credentials = {
+
       email:
         this.loginForm.controls.email
           .value
@@ -123,11 +133,6 @@ export class LoginComponent {
     };
 
 
-    /*
-     * Usamos esta variável para saber
-     * se o erro aconteceu no LOGIN
-     * ou depois, ao carregar o contexto.
-     */
     let loginRealizado = false;
 
 
@@ -136,53 +141,56 @@ export class LoginComponent {
 
       .pipe(
 
-        /*
-         * O AuthService já salvou o JWT
-         * no localStorage através do tap()
-         * que existe dentro dele.
-         */
         tap(() => {
 
           loginRealizado = true;
 
+          /*
+           * Garante que o contexto de fazenda
+           * da sessão anterior não seja reutilizado.
+           */
+          this.fazendaContext.limpar();
         }),
 
-
-        /*
-         * Depois do login, buscamos o
-         * estado atual do usuário.
-         */
         switchMap(() =>
-
           this.usuarioContextService
             .getContexto()
-
         ),
 
-
-        /*
-         * Sempre encerra o loading.
-         */
         finalize(() => {
-
           this.loading.set(false);
-
         })
 
       )
 
       .subscribe({
 
-        // ==========================================
-        // LOGIN + CONTEXTO CARREGADOS
-        // ==========================================
-
         next: contexto => {
 
           /*
-           * ADMIN não precisa passar
-           * pelo onboarding de produtor.
+           * Convite de conta existente:
+           * após autenticar, volta para a tela
+           * do convite para efetuar o aceite.
            */
+          const returnUrl =
+            this.route.snapshot.queryParamMap
+              .get('returnUrl');
+
+          if (
+            returnUrl &&
+            returnUrl.startsWith(
+              '/convite-funcionario'
+            )
+          ) {
+
+            this.router.navigateByUrl(
+              returnUrl
+            );
+
+            return;
+          }
+
+
           if (contexto.admin) {
 
             this.router.navigate([
@@ -194,16 +202,18 @@ export class LoginComponent {
 
 
           /*
-           * Usuário ainda não terminou
-           * sua configuração.
+           * Funcionário com algum vínculo,
+           * porém sem vínculo ativo.
+           * Não deve cair no onboarding
+           * de produtor/fazenda.
            */
           if (
-            !contexto.possuiPerfilProdutor ||
-            !contexto.possuiFazenda
+            contexto.possuiVinculoFuncionario &&
+            !contexto.possuiAcessoFazenda
           ) {
 
             this.router.navigate([
-              '/onboarding'
+              '/acesso-suspenso'
             ]);
 
             return;
@@ -211,19 +221,32 @@ export class LoginComponent {
 
 
           /*
-           * Usuário já possui perfil
-           * de produtor e fazenda.
+           * Produtor ou funcionário com
+           * acesso ativo a pelo menos uma
+           * propriedade.
+           */
+          if (
+            contexto.possuiAcessoFazenda
+          ) {
+
+            this.router.navigate([
+              '/app'
+            ]);
+
+            return;
+          }
+
+
+          /*
+           * Usuário comum sem perfil nem
+           * vínculo de funcionário inicia
+           * onboarding como produtor.
            */
           this.router.navigate([
-            '/app'
+            '/onboarding'
           ]);
-
         },
 
-
-        // ==========================================
-        // ERROS
-        // ==========================================
 
         error: error => {
 
@@ -233,10 +256,6 @@ export class LoginComponent {
           );
 
 
-          /*
-           * Se nem o login terminou,
-           * o problema está na autenticação.
-           */
           if (!loginRealizado) {
 
             if (
@@ -248,7 +267,9 @@ export class LoginComponent {
                 'E-mail ou senha incorretos. Verifique e tente novamente.'
               );
 
-            } else if (error.status === 0) {
+            } else if (
+              error.status === 0
+            ) {
 
               this.showErrorMessage(
                 'Não foi possível conectar ao servidor. Verifique sua conexão.'
@@ -259,18 +280,12 @@ export class LoginComponent {
               this.showErrorMessage(
                 'Não foi possível realizar o login. Tente novamente.'
               );
-
             }
 
             return;
           }
 
 
-          /*
-           * Se chegou aqui com loginRealizado = true,
-           * significa que o login funcionou e o erro
-           * aconteceu ao buscar /api/me/context.
-           */
           if (error.status === 0) {
 
             this.showErrorMessage(
@@ -282,10 +297,6 @@ export class LoginComponent {
             error.status === 403
           ) {
 
-            /*
-             * Token inválido ou rejeitado.
-             * Nesse caso limpamos a sessão.
-             */
             this.authService.logout();
 
             this.showErrorMessage(
@@ -297,13 +308,10 @@ export class LoginComponent {
             this.showErrorMessage(
               'Login realizado, mas ocorreu um erro ao carregar sua conta.'
             );
-
           }
-
         }
 
       });
-
   }
 
 
@@ -312,7 +320,6 @@ export class LoginComponent {
   ): void {
 
     this.errorMessage.set(message);
-
   }
 
 
@@ -321,7 +328,5 @@ export class LoginComponent {
     this.errorMessage.set('');
 
     this.contaCriada.set(false);
-
   }
-
 }
