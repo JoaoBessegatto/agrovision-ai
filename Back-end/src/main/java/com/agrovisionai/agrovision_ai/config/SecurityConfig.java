@@ -2,6 +2,8 @@ package com.agrovisionai.agrovision_ai.config;
 
 import java.util.Arrays;
 
+import jakarta.servlet.DispatcherType;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -45,6 +47,11 @@ public class SecurityConfig  {
         http
                 .csrf(AbstractHttpConfigurer::disable )
                 .authorizeHttpRequests((requests) -> requests
+                        .dispatcherTypeMatchers(
+                                DispatcherType.ERROR,
+                                DispatcherType.FORWARD
+                        ).permitAll()
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/auth/login", "/api/auth/cadastrar").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/convites/funcionarios/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/convites/funcionarios/cadastrar").permitAll()
