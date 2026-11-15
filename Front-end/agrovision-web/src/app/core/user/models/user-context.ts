@@ -7,4 +7,7 @@ export interface UsuarioContext {
 
   possuiPerfilProdutor: boolean;
   possuiFazenda: boolean;
+
+  possuiVinculoFuncionario: boolean;
+  possuiAcessoFazenda: boolean;
 }
