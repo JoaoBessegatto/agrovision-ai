@@ -2,7 +2,6 @@ package com.agrovisionai.agrovision_ai.controller;
 
 import com.agrovisionai.agrovision_ai.domain.dto.request.RebanhoRequestDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.RebanhoResponseDTO;
-import com.agrovisionai.agrovision_ai.repository.RebanhoRepository;
 import com.agrovisionai.agrovision_ai.service.RebanhoService;
 import com.agrovisionai.agrovision_ai.domain.dto.response.VendaRebanhoResponseDTO;
 import jakarta.validation.Valid;
@@ -22,8 +21,7 @@ public class RebanhoController {
 
 
     public RebanhoController(
-            RebanhoService rebanhoService,
-            RebanhoRepository rebanhoRepository
+            RebanhoService rebanhoService
     ) {
         this.rebanhoService = rebanhoService;
     }
