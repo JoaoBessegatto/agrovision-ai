@@ -24,6 +24,12 @@
     </div>
 
 
+    @if (
+      fazendaContext.possuiPermissao(
+        'CADASTRAR_ANIMAL'
+      )
+    ) {
+
     <button
       type="button"
       class="primary-button"
@@ -33,6 +39,8 @@
       <mat-icon>add</mat-icon>
       Novo animal
     </button>
+
+    }
 
   </header>
 
@@ -271,10 +279,18 @@
         rebanho desta propriedade para poder cadastrar animais.
       </p>
 
+      @if (
+        fazendaContext.possuiPermissao(
+          'GERENCIAR_REBANHO'
+        )
+      ) {
+
       <a routerLink="/app/rebanhos" class="primary-button">
         <mat-icon>add</mat-icon>
         Criar rebanho
       </a>
+
+      }
 
     </section>
 
@@ -298,6 +314,12 @@
         a acompanhar peso e situação.
       </p>
 
+      @if (
+        fazendaContext.possuiPermissao(
+          'CADASTRAR_ANIMAL'
+        )
+      ) {
+
       <button
         type="button"
         class="primary-button"
@@ -306,6 +328,8 @@
         <mat-icon>add</mat-icon>
         Cadastrar primeiro animal
       </button>
+
+      }
 
     </section>
 
@@ -480,8 +504,13 @@
                   <div class="row-actions">
 
                     @if (
-                      animal.situacao === 'ATIVO' ||
-                      animal.situacao === 'INATIVO'
+                      (
+                        animal.situacao === 'ATIVO' ||
+                        animal.situacao === 'INATIVO'
+                      ) &&
+                      fazendaContext.possuiPermissao(
+                        'ALTERAR_SITUACAO_ANIMAL'
+                      )
                     ) {
 
                       <button
