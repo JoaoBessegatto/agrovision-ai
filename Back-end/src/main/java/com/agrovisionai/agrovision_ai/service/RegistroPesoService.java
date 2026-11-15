@@ -5,17 +5,15 @@ import com.agrovisionai.agrovision_ai.auth.Usuario;
 import com.agrovisionai.agrovision_ai.domain.dto.request.RegistroPesoRequestDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.RegistroPesoResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.entity.Animal;
-import com.agrovisionai.agrovision_ai.domain.entity.Fazenda;
 import com.agrovisionai.agrovision_ai.domain.entity.RegistroPeso;
+import com.agrovisionai.agrovision_ai.domain.enums.PermissaoFuncionario;
 import com.agrovisionai.agrovision_ai.domain.enums.SituacaoAnimal;
 import com.agrovisionai.agrovision_ai.exception.BusinessException;
 import com.agrovisionai.agrovision_ai.exception.ResouceNotFoundException;
-import com.agrovisionai.agrovision_ai.exception.UnauthorizedException;
 import com.agrovisionai.agrovision_ai.repository.AnimalRepository;
 import com.agrovisionai.agrovision_ai.repository.RegistroPesoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.agrovisionai.agrovision_ai.repository.FazendaRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,68 +22,40 @@ import java.util.UUID;
 @Transactional
 public class RegistroPesoService {
 
-    private final RegistroPesoRepository
-            registroPesoRepository;
-
-    private final AnimalRepository
-            animalRepository;
-
-    private final CurrentUserProvider
-            currentUserProvider;
-    private final FazendaRepository fazendaRepository;
+    private final RegistroPesoRepository registroPesoRepository;
+    private final AnimalRepository animalRepository;
+    private final CurrentUserProvider currentUserProvider;
+    private final FazendaAccessService fazendaAccessService;
 
     public RegistroPesoService(
             RegistroPesoRepository registroPesoRepository,
             AnimalRepository animalRepository,
             CurrentUserProvider currentUserProvider,
-            FazendaRepository fazendaRepository
+            FazendaAccessService fazendaAccessService
     ) {
-
-        this.registroPesoRepository =
-                registroPesoRepository;
-
-        this.animalRepository =
-                animalRepository;
-
-        this.currentUserProvider =
-                currentUserProvider;
-        this.fazendaRepository =
-                fazendaRepository;
+        this.registroPesoRepository = registroPesoRepository;
+        this.animalRepository = animalRepository;
+        this.currentUserProvider = currentUserProvider;
+        this.fazendaAccessService = fazendaAccessService;
     }
-
 
     public RegistroPesoResponseDTO registrar(
             UUID animalId,
             RegistroPesoRequestDTO dto
     ) {
-
         Usuario usuario =
-                currentUserProvider
-                        .getUsuarioAtual();
-
+                currentUserProvider.getUsuarioAtual();
 
         Animal animal =
-                buscarAnimal(
-                        animalId
-                );
+                buscarAnimal(animalId);
 
-
-        validarPermissao(
-                usuario,
-                animal.getRebanho()
-                        .getFazenda()
+        fazendaAccessService.exigirPermissao(
+                animal.getRebanho().getFazenda().getId(),
+                PermissaoFuncionario.REGISTRAR_PESO
         );
 
-
-        validarAnimalParaPesagem(
-                animal
-        );
-
-
-        validarPeso(
-                dto.pesoKg()
-        );
-
+        validarAnimalParaPesagem(animal);
+        validarPeso(dto.pesoKg());
 
         RegistroPeso registro =
                 new RegistroPeso(
@@ -94,125 +64,54 @@ public class RegistroPesoService {
                         dto.pesoKg()
                 );
 
+        registroPesoRepository.save(registro);
 
-        registroPesoRepository
-                .save(registro);
+        animal.atualizarPeso(dto.pesoKg());
 
-
-        /*
-         * Atualiza o snapshot de peso
-         * atual do animal.
-         */
-        animal.atualizarPeso(
-                dto.pesoKg()
-        );
-
-
-        return RegistroPesoResponseDTO
-                .from(registro);
+        return RegistroPesoResponseDTO.from(registro);
     }
+
     @Transactional(readOnly = true)
     public List<RegistroPesoResponseDTO> listarPorFazenda(
             UUID fazendaId
     ) {
-
-        Usuario usuario =
-                currentUserProvider
-                        .getUsuarioAtual();
-
-
-        Fazenda fazenda =
-                fazendaRepository
-                        .findById(fazendaId)
-                        .orElseThrow(() ->
-                                new ResouceNotFoundException(
-                                        "Fazenda não encontrada."
-                                )
-                        );
-
-
-        validarPermissao(
-                usuario,
-                fazenda
-        );
-
+        fazendaAccessService.exigirVisualizacao(fazendaId);
 
         return registroPesoRepository
                 .findByAnimalRebanhoFazendaIdOrderByDataRegistroDesc(
                         fazendaId
                 )
                 .stream()
-                .map(
-                        RegistroPesoResponseDTO::from
-                )
+                .map(RegistroPesoResponseDTO::from)
                 .toList();
     }
-
-    // =========================================================
-    // HISTÓRICO
-    // =========================================================
 
     @Transactional(readOnly = true)
     public List<RegistroPesoResponseDTO> listarHistorico(
             UUID animalId
     ) {
+        Animal animal = buscarAnimal(animalId);
 
-        Usuario usuario =
-                currentUserProvider
-                        .getUsuarioAtual();
-
-
-        Animal animal =
-                buscarAnimal(
-                        animalId
-                );
-
-
-        validarPermissao(
-                usuario,
-                animal.getRebanho()
-                        .getFazenda()
+        fazendaAccessService.exigirVisualizacao(
+                animal.getRebanho().getFazenda().getId()
         );
 
-
         return registroPesoRepository
-                .findByAnimalIdOrderByDataRegistroDesc(
-                        animalId
-                )
+                .findByAnimalIdOrderByDataRegistroDesc(animalId)
                 .stream()
-                .map(
-                        RegistroPesoResponseDTO::from
-                )
+                .map(RegistroPesoResponseDTO::from)
                 .toList();
     }
-
-
-    // =========================================================
-    // ÚLTIMA PESAGEM
-    // =========================================================
 
     @Transactional(readOnly = true)
     public RegistroPesoResponseDTO buscarUltimaPesagem(
             UUID animalId
     ) {
+        Animal animal = buscarAnimal(animalId);
 
-        Usuario usuario =
-                currentUserProvider
-                        .getUsuarioAtual();
-
-
-        Animal animal =
-                buscarAnimal(
-                        animalId
-                );
-
-
-        validarPermissao(
-                usuario,
-                animal.getRebanho()
-                        .getFazenda()
+        fazendaAccessService.exigirVisualizacao(
+                animal.getRebanho().getFazenda().getId()
         );
-
 
         RegistroPeso registro =
                 registroPesoRepository
@@ -225,20 +124,10 @@ public class RegistroPesoService {
                                 )
                         );
 
-
-        return RegistroPesoResponseDTO
-                .from(registro);
+        return RegistroPesoResponseDTO.from(registro);
     }
 
-
-    // =========================================================
-    // AUXILIARES
-    // =========================================================
-
-    private Animal buscarAnimal(
-            UUID animalId
-    ) {
-
+    private Animal buscarAnimal(UUID animalId) {
         return animalRepository
                 .findById(animalId)
                 .orElseThrow(() ->
@@ -248,64 +137,26 @@ public class RegistroPesoService {
                 );
     }
 
+    private void validarAnimalParaPesagem(Animal animal) {
 
-    private void validarAnimalParaPesagem(
-            Animal animal
-    ) {
-
-        if (
-                animal.getSituacao()
-                        != SituacaoAnimal.ATIVO
-        ) {
-
+        if (animal.getSituacao() != SituacaoAnimal.ATIVO) {
             throw new BusinessException(
                     "Não é possível registrar pesagem para um animal inativo."
             );
         }
     }
 
+    private void validarPeso(Double peso) {
 
-    private void validarPeso(
-            Double peso
-    ) {
-
-        if (
-                peso == null ||
-                        peso <= 0
-        ) {
-
+        if (peso == null || peso <= 0) {
             throw new BusinessException(
                     "Peso inválido."
             );
         }
 
-
         if (peso > 1500) {
-
             throw new BusinessException(
                     "Peso informado está acima do limite permitido."
-            );
-        }
-    }
-
-
-    private void validarPermissao(
-            Usuario usuario,
-            Fazenda fazenda
-    ) {
-
-        if (
-                !fazenda
-                        .getProdutor()
-                        .getUsuario()
-                        .getId()
-                        .equals(
-                                usuario.getId()
-                        )
-        ) {
-
-            throw new UnauthorizedException(
-                    "Usuário não possui acesso a esta fazenda."
             );
         }
     }
