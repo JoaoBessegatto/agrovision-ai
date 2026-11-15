@@ -41,15 +41,23 @@
     </div>
 
 
-    <button
-      type="button"
-      class="primary-button"
-      (click)="abrirNovoRebanho()"
-      [disabled]="!fazendaContext.fazendaAtivaId()"
-    >
-      <mat-icon>add</mat-icon>
-      Novo rebanho
-    </button>
+    @if (
+      fazendaContext.possuiPermissao(
+        'GERENCIAR_REBANHO'
+      )
+    ) {
+
+      <button
+        type="button"
+        class="primary-button"
+        (click)="abrirNovoRebanho()"
+        [disabled]="!fazendaContext.fazendaAtivaId()"
+      >
+        <mat-icon>add</mat-icon>
+        Novo rebanho
+      </button>
+
+    }
 
   </header>
 
@@ -145,14 +153,22 @@
         cadastrar os animais dentro dele.
       </p>
 
-      <button
-        type="button"
-        class="primary-button"
-        (click)="abrirNovoRebanho()"
-      >
-        <mat-icon>add</mat-icon>
-        Criar primeiro rebanho
-      </button>
+      @if (
+        fazendaContext.possuiPermissao(
+          'GERENCIAR_REBANHO'
+        )
+      ) {
+
+        <button
+          type="button"
+          class="primary-button"
+          (click)="abrirNovoRebanho()"
+        >
+          <mat-icon>add</mat-icon>
+          Criar primeiro rebanho
+        </button>
+
+      }
 
     </section>
 
@@ -185,7 +201,10 @@
 
               <!-- VENDA DO LOTE -->
 
-              @if (rebanho.quantidadeAnimais > 0) {
+              @if (
+                rebanho.quantidadeAnimais > 0 &&
+                fazendaContext.podeVender()
+              ) {
 
                 <button
                   type="button"
@@ -201,6 +220,12 @@
 
               }
 
+
+              @if (
+                fazendaContext.possuiPermissao(
+                  'GERENCIAR_REBANHO'
+                )
+              ) {
 
               <!-- EDITAR -->
 
@@ -238,6 +263,8 @@
                   delete_outline
                 </mat-icon>
               </button>
+
+              }
 
             </div>
 
