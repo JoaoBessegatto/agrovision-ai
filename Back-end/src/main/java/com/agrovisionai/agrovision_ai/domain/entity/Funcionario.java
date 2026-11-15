@@ -2,6 +2,7 @@ package com.agrovisionai.agrovision_ai.domain.entity;
 
 import com.agrovisionai.agrovision_ai.auth.Usuario;
 import com.agrovisionai.agrovision_ai.domain.enums.CargoFuncionario;
+import com.agrovisionai.agrovision_ai.domain.enums.PermissaoFuncionario;
 import com.agrovisionai.agrovision_ai.exception.BusinessException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -14,12 +15,14 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "funcionario",
+@Table(
+        name = "funcionario",
         uniqueConstraints = {
                 @UniqueConstraint(
                         columnNames = {"usuario_id", "fazenda_id"}
                 )
-        })
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Funcionario {
@@ -30,11 +33,12 @@ public class Funcionario {
     @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
-    @ManyToOne(optional =false)
-    @JoinColumn(name = "usuario_id")
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "fazenda_id", nullable = false)
     private Fazenda fazenda;
 
     @Enumerated(EnumType.STRING)
@@ -67,20 +71,23 @@ public class Funcionario {
             CargoFuncionario cargo
     ) {
         if (usuario == null) {
-            throw new BusinessException("Usuário é obrigatório");
+            throw new BusinessException("Usuário é obrigatório.");
         }
+
         if (fazenda == null) {
-            throw new BusinessException("Funcionário deve pertencer a uma fazenda");
+            throw new BusinessException("Funcionário deve pertencer a uma fazenda.");
         }
+
         if (cargo == null) {
-            throw new BusinessException("Cargo do funcionário é obrigatório");
+            throw new BusinessException("Cargo do funcionário é obrigatório.");
         }
     }
 
     public void alterarCargo(CargoFuncionario novoCargo) {
         if (novoCargo == null) {
-            throw new BusinessException("Cargo inválido");
+            throw new BusinessException("Cargo inválido.");
         }
+
         this.cargo = novoCargo;
     }
 
@@ -92,16 +99,19 @@ public class Funcionario {
         this.ativo = true;
     }
 
+    public boolean possuiPermissao(PermissaoFuncionario permissao) {
+        return ativo && cargo.possuiPermissao(permissao);
+    }
 
     public boolean podeRegistrarPeso() {
-        return ativo && cargo.podeRegistrarPeso();
+        return possuiPermissao(PermissaoFuncionario.REGISTRAR_PESO);
     }
 
     public boolean podeTransferirAnimal() {
-        return ativo && cargo.podeTransferirAnimal();
+        return possuiPermissao(PermissaoFuncionario.TRANSFERIR_ANIMAL);
     }
 
     public boolean podeGerenciarRebanho() {
-        return ativo && cargo.podeGerenciarRebanho();
+        return possuiPermissao(PermissaoFuncionario.GERENCIAR_REBANHO);
     }
 }
