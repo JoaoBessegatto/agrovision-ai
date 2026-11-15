@@ -1,7 +1,6 @@
 package com.agrovisionai.agrovision_ai.controller;
 
 import com.agrovisionai.agrovision_ai.domain.dto.request.AlterarCargoFuncionarioRequestDTO;
-import com.agrovisionai.agrovision_ai.domain.dto.request.FuncionarioRequestDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.FuncionarioResponseDTO;
 import com.agrovisionai.agrovision_ai.service.FuncionarioService;
 import jakarta.validation.Valid;
@@ -12,21 +11,13 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("api/funcionarios")
+@RequestMapping("/api/funcionarios")
 public class FuncionarioController {
 
     private final FuncionarioService funcionarioService;
 
     public FuncionarioController(FuncionarioService funcionarioService) {
         this.funcionarioService = funcionarioService;
-    }
-
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public FuncionarioResponseDTO cadastrar(
-            @Valid @RequestBody FuncionarioRequestDTO dto
-    ) {
-        return funcionarioService.cadastrar(dto);
     }
 
     @GetMapping("/{id}")
