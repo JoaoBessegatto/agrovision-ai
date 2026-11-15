@@ -124,7 +124,10 @@
           </div>
 
 
-          @if (autenticado) {
+          @if (
+            autenticado &&
+            contaAutenticadaCorreta
+          ) {
 
             <button
               type="button"
@@ -141,6 +144,29 @@
                 Aceitar convite
               }
 
+            </button>
+
+          } @else if (autenticado) {
+
+            <div class="account-warning">
+
+              <mat-icon>switch_account</mat-icon>
+
+              <p>
+                A conta atualmente conectada não é
+                <strong>{{ dados.email }}</strong>.
+                Entre com o e-mail que recebeu o convite.
+              </p>
+
+            </div>
+
+            <button
+              type="button"
+              class="primary-button"
+              (click)="trocarConta()"
+            >
+              <mat-icon>switch_account</mat-icon>
+              Trocar conta
             </button>
 
           } @else {
