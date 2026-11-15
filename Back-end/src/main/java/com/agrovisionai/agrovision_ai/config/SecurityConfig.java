@@ -26,6 +26,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig  {
 
     // 1. Campos final para injeção via construtor
