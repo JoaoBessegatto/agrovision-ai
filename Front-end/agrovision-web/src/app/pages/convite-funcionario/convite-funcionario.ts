@@ -146,6 +146,27 @@ export class ConviteFuncionario
   }
 
 
+  get contaAutenticadaCorreta(): boolean {
+
+    const emailAtual =
+      this.authService
+        .getUser()
+        ?.username
+        ?.trim()
+        .toLowerCase();
+
+    const emailConvite =
+      this.convite()
+        ?.email
+        ?.trim()
+        .toLowerCase();
+
+    return !!emailAtual &&
+      !!emailConvite &&
+      emailAtual === emailConvite;
+  }
+
+
   entrarParaAceitar(): void {
 
     const returnUrl =
@@ -159,6 +180,14 @@ export class ConviteFuncionario
         }
       }
     );
+  }
+
+
+  trocarConta(): void {
+
+    this.authService.logout();
+
+    this.entrarParaAceitar();
   }
 
 
