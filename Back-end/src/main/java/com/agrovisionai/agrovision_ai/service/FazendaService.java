@@ -4,19 +4,25 @@ import com.agrovisionai.agrovision_ai.auth.CurrentUserProvider;
 import com.agrovisionai.agrovision_ai.auth.Role;
 import com.agrovisionai.agrovision_ai.auth.Usuario;
 import com.agrovisionai.agrovision_ai.domain.dto.request.FazendaRequestDTO;
+import com.agrovisionai.agrovision_ai.domain.dto.response.FazendaAcessivelResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.FazendaResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.entity.Fazenda;
+import com.agrovisionai.agrovision_ai.domain.entity.Funcionario;
 import com.agrovisionai.agrovision_ai.domain.entity.Produtor;
 import com.agrovisionai.agrovision_ai.domain.enums.TipoExploracao;
 import com.agrovisionai.agrovision_ai.exception.BusinessException;
 import com.agrovisionai.agrovision_ai.exception.ResouceNotFoundException;
 import com.agrovisionai.agrovision_ai.exception.UnauthorizedException;
 import com.agrovisionai.agrovision_ai.repository.FazendaRepository;
+import com.agrovisionai.agrovision_ai.repository.FuncionarioRepository;
 import com.agrovisionai.agrovision_ai.repository.ProdutorRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -24,16 +30,22 @@ public class FazendaService {
 
     private final FazendaRepository fazendaRepository;
     private final ProdutorRepository produtorRepository;
+    private final FuncionarioRepository funcionarioRepository;
     private final CurrentUserProvider currentUserProvider;
+    private final FazendaAccessService fazendaAccessService;
 
     public FazendaService(
             FazendaRepository fazendaRepository,
             ProdutorRepository produtorRepository,
-            CurrentUserProvider currentUserProvider
+            FuncionarioRepository funcionarioRepository,
+            CurrentUserProvider currentUserProvider,
+            FazendaAccessService fazendaAccessService
     ) {
         this.fazendaRepository = fazendaRepository;
         this.produtorRepository = produtorRepository;
+        this.funcionarioRepository = funcionarioRepository;
         this.currentUserProvider = currentUserProvider;
+        this.fazendaAccessService = fazendaAccessService;
     }
 
     @Transactional
@@ -51,14 +63,13 @@ public class FazendaService {
         fazenda.setAreaTotalHa(dto.areaTotalHa());
         fazenda.setExploracao(converterTipoExploracao(dto.exploracao()));
         fazenda.setGeopoligono(dto.geopoligono());
-
         fazenda.setProdutor(produtor);
 
         Fazenda fazendaSalva =
                 fazendaRepository.save(fazenda);
 
         return new FazendaResponseDTO(fazendaSalva);
-    } 
+    }
 
     @Transactional
     public FazendaResponseDTO atualizar(FazendaRequestDTO dto) {
@@ -83,11 +94,8 @@ public class FazendaService {
         fazenda.setExploracao(converterTipoExploracao(dto.exploracao()));
         fazenda.setGeopoligono(dto.geopoligono());
 
-        Fazenda fazendaAtualizada =
-                fazendaRepository.save(fazenda);
-
         return new FazendaResponseDTO(
-                fazendaAtualizada
+                fazendaRepository.save(fazenda)
         );
     }
 
@@ -98,10 +106,7 @@ public class FazendaService {
 
         Fazenda fazenda =
                 fazendaRepository
-                        .findByIdAndProdutor(
-                                fazendaId,
-                                produtor
-                        )
+                        .findByIdAndProdutor(fazendaId, produtor)
                         .orElseThrow(() ->
                                 new ResouceNotFoundException(
                                         "Fazenda não encontrada para o produtor autenticado."
@@ -120,7 +125,6 @@ public class FazendaService {
                 currentUserProvider.getUsuarioAtual();
 
         if (usuarioLogado.getRole() != Role.ADMIN) {
-
             throw new UnauthorizedException(
                     "Somente administradores podem listar todas as fazendas."
             );
@@ -133,23 +137,10 @@ public class FazendaService {
                 .toList();
     }
 
-
     @Transactional(readOnly = true)
     public FazendaResponseDTO get(UUID fazendaId) {
-
-        Produtor produtor = getProdutorLogado();
-
         Fazenda fazenda =
-                fazendaRepository
-                        .findByIdAndProdutor(
-                                fazendaId,
-                                produtor
-                        )
-                        .orElseThrow(() ->
-                                new ResouceNotFoundException(
-                                        "Fazenda não encontrada para o produtor autenticado."
-                                )
-                        );
+                fazendaAccessService.exigirVisualizacao(fazendaId);
 
         return new FazendaResponseDTO(fazenda);
     }
@@ -166,6 +157,59 @@ public class FazendaService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<FazendaAcessivelResponseDTO> getFazendasAcessiveis() {
+
+        Usuario usuario =
+                currentUserProvider.getUsuarioAtual();
+
+        if (usuario.getRole() == Role.ADMIN) {
+            return fazendaRepository
+                    .findAll()
+                    .stream()
+                    .map(FazendaAcessivelResponseDTO::admin)
+                    .sorted((a, b) ->
+                            a.nome().compareToIgnoreCase(b.nome())
+                    )
+                    .toList();
+        }
+
+        Map<UUID, FazendaAcessivelResponseDTO> acessos =
+                new LinkedHashMap<>();
+
+        produtorRepository
+                .findByUsuario(usuario)
+                .ifPresent(produtor ->
+                        fazendaRepository
+                                .findByProdutor(produtor)
+                                .forEach(fazenda ->
+                                        acessos.put(
+                                                fazenda.getId(),
+                                                FazendaAcessivelResponseDTO.proprietario(fazenda)
+                                        )
+                                )
+                );
+
+        List<Funcionario> vinculos =
+                funcionarioRepository
+                        .findByUsuarioIdAndAtivoTrue(usuario.getId());
+
+        for (Funcionario funcionario : vinculos) {
+            acessos.putIfAbsent(
+                    funcionario.getFazenda().getId(),
+                    FazendaAcessivelResponseDTO.funcionario(funcionario)
+            );
+        }
+
+        List<FazendaAcessivelResponseDTO> resultado =
+                new ArrayList<>(acessos.values());
+
+        resultado.sort((a, b) ->
+                a.nome().compareToIgnoreCase(b.nome())
+        );
+
+        return resultado;
+    }
 
     private Produtor getProdutorLogado() {
 
@@ -181,32 +225,23 @@ public class FazendaService {
                 );
     }
 
-
-    private TipoExploracao converterTipoExploracao(
-            String exploracao
-    ) {
+    private TipoExploracao converterTipoExploracao(String exploracao) {
 
         if (exploracao == null || exploracao.isBlank()) {
-
             throw new BusinessException(
                     "O tipo de exploração da fazenda é obrigatório."
             );
         }
 
         try {
-
             return TipoExploracao.valueOf(
-                    exploracao
-                            .trim()
-                            .toUpperCase()
+                    exploracao.trim().toUpperCase()
             );
 
         } catch (IllegalArgumentException e) {
-
             throw new BusinessException(
                     "Tipo de exploração inválido."
             );
         }
     }
-
 }
