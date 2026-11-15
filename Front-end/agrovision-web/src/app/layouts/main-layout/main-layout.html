@@ -1,18 +1,12 @@
 <div class="app-shell">
 
-  <!-- Overlay mobile -->
-
   @if (sidebarOpen()) {
-
     <div
       class="sidebar-overlay"
       (click)="fecharSidebar()"
     ></div>
-
   }
 
-
-  <!-- ===== SIDEBAR ===== -->
 
   <aside
     class="sidebar"
@@ -28,7 +22,10 @@
         (click)="fecharSidebar()"
       >
 
-        <div class="brand-mark" aria-hidden="true">
+        <div
+          class="brand-mark"
+          aria-hidden="true"
+        >
           <mat-icon>grass</mat-icon>
         </div>
 
@@ -41,8 +38,6 @@
 
     </div>
 
-
-    <!-- Fazenda (mobile) -->
 
     <div class="mobile-farm">
 
@@ -61,6 +56,13 @@
           {{ fazenda.cidade }} - {{ fazenda.estado }}
         </small>
 
+        <span class="mobile-access">
+          {{
+            fazenda.tipoAcesso === 'FUNCIONARIO'
+              ? (fazenda.cargo ?? 'Funcionário')
+              : 'Proprietário'
+          }}
+        </span>
       }
 
     </div>
@@ -71,7 +73,9 @@
       aria-label="Menu principal"
     >
 
-      <span class="menu-label">Principal</span>
+      <span class="menu-label">
+        Principal
+      </span>
 
       <a
         routerLink="/app"
@@ -95,7 +99,9 @@
       </a>
 
 
-      <span class="menu-label second">Pecuária</span>
+      <span class="menu-label second">
+        Pecuária
+      </span>
 
       <a
         routerLink="/app/rebanhos"
@@ -119,7 +125,7 @@
 
       <a
         routerLink="/app/pesagens"
-        routerLinkActive="active"      
+        routerLinkActive="active"
         ariaCurrentWhenActive="page"
         (click)="fecharSidebar()"
       >
@@ -128,37 +134,25 @@
       </a>
 
 
-      <span class="menu-label second">Gestão</span>
+      @if (
+        fazendaContext.podeGerenciarFuncionarios()
+      ) {
 
-      <a
-        routerLink="/app/fazendas"
-        routerLinkActive="active"
-        ariaCurrentWhenActive="page"
-        (click)="fecharSidebar()"
-      >
-        <mat-icon>agriculture</mat-icon>
-        <span>Fazendas</span>
-      </a>
+        <span class="menu-label second">
+          Gestão
+        </span>
 
-      <a
-        routerLink="/app/funcionarios"
-        routerLinkActive="active"
-        ariaCurrentWhenActive="page"
-        (click)="fecharSidebar()"
-      >
-        <mat-icon>badge</mat-icon>
-        <span>Funcionários</span>
-      </a>
+        <a
+          routerLink="/app/funcionarios"
+          routerLinkActive="active"
+          ariaCurrentWhenActive="page"
+          (click)="fecharSidebar()"
+        >
+          <mat-icon>badge</mat-icon>
+          <span>Funcionários</span>
+        </a>
 
-      <a
-        routerLink="/app/relatorios"
-        routerLinkActive="active"
-        ariaCurrentWhenActive="page"
-        (click)="fecharSidebar()"
-      >
-        <mat-icon>assessment</mat-icon>
-        <span>Relatórios</span>
-      </a>
+      }
 
     </nav>
 
@@ -179,8 +173,6 @@
   </aside>
 
 
-  <!-- ===== ÁREA PRINCIPAL ===== -->
-
   <div class="main-area">
 
     <header class="topbar">
@@ -200,15 +192,21 @@
 
         <div class="farm-selector">
 
-          <mat-icon class="farm-icon">agriculture</mat-icon>
+          <mat-icon class="farm-icon">
+            agriculture
+          </mat-icon>
 
           <div class="farm-select-content">
 
             <span>Fazenda ativa</span>
 
-            @if (fazendaContext.loading()) {
+            @if (
+              fazendaContext.loading()
+            ) {
 
-              <strong>Carregando...</strong>
+              <strong>
+                Carregando...
+              </strong>
 
             } @else if (
               fazendaContext.fazendas().length > 0
@@ -229,11 +227,16 @@
                     <option
                       [value]="fazenda.id"
                       [selected]="
-                        fazenda.id
-                        === fazendaContext.fazendaAtivaId()
+                        fazenda.id ===
+                        fazendaContext.fazendaAtivaId()
                       "
                     >
                       {{ fazenda.nome }}
+                      @if (
+                        fazenda.tipoAcesso === 'FUNCIONARIO'
+                      ) {
+                        — {{ fazenda.cargo }}
+                      }
                     </option>
 
                   }
@@ -248,11 +251,34 @@
 
             } @else {
 
-              <strong>Nenhuma fazenda</strong>
+              <strong>
+                Nenhuma fazenda
+              </strong>
 
             }
 
           </div>
+
+
+          @if (
+            fazendaContext.fazendaAtiva();
+            as fazenda
+          ) {
+
+            <span
+              class="access-badge"
+              [class.employee]="
+                fazenda.tipoAcesso === 'FUNCIONARIO'
+              "
+            >
+              {{
+                fazenda.tipoAcesso === 'FUNCIONARIO'
+                  ? (fazenda.cargo ?? 'Funcionário')
+                  : 'Proprietário'
+              }}
+            </span>
+
+          }
 
         </div>
 
@@ -261,14 +287,31 @@
 
       <div class="user-area">
 
-        <div class="user-avatar" aria-hidden="true">
-          {{ (usuario?.username ?? 'U').charAt(0).toUpperCase() }}
+        <div
+          class="user-avatar"
+          aria-hidden="true"
+        >
+          {{
+            (usuario?.username ?? 'U')
+              .charAt(0)
+              .toUpperCase()
+          }}
         </div>
 
         <div class="user-info">
+
           <strong>
             {{ usuario?.username ?? 'Usuário' }}
           </strong>
+
+          @if (
+            fazendaContext.ehFuncionario()
+          ) {
+            <small>
+              Acesso como funcionário
+            </small>
+          }
+
         </div>
 
       </div>
@@ -277,9 +320,7 @@
 
 
     <main class="content">
-
       <router-outlet />
-
     </main>
 
   </div>
