@@ -45,6 +45,12 @@
     </div>
 
 
+    @if (
+      fazendaContext.possuiPermissao(
+        'REGISTRAR_PESO'
+      )
+    ) {
+
     <button
       type="button"
       class="primary-button"
@@ -63,6 +69,8 @@
       Nova pesagem
 
     </button>
+
+    }
 
   </section>
 
@@ -550,7 +558,10 @@
 
 
         @if (
-          animaisAtivos().length > 0
+          animaisAtivos().length > 0 &&
+          fazendaContext.possuiPermissao(
+            'REGISTRAR_PESO'
+          )
         ) {
 
           <button
@@ -656,6 +667,12 @@
           </div>
 
 
+          @if (
+            fazendaContext.possuiPermissao(
+              'REGISTRAR_PESO'
+            )
+          ) {
+
           <button
             type="button"
             class="primary-button compact"
@@ -672,6 +689,8 @@
             Nova pesagem
 
           </button>
+
+          }
 
         </div>
 
