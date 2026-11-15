@@ -51,7 +51,9 @@ public class LoginController {
             @RequestBody @Valid UsuarioResquest dto
     ) {
 
-        if (usuarioRepository.existsByEmail(dto.email())) {
+        String email = dto.email().trim().toLowerCase();
+
+        if (usuarioRepository.existsByEmailIgnoreCase(email)) {
 
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
@@ -67,7 +69,7 @@ public class LoginController {
         Usuario newUser = new Usuario(
                 null,
                 dto.name(),
-                dto.email(),
+                email,
                 encryptedPassword,
                 Role.USER
         );
@@ -87,7 +89,9 @@ public class LoginController {
             @RequestBody @Valid UsuarioResquest dto
     ) {
 
-        if (usuarioRepository.existsByEmail(dto.email())) {
+        String email = dto.email().trim().toLowerCase();
+
+        if (usuarioRepository.existsByEmailIgnoreCase(email)) {
 
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
@@ -103,7 +107,7 @@ public class LoginController {
         Usuario newUser = new Usuario(
                 null,
                 dto.name(),
-                dto.email(),
+                email,
                 encryptedPassword,
                 Role.ADMIN
         );
