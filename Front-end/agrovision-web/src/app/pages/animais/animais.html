@@ -11,7 +11,16 @@
       @if (fazendaContext.fazendaAtiva(); as fazenda) {
 
         <p>
-          Consulte, filtre e cadastre os animais da
+          @if (
+            fazendaContext.possuiPermissao(
+              'CADASTRAR_ANIMAL'
+            )
+          ) {
+            Consulte, filtre e cadastre os animais da
+          } @else {
+            Consulte e filtre os animais da
+          }
+
           <strong>{{ fazenda.nome }}</strong>.
         </p>
 
@@ -272,12 +281,26 @@
         <mat-icon>groups</mat-icon>
       </div>
 
-      <h2>Crie um rebanho primeiro</h2>
+      @if (
+        fazendaContext.possuiPermissao(
+          'GERENCIAR_REBANHO'
+        )
+      ) {
+        <h2>Crie um rebanho primeiro</h2>
 
-      <p>
-        Todo animal pertence a um rebanho. Crie o primeiro
-        rebanho desta propriedade para poder cadastrar animais.
-      </p>
+        <p>
+          Todo animal pertence a um rebanho. Crie o primeiro
+          rebanho desta propriedade para poder cadastrar animais.
+        </p>
+      } @else {
+        <h2>Nenhum rebanho disponível</h2>
+
+        <p>
+          Esta propriedade ainda não possui rebanhos cadastrados.
+          Quando o produtor ou gerente criar um lote, os animais
+          ficarão disponíveis aqui.
+        </p>
+      }
 
       @if (
         fazendaContext.possuiPermissao(
@@ -310,8 +333,17 @@
       <h2>Nenhum animal cadastrado</h2>
 
       <p>
-        Cadastre o primeiro animal para começar
-        a acompanhar peso e situação.
+        @if (
+          fazendaContext.possuiPermissao(
+            'CADASTRAR_ANIMAL'
+          )
+        ) {
+          Cadastre o primeiro animal para começar
+          a acompanhar peso e situação.
+        } @else {
+          Ainda não existem animais cadastrados
+          nesta propriedade.
+        }
       </p>
 
       @if (
