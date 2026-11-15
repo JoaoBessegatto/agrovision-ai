@@ -8,6 +8,8 @@ public record UsuarioContextResponseDTO(
         String email,
         boolean admin,
         boolean possuiPerfilProdutor,
-        boolean possuiFazenda
+        boolean possuiFazenda,
+        boolean possuiVinculoFuncionario,
+        boolean possuiAcessoFazenda
 ) {
 }
