@@ -1,6 +1,7 @@
 package com.agrovisionai.agrovision_ai.controller;
 
 import com.agrovisionai.agrovision_ai.domain.dto.request.FazendaRequestDTO;
+import com.agrovisionai.agrovision_ai.domain.dto.response.FazendaAcessivelResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.FazendaResponseDTO;
 import com.agrovisionai.agrovision_ai.service.FazendaService;
 import jakarta.validation.Valid;
@@ -29,13 +30,9 @@ public class FazendaController {
     public ResponseEntity<FazendaResponseDTO> cadastrar(
             @RequestBody @Valid FazendaRequestDTO dto
     ) {
-
-        FazendaResponseDTO fazenda =
-                fazendaService.salvar(dto);
-
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(fazenda);
+                .body(fazendaService.salvar(dto));
     }
 
     @PutMapping
@@ -43,11 +40,9 @@ public class FazendaController {
     public ResponseEntity<FazendaResponseDTO> atualizar(
             @RequestBody @Valid FazendaRequestDTO dto
     ) {
-
-        FazendaResponseDTO fazenda =
-                fazendaService.atualizar(dto);
-
-        return ResponseEntity.ok(fazenda);
+        return ResponseEntity.ok(
+                fazendaService.atualizar(dto)
+        );
     }
 
     @DeleteMapping("/{id}")
@@ -55,7 +50,6 @@ public class FazendaController {
     public ResponseEntity<Void> deletar(
             @PathVariable("id") UUID id
     ) {
-
         fazendaService.deletar(id);
 
         return ResponseEntity
@@ -63,13 +57,27 @@ public class FazendaController {
                 .build();
     }
 
-
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<FazendaResponseDTO>> getAll() {
-
         return ResponseEntity.ok(
                 fazendaService.getAll()
+        );
+    }
+
+    @GetMapping("/minhas")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<FazendaResponseDTO>> getMinhasFazendas() {
+        return ResponseEntity.ok(
+                fazendaService.getMinhasFazendas()
+        );
+    }
+
+    @GetMapping("/acessiveis")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<FazendaAcessivelResponseDTO>> getFazendasAcessiveis() {
+        return ResponseEntity.ok(
+                fazendaService.getFazendasAcessiveis()
         );
     }
 
@@ -78,17 +86,8 @@ public class FazendaController {
     public ResponseEntity<FazendaResponseDTO> getOne(
             @PathVariable("id") UUID id
     ) {
-
         return ResponseEntity.ok(
                 fazendaService.get(id)
-        );
-    }
-    @GetMapping("/minhas")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<FazendaResponseDTO>> getMinhasFazendas() {
-
-        return ResponseEntity.ok(
-                fazendaService.getMinhasFazendas()
         );
     }
 }
