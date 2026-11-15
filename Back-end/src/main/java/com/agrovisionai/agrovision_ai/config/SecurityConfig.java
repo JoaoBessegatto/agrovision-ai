@@ -52,6 +52,7 @@ public class SecurityConfig  {
                                 DispatcherType.FORWARD
                         ).permitAll()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/login", "/api/auth/cadastrar").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/convites/funcionarios/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/convites/funcionarios/cadastrar").permitAll()
