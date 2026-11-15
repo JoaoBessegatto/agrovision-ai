@@ -110,13 +110,41 @@ export class Home {
         next: rebanhos => this.totalRebanhos.set(rebanhos.length),
         error: () => falha('Não foi possível carregar os rebanhos.')
       }));
-      subscriptions.add(this.funcionarioService.listarPorFazenda(fazendaId).subscribe({
-        next: funcionarios => {
-          this.totalFuncionarios.set(funcionarios.length);
-          this.funcionarios.set(funcionarios);
-        },
-        error: () => falha('Não foi possível carregar os funcionários.')
-      }));
+      /*
+       * O endpoint de funcionários é exclusivo
+       * do proprietário. Funcionários não devem
+       * disparar esta requisição apenas para
+       * montar a Home.
+       */
+      if (
+        this.fazendaContext
+          .podeGerenciarFuncionarios()
+      ) {
+
+        subscriptions.add(
+          this.funcionarioService
+            .listarPorFazenda(fazendaId)
+            .subscribe({
+
+              next: funcionarios => {
+
+                this.totalFuncionarios.set(
+                  funcionarios.length
+                );
+
+                this.funcionarios.set(
+                  funcionarios
+                );
+              },
+
+              error: () =>
+                falha(
+                  'Não foi possível carregar os funcionários.'
+                )
+            })
+        );
+
+      }
       this.carregandoPesagens.set(true);
       subscriptions.add(this.animalService.listarPorFazenda(fazendaId).subscribe({
         next: animais => {
