@@ -1,0 +1,271 @@
+<main class="invite-page">
+
+  <section class="invite-card">
+
+    <header class="brand">
+      <div class="brand-mark">
+        <mat-icon>grass</mat-icon>
+      </div>
+
+      <strong>AgroVision</strong>
+      <span>AI</span>
+    </header>
+
+
+    @if (loading()) {
+
+      <div class="state">
+        <div class="loader"></div>
+
+        <h1>
+          Validando convite
+        </h1>
+
+        <p>
+          Estamos conferindo os dados do seu acesso.
+        </p>
+      </div>
+
+    } @else if (sucesso()) {
+
+      <div class="state success">
+
+        <div class="state-icon">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+
+        <h1>
+          Convite aceito
+        </h1>
+
+        <p>
+          Seu acesso à propriedade foi configurado.
+        </p>
+
+      </div>
+
+    } @else if (convite(); as dados) {
+
+      <div class="invite-heading">
+
+        <span class="eyebrow">
+          CONVITE DE ACESSO
+        </span>
+
+        <h1>
+          Você foi convidado para uma fazenda
+        </h1>
+
+        <p>
+          O produtor concedeu acesso à propriedade
+          abaixo com um perfil de trabalho específico.
+        </p>
+
+      </div>
+
+
+      <div class="farm-card">
+
+        <div class="farm-icon">
+          <mat-icon>agriculture</mat-icon>
+        </div>
+
+        <div>
+          <span>Propriedade</span>
+          <strong>{{ dados.nomeFazenda }}</strong>
+        </div>
+
+        <div class="role-badge">
+          {{ dados.cargo }}
+        </div>
+
+      </div>
+
+
+      <div class="email-row">
+        <mat-icon>mail_outline</mat-icon>
+
+        <span>
+          Convite enviado para
+          <strong>{{ dados.email }}</strong>
+        </span>
+      </div>
+
+
+      @if (errorMessage()) {
+
+        <div class="alert">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ errorMessage() }}</span>
+        </div>
+
+      }
+
+
+      @if (dados.usuarioExistente) {
+
+        <section class="account-section">
+
+          <div class="section-title">
+
+            <mat-icon>person</mat-icon>
+
+            <div>
+              <strong>
+                Esta conta já existe
+              </strong>
+
+              <span>
+                Entre com a conta que recebeu o convite
+                e confirme o vínculo.
+              </span>
+            </div>
+
+          </div>
+
+
+          @if (autenticado) {
+
+            <button
+              type="button"
+              class="primary-button"
+              [disabled]="processando()"
+              (click)="aceitarContaExistente()"
+            >
+
+              @if (processando()) {
+                <span class="small-loader"></span>
+                Aceitando...
+              } @else {
+                <mat-icon>check</mat-icon>
+                Aceitar convite
+              }
+
+            </button>
+
+          } @else {
+
+            <button
+              type="button"
+              class="primary-button"
+              (click)="entrarParaAceitar()"
+            >
+              <mat-icon>login</mat-icon>
+              Entrar para aceitar
+            </button>
+
+          }
+
+        </section>
+
+      } @else {
+
+        <section class="account-section">
+
+          <div class="section-title">
+
+            <mat-icon>person_add</mat-icon>
+
+            <div>
+              <strong>
+                Crie sua conta
+              </strong>
+
+              <span>
+                Você não precisa cadastrar fazenda.
+                O acesso será criado automaticamente
+                ao concluir este cadastro.
+              </span>
+            </div>
+
+          </div>
+
+
+          <form
+            [formGroup]="cadastroForm"
+            (ngSubmit)="cadastrarEAceitar()"
+          >
+
+            <label>
+              Nome
+
+              <div class="input-wrap">
+                <mat-icon>person_outline</mat-icon>
+
+                <input
+                  type="text"
+                  formControlName="name"
+                  placeholder="Seu nome"
+                  autocomplete="name"
+                >
+              </div>
+            </label>
+
+
+            <label>
+              Senha
+
+              <div class="input-wrap">
+                <mat-icon>lock_outline</mat-icon>
+
+                <input
+                  type="password"
+                  formControlName="password"
+                  placeholder="Mínimo de 6 caracteres"
+                  autocomplete="new-password"
+                >
+              </div>
+            </label>
+
+
+            <button
+              type="submit"
+              class="primary-button"
+              [disabled]="processando()"
+            >
+
+              @if (processando()) {
+                <span class="small-loader"></span>
+                Criando acesso...
+              } @else {
+                <mat-icon>arrow_forward</mat-icon>
+                Criar conta e aceitar
+              }
+
+            </button>
+
+          </form>
+
+        </section>
+
+      }
+
+
+      <footer>
+        O convite expira em
+        {{ dados.expiraEm | date:'dd/MM/yyyy HH:mm' }}.
+      </footer>
+
+    } @else {
+
+      <div class="state error">
+
+        <div class="state-icon">
+          <mat-icon>link_off</mat-icon>
+        </div>
+
+        <h1>
+          Convite indisponível
+        </h1>
+
+        <p>
+          {{ errorMessage() }}
+        </p>
+
+      </div>
+
+    }
+
+  </section>
+
+</main>
