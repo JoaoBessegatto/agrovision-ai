@@ -341,7 +341,13 @@
               class="card-link"
               routerLink="/app/animais"
             >
-              Cadastrar animais
+              {{
+                fazendaContext.possuiPermissao(
+                  'CADASTRAR_ANIMAL'
+                )
+                  ? 'Cadastrar animais'
+                  : 'Ver animais'
+              }}
               <mat-icon>arrow_forward</mat-icon>
             </a>
 
