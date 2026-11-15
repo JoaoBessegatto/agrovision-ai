@@ -28,6 +28,7 @@ public class Usuario implements UserDetails {
     @Column(columnDefinition = "BINARY(16)")
     private UUID id;
     private String name;
+    @Column(nullable = false, unique = true)
     private String email;
     private String password;
     @Enumerated(EnumType.STRING)
