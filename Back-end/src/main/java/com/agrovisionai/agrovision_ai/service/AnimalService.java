@@ -2,19 +2,16 @@ package com.agrovisionai.agrovision_ai.service;
 
 import com.agrovisionai.agrovision_ai.auth.CurrentUserProvider;
 import com.agrovisionai.agrovision_ai.auth.Usuario;
-import com.agrovisionai.agrovision_ai.auth.UsuarioRepository;
 import com.agrovisionai.agrovision_ai.domain.dto.request.AnimalRequestDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.AnimalResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.entity.Animal;
-import com.agrovisionai.agrovision_ai.domain.entity.Fazenda;
 import com.agrovisionai.agrovision_ai.domain.entity.Rebanho;
+import com.agrovisionai.agrovision_ai.domain.entity.RegistroPeso;
+import com.agrovisionai.agrovision_ai.domain.enums.PermissaoFuncionario;
 import com.agrovisionai.agrovision_ai.exception.BusinessException;
 import com.agrovisionai.agrovision_ai.exception.ResouceNotFoundException;
-import com.agrovisionai.agrovision_ai.exception.UnauthorizedException;
 import com.agrovisionai.agrovision_ai.repository.AnimalRepository;
-import com.agrovisionai.agrovision_ai.repository.FazendaRepository;
 import com.agrovisionai.agrovision_ai.repository.RebanhoRepository;
-import com.agrovisionai.agrovision_ai.domain.entity.RegistroPeso;
 import com.agrovisionai.agrovision_ai.repository.RegistroPesoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,62 +25,51 @@ public class AnimalService {
 
     private final AnimalRepository animalRepository;
     private final RebanhoRepository rebanhoRepository;
-    private final FazendaRepository fazendaRepository;
     private final CurrentUserProvider currentUserProvider;
     private final RegistroPesoRepository registroPesoRepository;
-
+    private final FazendaAccessService fazendaAccessService;
 
     public AnimalService(
             AnimalRepository animalRepository,
             RebanhoRepository rebanhoRepository,
-            FazendaRepository fazendaRepository,
             CurrentUserProvider currentUserProvider,
-            RegistroPesoRepository registroPesoRepository
+            RegistroPesoRepository registroPesoRepository,
+            FazendaAccessService fazendaAccessService
     ) {
         this.animalRepository = animalRepository;
         this.rebanhoRepository = rebanhoRepository;
-        this.fazendaRepository = fazendaRepository;
         this.currentUserProvider = currentUserProvider;
         this.registroPesoRepository = registroPesoRepository;
+        this.fazendaAccessService = fazendaAccessService;
     }
 
-
-    public AnimalResponseDTO cadastrar(
-            AnimalRequestDTO dto
-    ) {
+    public AnimalResponseDTO cadastrar(AnimalRequestDTO dto) {
 
         Usuario usuario =
-                currentUserProvider
-                        .getUsuarioAtual();
-
+                currentUserProvider.getUsuarioAtual();
 
         Rebanho rebanho =
-                buscarRebanhoAutorizado(
-                        dto.rebanhoId()
-                );
+                buscarRebanho(dto.rebanhoId());
 
-
-        UUID fazendaId =
-                rebanho
-                        .getFazenda()
-                        .getId();
-
+        fazendaAccessService.exigirPermissao(
+                rebanho.getFazenda().getId(),
+                PermissaoFuncionario.CADASTRAR_ANIMAL
+        );
 
         String identificacao =
-                dto.identificacao().trim().toUpperCase();
-        if (
-                animalRepository
-                        .existsByIdentificacaoIgnoreCaseAndRebanhoFazendaId(
-                                identificacao,
-                                rebanho.getFazenda().getId()
-                        )
-        ) {
+                dto.identificacao()
+                        .trim()
+                        .toUpperCase();
 
+        if (animalRepository
+                .existsByIdentificacaoIgnoreCaseAndRebanhoFazendaId(
+                        identificacao,
+                        rebanho.getFazenda().getId()
+                )) {
             throw new BusinessException(
                     "Já existe um animal com essa identificação nesta fazenda."
             );
         }
-
 
         Animal animal =
                 new Animal(
@@ -95,11 +81,8 @@ public class AnimalService {
                         rebanho
                 );
 
-
         Animal animalSalvo =
-                animalRepository.save(
-                        animal
-                );
+                animalRepository.save(animal);
 
         RegistroPeso registroPesoInicial =
                 new RegistroPeso(
@@ -108,55 +91,38 @@ public class AnimalService {
                         dto.pesoAtual()
                 );
 
-        registroPesoRepository.save(
-                registroPesoInicial
-        );
+        registroPesoRepository.save(registroPesoInicial);
 
-
-        return AnimalResponseDTO.from(
-                animalSalvo
-        );
+        return AnimalResponseDTO.from(animalSalvo);
     }
-
 
     @Transactional(readOnly = true)
-    public AnimalResponseDTO buscarPorId(
-            UUID animalId
-    ) {
+    public AnimalResponseDTO buscarPorId(UUID animalId) {
 
-        return AnimalResponseDTO.from(
-                buscarAnimalAutorizado(
-                        animalId
-                )
+        Animal animal = buscarAnimal(animalId);
+
+        fazendaAccessService.exigirVisualizacao(
+                animal.getRebanho().getFazenda().getId()
         );
+
+        return AnimalResponseDTO.from(animal);
     }
+
     @Transactional(readOnly = true)
     public AnimalResponseDTO buscarPorIdentificacao(
             UUID fazendaId,
             String identificacao
     ) {
+        fazendaAccessService.exigirVisualizacao(fazendaId);
 
-        buscarFazendaAutorizada(
-                fazendaId
-        );
-
-
-        if (
-                identificacao == null ||
-                        identificacao.isBlank()
-        ) {
-
+        if (identificacao == null || identificacao.isBlank()) {
             throw new BusinessException(
                     "Identificação do animal é obrigatória."
             );
         }
 
-
         String identificacaoNormalizada =
-                identificacao
-                        .trim()
-                        .toUpperCase();
-
+                identificacao.trim().toUpperCase();
 
         Animal animal =
                 animalRepository
@@ -170,45 +136,32 @@ public class AnimalService {
                                 )
                         );
 
-
-        return AnimalResponseDTO.from(
-                animal
-        );
+        return AnimalResponseDTO.from(animal);
     }
 
     @Transactional(readOnly = true)
-    public List<AnimalResponseDTO> listarPorRebanho(
-            UUID rebanhoId
-    ) {
+    public List<AnimalResponseDTO> listarPorRebanho(UUID rebanhoId) {
 
-        buscarRebanhoAutorizado(
-                rebanhoId
+        Rebanho rebanho = buscarRebanho(rebanhoId);
+
+        fazendaAccessService.exigirVisualizacao(
+                rebanho.getFazenda().getId()
         );
 
-
         return animalRepository
-                .findByRebanhoId(
-                        rebanhoId
-                )
+                .findByRebanhoId(rebanhoId)
                 .stream()
                 .map(AnimalResponseDTO::from)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<AnimalResponseDTO> listarPorFazenda(
-            UUID fazendaId
-    ) {
+    public List<AnimalResponseDTO> listarPorFazenda(UUID fazendaId) {
 
-        buscarFazendaAutorizada(
-                fazendaId
-        );
-
+        fazendaAccessService.exigirVisualizacao(fazendaId);
 
         return animalRepository
-                .findByRebanhoFazendaId(
-                        fazendaId
-                )
+                .findByRebanhoFazendaId(fazendaId)
                 .stream()
                 .map(AnimalResponseDTO::from)
                 .toList();
@@ -218,193 +171,96 @@ public class AnimalService {
             UUID animalId,
             UUID novoRebanhoId
     ) {
+        Animal animal = buscarAnimal(animalId);
 
-        Animal animal =
-                buscarAnimalAutorizado(
-                        animalId
-                );
+        UUID fazendaId =
+                animal.getRebanho()
+                        .getFazenda()
+                        .getId();
 
+        fazendaAccessService.exigirPermissao(
+                fazendaId,
+                PermissaoFuncionario.TRANSFERIR_ANIMAL
+        );
 
         Rebanho novoRebanho =
-                buscarRebanhoAutorizado(
-                        novoRebanhoId
-                );
+                buscarRebanho(novoRebanhoId);
 
-
-        if (
-                !animal
-                        .getRebanho()
-                        .getFazenda()
-                        .getId()
-                        .equals(
-                                novoRebanho
-                                        .getFazenda()
-                                        .getId()
-                        )
-        ) {
-
+        if (!fazendaId.equals(
+                novoRebanho.getFazenda().getId()
+        )) {
             throw new BusinessException(
                     "Não é permitido transferir animais entre fazendas diferentes."
             );
         }
 
-
-        animal.mudarRebanho(
-                novoRebanho
-        );
+        animal.mudarRebanho(novoRebanho);
     }
 
+    public void inativar(UUID animalId) {
 
-    public void inativar(
-            UUID animalId
-    ) {
+        Animal animal = buscarAnimal(animalId);
 
-        Animal animal =
-                buscarAnimalAutorizado(
-                        animalId
-                );
+        fazendaAccessService.exigirPermissao(
+                animal.getRebanho().getFazenda().getId(),
+                PermissaoFuncionario.ALTERAR_SITUACAO_ANIMAL
+        );
 
         animal.inativar();
     }
 
-    public void ativar(
-            UUID animalId
-    ) {
+    public void ativar(UUID animalId) {
 
-        Animal animal =
-                buscarAnimalAutorizado(
-                        animalId
-                );
+        Animal animal = buscarAnimal(animalId);
+
+        fazendaAccessService.exigirPermissao(
+                animal.getRebanho().getFazenda().getId(),
+                PermissaoFuncionario.ALTERAR_SITUACAO_ANIMAL
+        );
 
         animal.ativar();
     }
-    public void marcarComoVendido(
-            UUID animalId
-    ) {
 
-        Animal animal =
-                buscarAnimalAutorizado(
-                        animalId
-                );
+    public void marcarComoVendido(UUID animalId) {
+
+        Animal animal = buscarAnimal(animalId);
+
+        fazendaAccessService.exigirProprietario(
+                animal.getRebanho().getFazenda().getId()
+        );
 
         animal.marcarComoVendido();
     }
 
-    public void marcarComoMorto(
-            UUID animalId
-    ) {
+    public void marcarComoMorto(UUID animalId) {
 
-        Animal animal =
-                buscarAnimalAutorizado(
-                        animalId
-                );
+        Animal animal = buscarAnimal(animalId);
+
+        fazendaAccessService.exigirPermissao(
+                animal.getRebanho().getFazenda().getId(),
+                PermissaoFuncionario.REGISTRAR_MORTE
+        );
 
         animal.marcarComoMorto();
     }
 
-    private Animal buscarAnimalAutorizado(
-            UUID animalId
-    ) {
-
-        Animal animal =
-                animalRepository
-                        .findById(animalId)
-                        .orElseThrow(() ->
-                                new ResouceNotFoundException(
-                                        "Animal não encontrado."
-                                )
-                        );
-
-
-        Usuario usuario =
-                currentUserProvider
-                        .getUsuarioAtual();
-
-
-        validarPermissao(
-                usuario,
-                animal.getRebanho().getFazenda()
-        );
-
-
-        return animal;
+    private Animal buscarAnimal(UUID animalId) {
+        return animalRepository
+                .findById(animalId)
+                .orElseThrow(() ->
+                        new ResouceNotFoundException(
+                                "Animal não encontrado."
+                        )
+                );
     }
 
-
-    private Rebanho buscarRebanhoAutorizado(
-            UUID rebanhoId
-    ) {
-
-        Rebanho rebanho =
-                rebanhoRepository
-                        .findById(rebanhoId)
-                        .orElseThrow(() ->
-                                new ResouceNotFoundException(
-                                        "Rebanho não encontrado."
-                                )
-                        );
-
-
-        Usuario usuario =
-                currentUserProvider
-                        .getUsuarioAtual();
-
-
-        validarPermissao(
-                usuario,
-                rebanho.getFazenda()
-        );
-
-
-        return rebanho;
-    }
-
-
-    private Fazenda buscarFazendaAutorizada(
-            UUID fazendaId
-    ) {
-
-        Fazenda fazenda =
-                fazendaRepository
-                        .findById(fazendaId)
-                        .orElseThrow(() ->
-                                new ResouceNotFoundException(
-                                        "Fazenda não encontrada."
-                                )
-                        );
-
-
-        Usuario usuario =
-                currentUserProvider
-                        .getUsuarioAtual();
-
-
-        validarPermissao(
-                usuario,
-                fazenda
-        );
-
-
-        return fazenda;
-    }
-
-
-    private void validarPermissao(
-            Usuario usuario,
-            Fazenda fazenda
-    ) {
-
-        if (
-                !fazenda
-                        .getProdutor()
-                        .getUsuario()
-                        .getId()
-                        .equals(usuario.getId())
-        ) {
-
-            throw new UnauthorizedException(
-                    "Usuário não possui acesso a esta fazenda."
-            );
-        }
+    private Rebanho buscarRebanho(UUID rebanhoId) {
+        return rebanhoRepository
+                .findById(rebanhoId)
+                .orElseThrow(() ->
+                        new ResouceNotFoundException(
+                                "Rebanho não encontrado."
+                        )
+                );
     }
 }
