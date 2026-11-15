@@ -22,13 +22,15 @@ public class LoginService {
 
     public LoginResponseDTO login(Login login){
         try{
+            String email = login.getEmail().trim().toLowerCase();
+
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            login.getEmail(),
+                            email,
                             login.getPassword()
                     )
             );
-            Usuario usuario = usuarioRepository.findByEmail(login.getEmail())
+            Usuario usuario = usuarioRepository.findByEmailIgnoreCase(email)
                     .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
             String token = jwtService.generateToken(usuario);
 
