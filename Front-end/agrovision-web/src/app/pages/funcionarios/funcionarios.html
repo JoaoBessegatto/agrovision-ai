@@ -1,0 +1,717 @@
+<div class="employees-page">
+
+  <header class="page-header">
+
+    <div>
+
+      <span class="eyebrow">
+        EQUIPE DA PROPRIEDADE
+      </span>
+
+      <h1>
+        Funcionários
+      </h1>
+
+      @if (
+        fazendaContext.fazendaAtiva();
+        as fazenda
+      ) {
+
+        <p>
+          Gerencie quem pode acessar
+          <strong>{{ fazenda.nome }}</strong>
+          e quais operações cada cargo pode realizar.
+        </p>
+
+      } @else {
+
+        <p>
+          Selecione uma fazenda para gerenciar sua equipe.
+        </p>
+
+      }
+
+    </div>
+
+
+    @if (
+      fazendaContext.podeGerenciarFuncionarios()
+    ) {
+
+      <button
+        type="button"
+        class="primary-button"
+        [disabled]="!fazendaContext.fazendaAtivaId()"
+        (click)="abrirConvite()"
+      >
+        <mat-icon>person_add</mat-icon>
+        Convidar funcionário
+      </button>
+
+    }
+
+  </header>
+
+
+  @if (errorMessage()) {
+
+    <div class="alert error">
+
+      <mat-icon>error_outline</mat-icon>
+
+      <span>
+        {{ errorMessage() }}
+      </span>
+
+      <button
+        type="button"
+        (click)="limparMensagens()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+
+    </div>
+
+  }
+
+
+  @if (successMessage()) {
+
+    <div class="alert success">
+
+      <mat-icon>check_circle_outline</mat-icon>
+
+      <span>
+        {{ successMessage() }}
+      </span>
+
+      <button
+        type="button"
+        (click)="limparMensagens()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+
+    </div>
+
+  }
+
+
+  @if (
+    fazendaContext.fazendaAtivaId() &&
+    !fazendaContext.podeGerenciarFuncionarios()
+  ) {
+
+    <section class="restricted-state">
+
+      <div class="restricted-icon">
+        <mat-icon>admin_panel_settings</mat-icon>
+      </div>
+
+      <span class="eyebrow">
+        ÁREA DO PROPRIETÁRIO
+      </span>
+
+      <h2>
+        Gestão de equipe restrita
+      </h2>
+
+      <p>
+        Apenas o produtor proprietário da fazenda
+        pode convidar funcionários, alterar cargos
+        ou suspender acessos.
+      </p>
+
+    </section>
+
+  } @else if (loading()) {
+
+    <section class="loading-state">
+
+      <div class="loader"></div>
+
+      <p>
+        Carregando equipe...
+      </p>
+
+    </section>
+
+  } @else if (
+    fazendaContext.podeGerenciarFuncionarios()
+  ) {
+
+    <section class="metrics">
+
+      <article>
+        <div class="metric-icon active">
+          <mat-icon>badge</mat-icon>
+        </div>
+
+        <div>
+          <span>Funcionários ativos</span>
+          <strong>{{ ativos() }}</strong>
+          <small>com acesso à fazenda</small>
+        </div>
+      </article>
+
+
+      <article>
+        <div class="metric-icon inactive">
+          <mat-icon>person_off</mat-icon>
+        </div>
+
+        <div>
+          <span>Acessos suspensos</span>
+          <strong>{{ inativos() }}</strong>
+          <small>vínculos inativos</small>
+        </div>
+      </article>
+
+
+      <article>
+        <div class="metric-icon pending">
+          <mat-icon>forward_to_inbox</mat-icon>
+        </div>
+
+        <div>
+          <span>Convites pendentes</span>
+          <strong>{{ convitesPendentes() }}</strong>
+          <small>aguardando aceite</small>
+        </div>
+      </article>
+
+    </section>
+
+
+    <section class="panel">
+
+      <div class="panel-header">
+
+        <div>
+          <span class="eyebrow">
+            VÍNCULOS ATIVOS E HISTÓRICOS
+          </span>
+
+          <h2>
+            Equipe cadastrada
+          </h2>
+
+          <p>
+            {{ funcionarios().length }}
+            funcionário(s) vinculado(s) à propriedade.
+          </p>
+        </div>
+
+      </div>
+
+
+      @if (
+        funcionarios().length === 0
+      ) {
+
+        <div class="empty-state">
+
+          <div class="empty-icon">
+            <mat-icon>group_add</mat-icon>
+          </div>
+
+          <h3>
+            Nenhum funcionário vinculado
+          </h3>
+
+          <p>
+            Envie um convite para adicionar
+            a primeira pessoa à equipe.
+          </p>
+
+          <button
+            type="button"
+            class="secondary-button"
+            (click)="abrirConvite()"
+          >
+            Enviar convite
+          </button>
+
+        </div>
+
+      } @else {
+
+        <div class="table-wrap">
+
+          <table>
+
+            <thead>
+              <tr>
+                <th>Funcionário</th>
+                <th>Cargo</th>
+                <th>Vínculo</th>
+                <th>Status</th>
+                <th class="actions-column">Ações</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              @for (
+                funcionario of funcionarios();
+                track funcionario.id
+              ) {
+
+                <tr>
+
+                  <td>
+
+                    <div class="person-cell">
+
+                      <div class="avatar">
+                        {{
+                          funcionario.nomeUsuario
+                            .charAt(0)
+                            .toUpperCase()
+                        }}
+                      </div>
+
+                      <div>
+                        <strong>
+                          {{ funcionario.nomeUsuario }}
+                        </strong>
+
+                        <small>
+                          {{ funcionario.email }}
+                        </small>
+                      </div>
+
+                    </div>
+
+                  </td>
+
+
+                  <td>
+
+                    <select
+                      class="role-select"
+                      [value]="funcionario.cargo"
+                      [disabled]="processando()"
+                      (change)="
+                        alterarCargo(
+                          funcionario,
+                          $event
+                        )
+                      "
+                    >
+
+                      @for (
+                        cargo of cargos;
+                        track cargo.value
+                      ) {
+
+                        <option
+                          [value]="cargo.value"
+                        >
+                          {{ cargo.label }}
+                        </option>
+
+                      }
+
+                    </select>
+
+                  </td>
+
+
+                  <td>
+                    {{
+                      funcionario.dataVinculo
+                        | date:'dd/MM/yyyy'
+                    }}
+                  </td>
+
+
+                  <td>
+
+                    <span
+                      class="status"
+                      [class.active]="funcionario.ativo"
+                      [class.inactive]="!funcionario.ativo"
+                    >
+                      <span class="status-dot"></span>
+
+                      {{
+                        funcionario.ativo
+                          ? 'Ativo'
+                          : 'Suspenso'
+                      }}
+                    </span>
+
+                  </td>
+
+
+                  <td class="actions-column">
+
+                    <button
+                      type="button"
+                      class="icon-button"
+                      [class.danger]="funcionario.ativo"
+                      [disabled]="processando()"
+                      [title]="
+                        funcionario.ativo
+                          ? 'Suspender acesso'
+                          : 'Reativar acesso'
+                      "
+                      (click)="
+                        alternarStatus(
+                          funcionario
+                        )
+                      "
+                    >
+
+                      <mat-icon>
+                        {{
+                          funcionario.ativo
+                            ? 'person_off'
+                            : 'person_add_alt'
+                        }}
+                      </mat-icon>
+
+                    </button>
+
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      }
+
+    </section>
+
+
+    <section class="panel invitations">
+
+      <div class="panel-header">
+
+        <div>
+          <span class="eyebrow">
+            ACESSOS EM ANDAMENTO
+          </span>
+
+          <h2>
+            Convites
+          </h2>
+
+          <p>
+            Acompanhe convites enviados e seus estados.
+          </p>
+        </div>
+
+      </div>
+
+
+      @if (
+        convites().length === 0
+      ) {
+
+        <div class="empty-state compact">
+
+          <mat-icon>mail_outline</mat-icon>
+
+          <p>
+            Nenhum convite enviado para esta fazenda.
+          </p>
+
+        </div>
+
+      } @else {
+
+        <div class="invite-list">
+
+          @for (
+            convite of convites();
+            track convite.id
+          ) {
+
+            <article class="invite-row">
+
+              <div class="invite-main">
+
+                <div class="mail-icon">
+                  <mat-icon>mail_outline</mat-icon>
+                </div>
+
+                <div>
+                  <strong>
+                    {{ convite.email }}
+                  </strong>
+
+                  <small>
+                    {{ labelCargo(convite.cargo) }}
+                    · enviado em
+                    {{
+                      convite.criadoEm
+                        | date:'dd/MM/yyyy HH:mm'
+                    }}
+                  </small>
+                </div>
+
+              </div>
+
+
+              <span
+                class="invite-status"
+                [attr.data-status]="
+                  convite.status
+                "
+              >
+                {{
+                  labelStatusConvite(
+                    convite.status
+                  )
+                }}
+              </span>
+
+
+              <div class="invite-actions">
+
+                @if (
+                  convite.status === 'PENDENTE' ||
+                  convite.status === 'EXPIRADO'
+                ) {
+
+                  <button
+                    type="button"
+                    class="text-button"
+                    [disabled]="processando()"
+                    (click)="reenviar(convite)"
+                  >
+                    <mat-icon>refresh</mat-icon>
+                    Reenviar
+                  </button>
+
+                }
+
+
+                @if (
+                  convite.status === 'PENDENTE'
+                ) {
+
+                  <button
+                    type="button"
+                    class="text-button danger"
+                    [disabled]="processando()"
+                    (click)="cancelar(convite)"
+                  >
+                    <mat-icon>close</mat-icon>
+                    Cancelar
+                  </button>
+
+                }
+
+              </div>
+
+            </article>
+
+          }
+
+        </div>
+
+      }
+
+    </section>
+
+  }
+
+</div>
+
+
+@if (modalConviteAberto()) {
+
+  <div
+    class="modal-overlay"
+    (click)="fecharConvite()"
+  >
+
+    <section
+      class="modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <header class="modal-header">
+
+        <div>
+          <span class="eyebrow">
+            NOVO ACESSO
+          </span>
+
+          <h2>
+            Convidar funcionário
+          </h2>
+
+          <p>
+            O convite ficará vinculado à fazenda ativa.
+          </p>
+        </div>
+
+
+        <button
+          type="button"
+          class="close-button"
+          (click)="fecharConvite()"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+
+      </header>
+
+
+      @if (
+        fazendaContext.fazendaAtiva();
+        as fazenda
+      ) {
+
+        <div class="modal-farm">
+
+          <mat-icon>agriculture</mat-icon>
+
+          <div>
+            <span>Propriedade</span>
+            <strong>{{ fazenda.nome }}</strong>
+          </div>
+
+        </div>
+
+      }
+
+
+      <form
+        [formGroup]="conviteForm"
+        (ngSubmit)="enviarConvite()"
+      >
+
+        <label>
+          E-mail do funcionário
+
+          <div class="input-wrap">
+            <mat-icon>mail_outline</mat-icon>
+
+            <input
+              type="email"
+              formControlName="email"
+              placeholder="funcionario@email.com"
+              autocomplete="email"
+            >
+          </div>
+        </label>
+
+
+        <label>
+          Cargo
+
+          <div class="input-wrap">
+            <mat-icon>badge</mat-icon>
+
+            <select
+              formControlName="cargo"
+            >
+
+              @for (
+                cargo of cargos;
+                track cargo.value
+              ) {
+
+                <option
+                  [value]="cargo.value"
+                >
+                  {{ cargo.label }}
+                </option>
+
+              }
+
+            </select>
+          </div>
+        </label>
+
+
+        @for (
+          cargo of cargos;
+          track cargo.value
+        ) {
+
+          @if (
+            conviteForm.controls
+              .cargo.value === cargo.value
+          ) {
+
+            <div class="role-description">
+
+              <mat-icon>verified_user</mat-icon>
+
+              <p>
+                <strong>
+                  {{ cargo.label }}
+                </strong>
+
+                {{ cargo.descricao }}
+              </p>
+
+            </div>
+
+          }
+
+        }
+
+
+        <div class="modal-note">
+
+          <mat-icon>link</mat-icon>
+
+          <p>
+            O funcionário receberá um link por e-mail.
+            Se ainda não tiver conta, poderá criá-la
+            diretamente pelo convite sem cadastrar
+            uma nova fazenda.
+          </p>
+
+        </div>
+
+
+        <div class="modal-actions">
+
+          <button
+            type="button"
+            class="secondary-button"
+            [disabled]="processando()"
+            (click)="fecharConvite()"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="primary-button"
+            [disabled]="processando()"
+          >
+
+            @if (processando()) {
+              <span class="small-loader"></span>
+              Enviando...
+            } @else {
+              <mat-icon>send</mat-icon>
+              Enviar convite
+            }
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </section>
+
+  </div>
+
+}
