@@ -7,7 +7,6 @@ import {
 } from '@angular/core';
 
 import {
-  DatePipe,
   DecimalPipe
 } from '@angular/common';
 
@@ -42,9 +41,20 @@ import {
 import {
   AlertaDesempenho,
   DesempenhoFazenda,
-  SeveridadeAlertaDesempenho,
-  TendenciaDesempenho
+  SeveridadeAlertaDesempenho
 } from '../../core/desempenho/models/desempenho';
+
+
+type MetricaGrafico =
+  | 'GMD'
+  | 'PESO'
+  | 'COBERTURA'
+  | 'ALERTAS';
+
+type TipoGrafico =
+  | 'BARRAS'
+  | 'LINHA';
+
 
 @Component({
   selector: 'app-desempenho',
@@ -52,7 +62,6 @@ import {
 
   imports: [
     DecimalPipe,
-    DatePipe,
     RouterLink,
     MatIconModule,
     NgxEchartsDirective
@@ -78,6 +87,12 @@ export class Desempenho {
   readonly errorMessage =
     signal('');
 
+  readonly metricaGrafico =
+    signal<MetricaGrafico>('GMD');
+
+  readonly tipoGrafico =
+    signal<TipoGrafico>('BARRAS');
+
   readonly alertasPrioritarios =
     computed(() =>
       this.dados()
@@ -85,64 +100,448 @@ export class Desempenho {
         .slice(0, 12) ?? []
     );
 
+
+  readonly tituloGrafico =
+    computed(() => {
+
+      switch (this.metricaGrafico()) {
+
+        case 'PESO':
+          return 'Peso médio por rebanho';
+
+        case 'COBERTURA':
+          return 'Cobertura de GMD por rebanho';
+
+        case 'ALERTAS':
+          return 'Ocorrências por rebanho';
+
+        default:
+          return 'GMD médio por rebanho';
+      }
+    });
+
+
+  readonly descricaoGrafico =
+    computed(() => {
+
+      switch (this.metricaGrafico()) {
+
+        case 'PESO':
+          return 'Compare o peso médio atual dos animais ativos em cada lote.';
+
+        case 'COBERTURA':
+          return 'Mostra quanto do lote possui ao menos duas pesagens válidas para cálculo de GMD.';
+
+        case 'ALERTAS':
+          return 'Compare animais em perda, GMD baixo e pesagens atrasadas entre os lotes.';
+
+        default:
+          return 'Compare o ritmo médio de ganho de peso dos lotes. A referência indica o parâmetro de atenção.';
+      }
+    });
+
+
+  readonly temDadosGrafico =
+    computed(() => {
+
+      const dados =
+        this.dados();
+
+      if (!dados) {
+        return false;
+      }
+
+      switch (this.metricaGrafico()) {
+
+        case 'PESO':
+          return dados.rebanhos.some(
+            item =>
+              item.pesoMedioAtualKg !== null
+          );
+
+        case 'COBERTURA':
+        case 'ALERTAS':
+          return dados.rebanhos.length > 0;
+
+        default:
+          return dados.rebanhos.some(
+            item =>
+              item.gmdMedioKgDia !== null
+          );
+      }
+    });
+
+
   readonly graficoRebanhos =
     computed<EChartsCoreOption>(() => {
 
-      const dados = this.dados();
+      const dados =
+        this.dados();
 
       if (!dados) {
         return {};
       }
 
-      const rebanhos =
-        dados.rebanhos
-          .filter(item =>
-            item.gmdMedioKgDia !== null
-          );
+      const metrica =
+        this.metricaGrafico();
 
-      if (rebanhos.length === 0) {
-        return {};
+      const tipo =
+        this.tipoGrafico();
+
+      if (metrica === 'ALERTAS') {
+
+        const rebanhos =
+          dados.rebanhos;
+
+        return {
+
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'shadow'
+            }
+          },
+
+          legend: {
+            top: 4,
+            textStyle: {
+              color: '#58675e',
+              fontSize: 12
+            }
+          },
+
+          grid: {
+            top: 58,
+            right: 28,
+            bottom: 30,
+            left: 28,
+            containLabel: true
+          },
+
+          xAxis: {
+            type: 'category',
+            data:
+              rebanhos.map(
+                item => item.nome
+              ),
+            axisLabel: {
+              color: '#607067',
+              fontSize: 12,
+              rotate:
+                rebanhos.length > 5
+                  ? 18
+                  : 0
+            },
+            axisTick: {
+              show: false
+            }
+          },
+
+          yAxis: {
+            type: 'value',
+            minInterval: 1,
+            axisLabel: {
+              color: '#748078',
+              fontSize: 11
+            },
+            splitLine: {
+              lineStyle: {
+                color: '#edf1ee'
+              }
+            }
+          },
+
+          series: [
+            {
+              name: 'Em perda',
+              type: 'bar',
+              data:
+                rebanhos.map(
+                  item =>
+                    item.animaisEmPerda
+                ),
+              barMaxWidth: 28,
+              itemStyle: {
+                color: '#a94a46',
+                borderRadius: [5, 5, 0, 0]
+              }
+            },
+            {
+              name: 'GMD baixo',
+              type: 'bar',
+              data:
+                rebanhos.map(
+                  item =>
+                    item.animaisComGmdBaixo
+                ),
+              barMaxWidth: 28,
+              itemStyle: {
+                color: '#d39a2c',
+                borderRadius: [5, 5, 0, 0]
+              }
+            },
+            {
+              name: 'Pesagem atrasada',
+              type: 'bar',
+              data:
+                rebanhos.map(
+                  item =>
+                    item.animaisSemPesagemRecente
+                ),
+              barMaxWidth: 28,
+              itemStyle: {
+                color: '#58798f',
+                borderRadius: [5, 5, 0, 0]
+              }
+            }
+          ]
+        };
       }
 
+
+      const rebanhos =
+        dados.rebanhos
+          .filter(item => {
+
+            if (metrica === 'PESO') {
+              return item.pesoMedioAtualKg !== null;
+            }
+
+            if (metrica === 'GMD') {
+              return item.gmdMedioKgDia !== null;
+            }
+
+            return true;
+          });
+
+
+      const valores =
+        rebanhos.map(item => {
+
+          if (metrica === 'PESO') {
+            return item.pesoMedioAtualKg ?? 0;
+          }
+
+          if (metrica === 'COBERTURA') {
+            return item.coberturaGmdPercentual;
+          }
+
+          return item.gmdMedioKgDia ?? 0;
+        });
+
+
+      const unidade =
+        metrica === 'PESO'
+          ? 'kg'
+          : metrica === 'COBERTURA'
+            ? '%'
+            : 'kg/dia';
+
+
+      const cor =
+        metrica === 'PESO'
+          ? '#4e7898'
+          : metrica === 'COBERTURA'
+            ? '#7a8d3c'
+            : '#2f7a4b';
+
+
+      const tooltip = (
+        params: any
+      ) => {
+
+        const item =
+          Array.isArray(params)
+            ? params[0]
+            : params;
+
+        const rebanho =
+          rebanhos[item.dataIndex];
+
+        const valor =
+          valores[item.dataIndex];
+
+        return `
+          <strong>${rebanho.nome}</strong><br>
+          ${this.rotuloMetrica(metrica)}:
+          ${this.formatarNumero(valor)} ${unidade}<br>
+          ${rebanho.animaisComGmd} de
+          ${rebanho.animaisAtivos} animais com GMD calculável
+        `;
+      };
+
+
+      const markLine =
+        metrica === 'GMD'
+          ? {
+              silent: true,
+              symbol: 'none',
+              lineStyle: {
+                type: 'dashed' as const,
+                color: '#d59d28',
+                width: 2
+              },
+              label: {
+                formatter:
+                  `Atenção: ${this.formatarNumero(
+                    dados.gmdMinimoAlertaKgDia
+                  )} kg/dia`,
+                color: '#8a651b',
+                fontSize: 11
+              },
+              data: [
+                {
+                  yAxis:
+                    dados.gmdMinimoAlertaKgDia
+                }
+              ]
+            }
+          : undefined;
+
+
+      if (tipo === 'LINHA') {
+
+        return {
+
+          tooltip: {
+            trigger: 'axis',
+            formatter: tooltip
+          },
+
+          grid: {
+            top: 45,
+            right: 36,
+            bottom: 44,
+            left: 28,
+            containLabel: true
+          },
+
+          xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data:
+              rebanhos.map(
+                item => item.nome
+              ),
+            axisLabel: {
+              color: '#607067',
+              fontSize: 12,
+              rotate:
+                rebanhos.length > 5
+                  ? 18
+                  : 0
+            },
+            axisTick: {
+              show: false
+            }
+          },
+
+          yAxis: {
+            type: 'value',
+            scale:
+              metrica !== 'COBERTURA',
+            min:
+              metrica === 'COBERTURA'
+                ? 0
+                : undefined,
+            max:
+              metrica === 'COBERTURA'
+                ? 100
+                : undefined,
+            axisLabel: {
+              color: '#748078',
+              fontSize: 11,
+              formatter:
+                `{value} ${unidade}`
+            },
+            splitLine: {
+              lineStyle: {
+                color: '#edf1ee'
+              }
+            }
+          },
+
+          series: [
+            {
+              type: 'line',
+              data: valores,
+              smooth: true,
+              symbol: 'circle',
+              symbolSize: 9,
+              lineStyle: {
+                width: 3,
+                color: cor
+              },
+              itemStyle: {
+                color: cor,
+                borderColor: '#ffffff',
+                borderWidth: 2
+              },
+              areaStyle: {
+                opacity: 0.08,
+                color: cor
+              },
+              markLine
+            }
+          ]
+        };
+      }
+
+
       return {
+
         tooltip: {
           trigger: 'axis',
           axisPointer: {
             type: 'shadow'
           },
-          formatter: (params: any) => {
-
-            const item =
-              Array.isArray(params)
-                ? params[0]
-                : params;
-
-            const rebanho =
-              rebanhos[item.dataIndex];
-
-            return `
-              <strong>${rebanho.nome}</strong><br>
-              GMD médio: ${this.formatarNumero(
-                rebanho.gmdMedioKgDia
-              )} kg/dia<br>
-              ${rebanho.animaisComGmd} de
-              ${rebanho.animaisAtivos} animais com cálculo
-            `;
-          }
+          formatter: tooltip
         },
 
         grid: {
-          top: 10,
-          right: 35,
-          bottom: 30,
-          left: 20,
+          top: 28,
+          right: 36,
+          bottom: 44,
+          left: 28,
           containLabel: true
         },
 
         xAxis: {
-          type: 'value',
+          type: 'category',
+          data:
+            rebanhos.map(
+              item => item.nome
+            ),
           axisLabel: {
-            formatter: '{value} kg/d'
+            color: '#607067',
+            fontSize: 12,
+            rotate:
+              rebanhos.length > 5
+                ? 18
+                : 0
+          },
+          axisTick: {
+            show: false
+          }
+        },
+
+        yAxis: {
+          type: 'value',
+          scale:
+            metrica !== 'COBERTURA',
+          min:
+            metrica === 'COBERTURA'
+              ? 0
+              : undefined,
+          max:
+            metrica === 'COBERTURA'
+              ? 100
+              : undefined,
+          axisLabel: {
+            color: '#748078',
+            fontSize: 11,
+            formatter:
+              `{value} ${unidade}`
           },
           splitLine: {
             lineStyle: {
@@ -151,48 +550,28 @@ export class Desempenho {
           }
         },
 
-        yAxis: {
-          type: 'category',
-          inverse: true,
-          data:
-            rebanhos.map(
-              item => item.nome
-            ),
-          axisLine: {
-            show: false
-          },
-          axisTick: {
-            show: false
-          }
-        },
-
         series: [
           {
             type: 'bar',
-            data:
-              rebanhos.map(
-                item =>
-                  item.gmdMedioKgDia
-              ),
-            barMaxWidth: 24,
+            data: valores,
+            barMaxWidth: 44,
             itemStyle: {
-              color: '#2f7a4b',
-              borderRadius: 5
+              color: cor,
+              borderRadius: [7, 7, 0, 0]
             },
-            markLine: {
-              silent: true,
-              symbol: 'none',
-              lineStyle: {
-                type: 'dashed',
-                color: '#d59d28'
-              },
-              data: [
-                {
-                  xAxis:
-                    dados.gmdMinimoAlertaKgDia
-                }
-              ]
-            }
+            label: {
+              show: true,
+              position: 'top',
+              color: '#526158',
+              fontSize: 11,
+              formatter: (
+                params: any
+              ) =>
+                `${this.formatarNumero(
+                  Number(params.value)
+                )} ${unidade}`
+            },
+            markLine
           }
         ]
       };
@@ -280,45 +659,38 @@ export class Desempenho {
   }
 
 
-  labelTendencia(
-    tendencia: TendenciaDesempenho
-  ): string {
+  selecionarMetrica(
+    metrica: MetricaGrafico
+  ): void {
 
-    switch (tendencia) {
+    this.metricaGrafico.set(
+      metrica
+    );
 
-      case 'GANHO':
-        return 'Em ganho';
-
-      case 'ESTAVEL':
-        return 'Estável';
-
-      case 'PERDA':
-        return 'Em perda';
-
-      default:
-        return 'Sem dados';
+    if (
+      metrica === 'ALERTAS'
+    ) {
+      this.tipoGrafico.set(
+        'BARRAS'
+      );
     }
   }
 
 
-  iconeTendencia(
-    tendencia: TendenciaDesempenho
-  ): string {
+  selecionarTipoGrafico(
+    tipo: TipoGrafico
+  ): void {
 
-    switch (tendencia) {
-
-      case 'GANHO':
-        return 'trending_up';
-
-      case 'PERDA':
-        return 'trending_down';
-
-      case 'ESTAVEL':
-        return 'trending_flat';
-
-      default:
-        return 'remove';
+    if (
+      this.metricaGrafico() ===
+      'ALERTAS'
+    ) {
+      return;
     }
+
+    this.tipoGrafico.set(
+      tipo
+    );
   }
 
 
@@ -364,6 +736,24 @@ export class Desempenho {
   limparErro(): void {
 
     this.errorMessage.set('');
+  }
+
+
+  private rotuloMetrica(
+    metrica: MetricaGrafico
+  ): string {
+
+    switch (metrica) {
+
+      case 'PESO':
+        return 'Peso médio';
+
+      case 'COBERTURA':
+        return 'Cobertura';
+
+      default:
+        return 'GMD médio';
+    }
   }
 
 
