@@ -379,7 +379,240 @@
 
       </article>
 
+
+      @if (
+        desempenho();
+        as performance
+      ) {
+
+        <article class="metric-card performance-card">
+
+          <div
+            class="metric-icon performance"
+            [class.negative]="
+              performance.tendencia === 'PERDA'
+            "
+          >
+            <mat-icon>
+              {{
+                performance.tendencia === 'GANHO'
+                  ? 'trending_up'
+                  : performance.tendencia === 'PERDA'
+                    ? 'trending_down'
+                    : performance.tendencia === 'ESTAVEL'
+                      ? 'trending_flat'
+                      : 'query_stats'
+              }}
+            </mat-icon>
+          </div>
+
+          <div>
+
+            <span>
+              GMD
+            </span>
+
+            <strong
+              [class.metric-negative]="
+                (performance.gmdKgDia ?? 0) < 0
+              "
+            >
+              @if (
+                performance.gmdKgDia !== null
+              ) {
+                {{
+                  performance.gmdKgDia
+                    | number:'1.0-2':'pt-BR'
+                }}
+                <small>kg/dia</small>
+              } @else {
+                —
+              }
+            </strong>
+
+            <p>
+              @if (
+                performance.intervaloDias !== null
+              ) {
+                Últimas duas pesagens em
+                {{
+                  performance.intervaloDias
+                    | number:'1.0-1':'pt-BR'
+                }}
+                dia(s)
+              } @else {
+                São necessárias duas pesagens
+              }
+            </p>
+
+          </div>
+
+        </article>
+
+
+        <article class="metric-card performance-card">
+
+          <div class="metric-icon performance">
+            <mat-icon>
+              difference
+            </mat-icon>
+          </div>
+
+          <div>
+
+            <span>
+              Ganho no intervalo
+            </span>
+
+            <strong
+              [class.metric-negative]="
+                (performance.ganhoPesoKg ?? 0) < 0
+              "
+            >
+              @if (
+                performance.ganhoPesoKg !== null
+              ) {
+                @if (
+                  performance.ganhoPesoKg > 0
+                ) {
+                  +
+                }
+
+                {{
+                  performance.ganhoPesoKg
+                    | number:'1.0-2':'pt-BR'
+                }}
+                <small>kg</small>
+              } @else {
+                —
+              }
+            </strong>
+
+            <p>
+              Diferença entre as duas últimas pesagens
+            </p>
+
+          </div>
+
+        </article>
+
+
+        <article class="metric-card projection-card">
+
+          <div class="metric-icon projection">
+            <mat-icon>
+              query_stats
+            </mat-icon>
+          </div>
+
+          <div>
+
+            <span>
+              Projeção de peso
+            </span>
+
+            <strong>
+              @if (
+                performance.projecaoPesoKg !== null
+              ) {
+                {{
+                  performance.projecaoPesoKg
+                    | number:'1.0-1':'pt-BR'
+                }}
+                <small>kg</small>
+              } @else {
+                —
+              }
+            </strong>
+
+            <p>
+              Projeção linear para
+              {{ performance.projecaoDias }} dias
+            </p>
+
+          </div>
+
+        </article>
+
+      }
+
     </section>
+
+
+    @if (
+      desempenho();
+      as performance
+    ) {
+
+      @if (
+        performance.alertas.length > 0
+      ) {
+
+        <section class="performance-alerts">
+
+          <div class="performance-alerts-heading">
+
+            <mat-icon>warning_amber</mat-icon>
+
+            <div>
+              <span class="eyebrow">
+                ACOMPANHAMENTO
+              </span>
+
+              <strong>
+                Pontos de atenção deste animal
+              </strong>
+            </div>
+
+          </div>
+
+          <div class="animal-alert-list">
+
+            @for (
+              alerta of performance.alertas;
+              track alerta.tipo
+            ) {
+
+              <article
+                class="animal-alert"
+                [class.critical]="
+                  alerta.severidade === 'CRITICO'
+                "
+              >
+
+                <mat-icon>
+                  {{
+                    alerta.tipo === 'PERDA_PESO'
+                      ? 'trending_down'
+                      : alerta.tipo === 'SEM_PESAGEM_RECENTE'
+                        ? 'event_busy'
+                        : alerta.tipo === 'GMD_BAIXO'
+                          ? 'speed'
+                          : 'info_outline'
+                  }}
+                </mat-icon>
+
+                <div>
+                  <strong>
+                    {{ alerta.titulo }}
+                  </strong>
+
+                  <p>
+                    {{ alerta.mensagem }}
+                  </p>
+                </div>
+
+              </article>
+
+            }
+
+          </div>
+
+        </section>
+
+      }
+
+    }
 
 
     <!-- ======================================
