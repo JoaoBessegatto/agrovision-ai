@@ -224,6 +224,65 @@
       </article>
 
 
+      <!-- GMD MÉDIO -->
+
+      @if (
+        desempenho();
+        as performance
+      ) {
+
+        <article class="kpi-card performance-kpi">
+
+          <div class="kpi-icon performance">
+
+            <mat-icon>
+              query_stats
+            </mat-icon>
+
+          </div>
+
+
+          <div class="kpi-content">
+
+            <span>
+              GMD médio
+            </span>
+
+            <strong>
+
+              @if (
+                performance.gmdMedioKgDia !== null
+              ) {
+
+                {{
+                  performance.gmdMedioKgDia
+                    | number:'1.0-2':'pt-BR'
+                }}
+
+                <small>
+                  kg/dia
+                </small>
+
+              } @else {
+
+                —
+
+              }
+
+            </strong>
+
+            <small>
+              {{ performance.animaisComGmd }}
+              animal(is) com cálculo válido
+            </small>
+
+          </div>
+
+        </article>
+
+      }
+
+
       <!-- REBANHOS -->
 
       <article class="kpi-card">
@@ -708,6 +767,10 @@
                   Peso médio
                 </th>
 
+                <th class="numeric">
+                  GMD médio
+                </th>
+
               </tr>
 
             </thead>
@@ -804,6 +867,39 @@
 
                   </td>
 
+
+                  <td class="numeric">
+
+                    @let gmd =
+                      gmdRebanho(
+                        rebanho.rebanhoId
+                      );
+
+                    @if (
+                      gmd !== null
+                    ) {
+
+                      <strong
+                        class="gmd-value"
+                        [class.negative]="
+                          gmd < 0
+                        "
+                      >
+                        {{
+                          gmd
+                            | number:'1.0-2':'pt-BR'
+                        }}
+                        kg/d
+                      </strong>
+
+                    } @else {
+
+                      —
+
+                    }
+
+                  </td>
+
                 </tr>
 
               }
@@ -834,6 +930,55 @@
       }
 
     </section>
+
+
+    @if (
+      desempenho();
+      as performance
+    ) {
+
+      <a
+        routerLink="/app/desempenho"
+        class="performance-cta"
+      >
+
+        <div class="performance-cta-icon">
+          <mat-icon>query_stats</mat-icon>
+        </div>
+
+        <div>
+
+          <span class="eyebrow">
+            ANÁLISE PRODUTIVA
+          </span>
+
+          <strong>
+            Aprofundar desempenho do plantel
+          </strong>
+
+          <p>
+            Veja ranking de GMD, alertas,
+            projeções e comparação entre rebanhos.
+          </p>
+
+        </div>
+
+        <div class="performance-cta-summary">
+
+          <span>
+            {{ performance.totalAlertas }}
+            alerta(s)
+          </span>
+
+          <mat-icon>
+            arrow_forward
+          </mat-icon>
+
+        </div>
+
+      </a>
+
+    }
 
 
     <!-- =================================
