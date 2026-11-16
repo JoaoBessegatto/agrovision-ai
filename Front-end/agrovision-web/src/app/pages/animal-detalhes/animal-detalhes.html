@@ -432,9 +432,16 @@
 
             <p>
               @if (
-                performance.intervaloDias !== null
+                performance.gmdKgDia !== null
               ) {
-                Últimas duas pesagens em
+                {{
+                  performance.tendencia === 'GANHO'
+                    ? 'Tendência de ganho'
+                    : performance.tendencia === 'PERDA'
+                      ? 'Tendência de perda'
+                      : 'Tendência estável'
+                }}
+                ·
                 {{
                   performance.intervaloDias
                     | number:'1.0-1':'pt-BR'
