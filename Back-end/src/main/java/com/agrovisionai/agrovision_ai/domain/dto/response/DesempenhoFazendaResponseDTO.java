@@ -16,7 +16,7 @@ public record DesempenhoFazendaResponseDTO(
         double coberturaGmdPercentual,
         int totalAlertas,
         int alertasCriticos,
-        int gmdMinimoAlertaCentigramas,
+        Double gmdMinimoAlertaKgDia,
         int diasSemPesagemAlerta,
         int projecaoDias,
         LocalDateTime calculadoEm,
