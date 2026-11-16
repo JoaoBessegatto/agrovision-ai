@@ -56,6 +56,14 @@ import {
   RegistroPesoResponse
 } from '../../core/pesagem/models/registro-peso-response';
 
+import {
+  DesempenhoService
+} from '../../core/desempenho/services/desempenho.service';
+
+import {
+  DesempenhoAnimal
+} from '../../core/desempenho/models/desempenho';
+
 
 @Component({
   selector: 'app-animal-detalhes',
@@ -91,6 +99,9 @@ export class AnimalDetalhes {
 
   private readonly registroPesoService =
     inject(RegistroPesoService);
+
+  private readonly desempenhoService =
+    inject(DesempenhoService);
 
   private readonly formBuilder =
     inject(FormBuilder);
@@ -154,6 +165,12 @@ export class AnimalDetalhes {
 
   pesagens =
     signal<RegistroPesoResponse[]>([]);
+
+  desempenho =
+    signal<DesempenhoAnimal | null>(null);
+
+  loadingDesempenho =
+    signal(false);
 
   loadingPesagens =
     signal(false);
@@ -302,6 +319,8 @@ export class AnimalDetalhes {
            * histórico de pesagens.
            */
           this.carregarPesagens();
+
+          this.carregarDesempenho();
 
         },
 
@@ -508,6 +527,61 @@ confirmarRegistroMorte(): void {
 
       });
 
+  }
+
+
+  // =========================================================
+  // DESEMPENHO PRODUTIVO
+  // =========================================================
+
+  carregarDesempenho(): void {
+
+    if (!this.animalId) {
+      return;
+    }
+
+    this.loadingDesempenho.set(
+      true
+    );
+
+    this.desempenhoService
+      .buscarPorAnimal(
+        this.animalId
+      )
+      .pipe(
+        finalize(() => {
+          this.loadingDesempenho.set(
+            false
+          );
+        })
+      )
+      .subscribe({
+
+        next: desempenho => {
+
+          this.desempenho.set(
+            desempenho
+          );
+        },
+
+        error: error => {
+
+          console.error(
+            'Erro ao carregar desempenho do animal:',
+            error
+          );
+
+          /*
+           * A falha do indicador não bloqueia
+           * a consulta dos dados cadastrais e
+           * do histórico de pesagens.
+           */
+          this.desempenho.set(
+            null
+          );
+        }
+
+      });
   }
 
 
@@ -837,6 +911,13 @@ confirmarRegistroMorte(): void {
             pesoKg: null
 
           });
+
+
+          /*
+           * O novo registro altera GMD,
+           * tendência, alertas e projeção.
+           */
+          this.carregarDesempenho();
 
         },
 
