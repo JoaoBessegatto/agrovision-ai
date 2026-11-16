@@ -2,7 +2,8 @@
 
   <header class="page-header">
 
-    <div>
+    <div class="page-heading">
+
       <span class="eyebrow">
         INTELIGÊNCIA PRODUTIVA
       </span>
@@ -15,26 +16,43 @@
         fazendaContext.fazendaAtiva();
         as fazenda
       ) {
+
         <p>
-          Ganho de peso, ritmo de evolução e pontos
-          de atenção da
+          Acompanhe ganho de peso, evolução dos lotes
+          e animais que precisam de atenção na
           <strong>{{ fazenda.nome }}</strong>.
         </p>
+
       } @else {
+
         <p>
-          Selecione uma fazenda para analisar o desempenho.
+          Selecione uma fazenda para analisar
+          o desempenho do plantel.
         </p>
+
       }
+
     </div>
 
+
     <div class="formula-card">
-      <span>GMD</span>
-      <strong>
-        (peso atual − peso anterior) ÷ dias
-      </strong>
-      <small>
-        Resultado em kg/dia
-      </small>
+
+      <div class="formula-icon">
+        <mat-icon>calculate</mat-icon>
+      </div>
+
+      <div>
+        <span>Como calculamos o GMD</span>
+
+        <strong>
+          (peso atual − peso anterior) ÷ dias
+        </strong>
+
+        <small>
+          Resultado em quilogramas por dia
+        </small>
+      </div>
+
     </div>
 
   </header>
@@ -42,9 +60,14 @@
 
   @if (errorMessage()) {
 
-    <div class="alert-error" role="alert">
+    <div
+      class="alert-error"
+      role="alert"
+    >
 
-      <mat-icon>error_outline</mat-icon>
+      <mat-icon>
+        error_outline
+      </mat-icon>
 
       <span>
         {{ errorMessage() }}
@@ -52,12 +75,14 @@
 
       <button
         type="button"
+        aria-label="Fechar erro"
         (click)="limparErro()"
       >
         <mat-icon>close</mat-icon>
       </button>
 
     </div>
+
   }
 
 
@@ -67,8 +92,13 @@
 
       <div class="loader"></div>
 
+      <h2>
+        Calculando desempenho
+      </h2>
+
       <p>
-        Calculando desempenho do plantel...
+        Organizando pesagens e indicadores
+        da fazenda selecionada.
       </p>
 
     </section>
@@ -79,15 +109,17 @@
 
     <section class="empty-state">
 
-      <mat-icon>analytics</mat-icon>
+      <mat-icon>
+        analytics
+      </mat-icon>
 
       <h2>
         Nenhuma fazenda selecionada
       </h2>
 
       <p>
-        Escolha uma propriedade no topo para visualizar
-        os indicadores produtivos.
+        Escolha uma propriedade no topo
+        para visualizar os indicadores produtivos.
       </p>
 
     </section>
@@ -97,35 +129,58 @@
     as desempenho
   ) {
 
-    <section class="kpi-grid">
+    <!-- ========================================
+         KPIs PRINCIPAIS
+    ========================================= -->
+
+    <section
+      class="kpi-grid"
+      aria-label="Resumo do desempenho"
+    >
 
       <article class="kpi-card featured">
 
         <div class="kpi-icon">
-          <mat-icon>trending_up</mat-icon>
+          <mat-icon>
+            trending_up
+          </mat-icon>
         </div>
 
-        <div>
-          <span>GMD médio da fazenda</span>
+        <div class="kpi-content">
+
+          <span>
+            GMD médio da fazenda
+          </span>
 
           <strong>
+
             @if (
               desempenho.gmdMedioKgDia !== null
             ) {
+
               {{
                 desempenho.gmdMedioKgDia
                   | number:'1.0-2':'pt-BR'
               }}
-              <small>kg/dia</small>
+
+              <small>
+                kg/dia
+              </small>
+
             } @else {
+
               —
+
             }
+
           </strong>
 
-          <small>
+          <p>
             {{ desempenho.animaisComGmd }}
-            animal(is) com cálculo válido
-          </small>
+            de {{ desempenho.animaisAtivos }}
+            animais ativos possuem cálculo válido.
+          </p>
+
         </div>
 
       </article>
@@ -134,23 +189,34 @@
       <article class="kpi-card">
 
         <div class="kpi-icon coverage">
-          <mat-icon>data_usage</mat-icon>
+          <mat-icon>
+            data_usage
+          </mat-icon>
         </div>
 
-        <div>
-          <span>Cobertura de GMD</span>
+        <div class="kpi-content">
+
+          <span>
+            Cobertura dos dados
+          </span>
 
           <strong>
+
             {{
               desempenho.coberturaGmdPercentual
                 | number:'1.0-1':'pt-BR'
-            }}<small>%</small>
+            }}
+
+            <small>%</small>
+
           </strong>
 
-          <small>
+          <p>
             {{ desempenho.animaisSemDados }}
-            ainda sem duas pesagens válidas
-          </small>
+            animal(is) ainda precisam de uma
+            segunda pesagem válida.
+          </p>
+
         </div>
 
       </article>
@@ -159,20 +225,26 @@
       <article class="kpi-card">
 
         <div class="kpi-icon gain">
-          <mat-icon>north_east</mat-icon>
+          <mat-icon>
+            north_east
+          </mat-icon>
         </div>
 
-        <div>
-          <span>Animais em ganho</span>
+        <div class="kpi-content">
+
+          <span>
+            Animais em ganho
+          </span>
 
           <strong>
             {{ desempenho.animaisEmGanho }}
           </strong>
 
-          <small>
+          <p>
             {{ desempenho.animaisEstaveis }}
-            estáveis
-          </small>
+            animal(is) apresentam tendência estável.
+          </p>
+
         </div>
 
       </article>
@@ -181,20 +253,27 @@
       <article class="kpi-card">
 
         <div class="kpi-icon risk">
-          <mat-icon>warning_amber</mat-icon>
+          <mat-icon>
+            warning_amber
+          </mat-icon>
         </div>
 
-        <div>
-          <span>Animais em perda</span>
+        <div class="kpi-content">
+
+          <span>
+            Animais em perda
+          </span>
 
           <strong>
             {{ desempenho.animaisEmPerda }}
           </strong>
 
-          <small>
+          <p>
             {{ desempenho.alertasCriticos }}
-            alerta(s) crítico(s)
-          </small>
+            alerta(s) crítico(s) merecem
+            acompanhamento prioritário.
+          </p>
+
         </div>
 
       </article>
@@ -202,395 +281,696 @@
     </section>
 
 
-    <section class="parameter-strip">
+    <!-- ========================================
+         PARÂMETROS
+    ========================================= -->
 
-      <div>
-        <mat-icon>tune</mat-icon>
+    <section class="parameter-grid">
 
-        <span>
-          GMD abaixo de
+      <article class="parameter-card">
+
+        <mat-icon>
+          speed
+        </mat-icon>
+
+        <div>
+          <span>
+            Limite de atenção
+          </span>
+
           <strong>
+            GMD abaixo de
+
             {{
               desempenho.gmdMinimoAlertaKgDia
                 | number:'1.0-2':'pt-BR'
             }}
+
             kg/dia
           </strong>
-          gera atenção
-        </span>
+        </div>
+
+      </article>
+
+
+      <article class="parameter-card">
+
+        <mat-icon>
+          event_busy
+        </mat-icon>
+
+        <div>
+          <span>
+            Pesagem desatualizada
+          </span>
+
+          <strong>
+            {{ desempenho.diasSemPesagemAlerta }}
+            dias sem novo registro
+          </strong>
+        </div>
+
+      </article>
+
+
+      <article class="parameter-card">
+
+        <mat-icon>
+          query_stats
+        </mat-icon>
+
+        <div>
+          <span>
+            Horizonte da projeção
+          </span>
+
+          <strong>
+            {{ desempenho.projecaoDias }}
+            dias
+          </strong>
+        </div>
+
+      </article>
+
+    </section>
+
+
+    <!-- ========================================
+         GRÁFICOS
+    ========================================= -->
+
+    <section class="panel chart-panel">
+
+      <div class="panel-header chart-header">
+
+        <div>
+
+          <span class="eyebrow">
+            VISUALIZAÇÃO
+          </span>
+
+          <h2>
+            {{ tituloGrafico() }}
+          </h2>
+
+          <p>
+            {{ descricaoGrafico() }}
+          </p>
+
+        </div>
+
+        <mat-icon>
+          monitoring
+        </mat-icon>
+
       </div>
 
-      <div>
-        <mat-icon>event_busy</mat-icon>
 
-        <span>
-          Sem pesagem por
-          <strong>
-            {{ desempenho.diasSemPesagemAlerta }} dias
-          </strong>
-          gera alerta
-        </span>
+      <div class="chart-toolbar">
+
+        <div class="chart-control-group">
+
+          <span class="control-label">
+            Informação
+          </span>
+
+          <div
+            class="segmented-control"
+            aria-label="Escolher informação do gráfico"
+          >
+
+            <button
+              type="button"
+              [class.active]="
+                metricaGrafico() === 'GMD'
+              "
+              (click)="selecionarMetrica('GMD')"
+            >
+              GMD
+            </button>
+
+            <button
+              type="button"
+              [class.active]="
+                metricaGrafico() === 'PESO'
+              "
+              (click)="selecionarMetrica('PESO')"
+            >
+              Peso médio
+            </button>
+
+            <button
+              type="button"
+              [class.active]="
+                metricaGrafico() === 'COBERTURA'
+              "
+              (click)="selecionarMetrica('COBERTURA')"
+            >
+              Cobertura
+            </button>
+
+            <button
+              type="button"
+              [class.active]="
+                metricaGrafico() === 'ALERTAS'
+              "
+              (click)="selecionarMetrica('ALERTAS')"
+            >
+              Ocorrências
+            </button>
+
+          </div>
+
+        </div>
+
+
+        @if (
+          metricaGrafico() !== 'ALERTAS'
+        ) {
+
+          <div class="chart-control-group compact">
+
+            <span class="control-label">
+              Formato
+            </span>
+
+            <div
+              class="segmented-control"
+              aria-label="Escolher formato do gráfico"
+            >
+
+              <button
+                type="button"
+                [class.active]="
+                  tipoGrafico() === 'BARRAS'
+                "
+                (click)="
+                  selecionarTipoGrafico('BARRAS')
+                "
+              >
+                <mat-icon>
+                  bar_chart
+                </mat-icon>
+
+                Barras
+              </button>
+
+              <button
+                type="button"
+                [class.active]="
+                  tipoGrafico() === 'LINHA'
+                "
+                (click)="
+                  selecionarTipoGrafico('LINHA')
+                "
+              >
+                <mat-icon>
+                  show_chart
+                </mat-icon>
+
+                Linha
+              </button>
+
+            </div>
+
+          </div>
+
+        }
+
       </div>
 
-      <div>
-        <mat-icon>query_stats</mat-icon>
 
-        <span>
-          Projeção linear:
-          <strong>
-            {{ desempenho.projecaoDias }} dias
-          </strong>
+      @if (temDadosGrafico()) {
+
+        <div
+          echarts
+          [options]="graficoRebanhos()"
+          class="herd-chart"
+        ></div>
+
+      } @else {
+
+        <div class="panel-empty large">
+
+          <mat-icon>
+            monitor_weight
+          </mat-icon>
+
+          <h3>
+            Ainda não há dados suficientes
+          </h3>
+
+          <p>
+            Registre mais pesagens para liberar
+            esta visualização comparativa.
+          </p>
+
+        </div>
+
+      }
+
+    </section>
+
+
+    <!-- ========================================
+         ALERTAS
+    ========================================= -->
+
+    <section class="panel alerts-panel">
+
+      <div class="panel-header">
+
+        <div>
+
+          <span class="eyebrow">
+            MANEJO
+          </span>
+
+          <h2>
+            Pontos de atenção
+          </h2>
+
+          <p>
+            Situações que merecem revisão com base
+            nas pesagens mais recentes dos animais ativos.
+          </p>
+
+        </div>
+
+        <span class="count-badge">
+          {{ desempenho.totalAlertas }}
         </span>
+
+      </div>
+
+
+      @if (
+        alertasPrioritarios().length === 0
+      ) {
+
+        <div class="panel-empty positive large">
+
+          <mat-icon>
+            task_alt
+          </mat-icon>
+
+          <h3>
+            Nenhum ponto de atenção
+          </h3>
+
+          <p>
+            Os animais ativos não apresentam
+            alertas produtivos neste momento.
+          </p>
+
+        </div>
+
+      } @else {
+
+        <div class="alert-list">
+
+          @for (
+            alerta of alertasPrioritarios();
+            track alerta.tipo + alerta.animalId
+          ) {
+
+            <a
+              class="productive-alert"
+              [class.critical]="
+                alerta.severidade === 'CRITICO'
+              "
+              [class.attention]="
+                alerta.severidade === 'ATENCAO'
+              "
+              [routerLink]="[
+                '/app/animais',
+                alerta.animalId
+              ]"
+            >
+
+              <div class="productive-alert-icon">
+
+                <mat-icon>
+                  {{ iconeAlerta(alerta) }}
+                </mat-icon>
+
+              </div>
+
+
+              <div class="productive-alert-content">
+
+                <div class="productive-alert-top">
+
+                  <strong>
+                    {{ alerta.identificacaoAnimal }}
+                  </strong>
+
+                  <span>
+                    {{
+                      labelSeveridade(
+                        alerta.severidade
+                      )
+                    }}
+                  </span>
+
+                </div>
+
+                <b>
+                  {{ alerta.titulo }}
+                </b>
+
+                <p>
+                  {{ alerta.mensagem }}
+                </p>
+
+                <small>
+                  Rebanho:
+                  {{ alerta.rebanhoNome }}
+                </small>
+
+              </div>
+
+
+              <mat-icon class="go-icon">
+                arrow_forward
+              </mat-icon>
+
+            </a>
+
+          }
+
+        </div>
+
+      }
+
+    </section>
+
+
+    <!-- ========================================
+         RANKINGS
+    ========================================= -->
+
+    <section class="panel ranking-panel">
+
+      <div class="panel-header">
+
+        <div>
+
+          <span class="eyebrow">
+            DESTAQUES
+          </span>
+
+          <h2>
+            Animais com maior GMD
+          </h2>
+
+          <p>
+            Os melhores ritmos de ganho considerando
+            as duas últimas pesagens válidas.
+          </p>
+
+        </div>
+
+        <mat-icon>
+          workspace_premium
+        </mat-icon>
+
+      </div>
+
+
+      <div class="ranking-list">
+
+        @for (
+          animal of desempenho.rankingMelhores;
+          track animal.animalId;
+          let posicao = $index
+        ) {
+
+          <a
+            class="ranking-row"
+            [routerLink]="[
+              '/app/animais',
+              animal.animalId
+            ]"
+          >
+
+            <span class="position">
+              {{ posicao + 1 }}
+            </span>
+
+            <div class="ranking-animal">
+
+              <strong>
+                {{ animal.identificacao }}
+              </strong>
+
+              <small>
+                {{ animal.rebanhoNome }}
+              </small>
+
+            </div>
+
+            <div class="ranking-meta">
+
+              <span>
+                Peso atual
+              </span>
+
+              <strong>
+                {{
+                  animal.pesoAtualKg
+                    | number:'1.0-1':'pt-BR'
+                }}
+                kg
+              </strong>
+
+            </div>
+
+            <div class="ranking-meta">
+
+              <span>
+                Ganho
+              </span>
+
+              <strong>
+                @if (
+                  (animal.ganhoPesoKg ?? 0) > 0
+                ) {
+                  +
+                }
+
+                {{
+                  animal.ganhoPesoKg
+                    | number:'1.0-1':'pt-BR'
+                }}
+                kg
+              </strong>
+
+            </div>
+
+            <div class="ranking-value positive">
+
+              <strong>
+                @if (
+                  (animal.gmdKgDia ?? 0) > 0
+                ) {
+                  +
+                }
+
+                {{
+                  animal.gmdKgDia
+                    | number:'1.0-2':'pt-BR'
+                }}
+              </strong>
+
+              <span>
+                kg/dia
+              </span>
+
+            </div>
+
+            <mat-icon class="go-icon">
+              arrow_forward
+            </mat-icon>
+
+          </a>
+
+        } @empty {
+
+          <div class="panel-empty large">
+
+            <p>
+              Ainda não existem animais
+              com GMD calculado.
+            </p>
+
+          </div>
+
+        }
+
       </div>
 
     </section>
 
 
-    <div class="main-grid">
+    <section class="panel ranking-panel">
 
-      <section class="panel chart-panel">
+      <div class="panel-header">
 
-        <div class="panel-header">
+        <div>
 
-          <div>
-            <span class="eyebrow">
-              COMPARATIVO
-            </span>
-
-            <h2>
-              GMD médio por rebanho
-            </h2>
-
-            <p>
-              A linha pontilhada representa o parâmetro
-              configurado para atenção.
-            </p>
-          </div>
-
-          <mat-icon>bar_chart</mat-icon>
-
-        </div>
-
-
-        @if (
-          desempenho.rebanhos.length > 0 &&
-          desempenho.animaisComGmd > 0
-        ) {
-
-          <div
-            echarts
-            [options]="graficoRebanhos()"
-            class="herd-chart"
-          ></div>
-
-        } @else {
-
-          <div class="panel-empty">
-            <mat-icon>monitor_weight</mat-icon>
-
-            <p>
-              Ainda não há dados suficientes para comparar
-              o GMD dos rebanhos.
-            </p>
-          </div>
-
-        }
-
-      </section>
-
-
-      <section class="panel alerts-panel">
-
-        <div class="panel-header">
-
-          <div>
-            <span class="eyebrow">
-              MANEJO
-            </span>
-
-            <h2>
-              Pontos de atenção
-            </h2>
-
-            <p>
-              Alertas gerados por regras explícitas de pesagem
-              e desempenho.
-            </p>
-          </div>
-
-          <span class="count-badge">
-            {{ desempenho.totalAlertas }}
+          <span class="eyebrow">
+            ACOMPANHAMENTO
           </span>
 
+          <h2>
+            Animais com menor GMD
+          </h2>
+
+          <p>
+            Priorize a avaliação dos animais
+            com menor ritmo de ganho ou perda de peso.
+          </p>
+
         </div>
 
+        <mat-icon>
+          priority_high
+        </mat-icon>
 
-        @if (
-          alertasPrioritarios().length === 0
+      </div>
+
+
+      <div class="ranking-list">
+
+        @for (
+          animal of desempenho.rankingAtencao;
+          track animal.animalId;
+          let posicao = $index
         ) {
 
-          <div class="panel-empty positive">
+          <a
+            class="ranking-row"
+            [routerLink]="[
+              '/app/animais',
+              animal.animalId
+            ]"
+          >
 
-            <mat-icon>task_alt</mat-icon>
+            <span class="position warning">
+              {{ posicao + 1 }}
+            </span>
+
+            <div class="ranking-animal">
+
+              <strong>
+                {{ animal.identificacao }}
+              </strong>
+
+              <small>
+                {{ animal.rebanhoNome }}
+              </small>
+
+            </div>
+
+            <div class="ranking-meta">
+
+              <span>
+                Peso atual
+              </span>
+
+              <strong>
+                {{
+                  animal.pesoAtualKg
+                    | number:'1.0-1':'pt-BR'
+                }}
+                kg
+              </strong>
+
+            </div>
+
+            <div class="ranking-meta">
+
+              <span>
+                Ganho/perda
+              </span>
+
+              <strong
+                [class.negative]="
+                  (animal.ganhoPesoKg ?? 0) < 0
+                "
+              >
+                @if (
+                  (animal.ganhoPesoKg ?? 0) > 0
+                ) {
+                  +
+                }
+
+                {{
+                  animal.ganhoPesoKg
+                    | number:'1.0-1':'pt-BR'
+                }}
+                kg
+              </strong>
+
+            </div>
+
+            <div
+              class="ranking-value"
+              [class.negative]="
+                (animal.gmdKgDia ?? 0) < 0
+              "
+            >
+
+              <strong>
+
+                {{
+                  animal.gmdKgDia
+                    | number:'1.0-2':'pt-BR'
+                }}
+
+              </strong>
+
+              <span>
+                kg/dia
+              </span>
+
+            </div>
+
+            <mat-icon class="go-icon">
+              arrow_forward
+            </mat-icon>
+
+          </a>
+
+        } @empty {
+
+          <div class="panel-empty large">
 
             <p>
-              Nenhum ponto de atenção identificado
-              nos animais ativos.
+              Ainda não existem animais
+              com GMD calculado.
             </p>
-
-          </div>
-
-        } @else {
-
-          <div class="alert-list">
-
-            @for (
-              alerta of alertasPrioritarios();
-              track alerta.tipo + alerta.animalId
-            ) {
-
-              <a
-                class="productive-alert"
-                [class.critical]="
-                  alerta.severidade === 'CRITICO'
-                "
-                [class.attention]="
-                  alerta.severidade === 'ATENCAO'
-                "
-                [routerLink]="[
-                  '/app/animais',
-                  alerta.animalId
-                ]"
-              >
-
-                <div class="productive-alert-icon">
-                  <mat-icon>
-                    {{ iconeAlerta(alerta) }}
-                  </mat-icon>
-                </div>
-
-                <div class="productive-alert-content">
-
-                  <div class="productive-alert-top">
-
-                    <strong>
-                      {{ alerta.identificacaoAnimal }}
-                    </strong>
-
-                    <span>
-                      {{ labelSeveridade(alerta.severidade) }}
-                    </span>
-
-                  </div>
-
-                  <b>
-                    {{ alerta.titulo }}
-                  </b>
-
-                  <p>
-                    {{ alerta.mensagem }}
-                  </p>
-
-                  <small>
-                    {{ alerta.rebanhoNome }}
-                  </small>
-
-                </div>
-
-                <mat-icon class="go-icon">
-                  arrow_forward
-                </mat-icon>
-
-              </a>
-
-            }
 
           </div>
 
         }
 
-      </section>
+      </div>
 
-    </div>
-
-
-    <div class="ranking-grid">
-
-      <section class="panel">
-
-        <div class="panel-header">
-
-          <div>
-            <span class="eyebrow">
-              DESTAQUES
-            </span>
-
-            <h2>
-              Maiores GMDs
-            </h2>
-
-            <p>
-              Animais com melhor ritmo entre
-              as duas últimas pesagens.
-            </p>
-          </div>
-
-          <mat-icon>workspace_premium</mat-icon>
-
-        </div>
+    </section>
 
 
-        <div class="ranking-list">
-
-          @for (
-            animal of desempenho.rankingMelhores;
-            track animal.animalId;
-            let posicao = $index
-          ) {
-
-            <a
-              class="ranking-row"
-              [routerLink]="[
-                '/app/animais',
-                animal.animalId
-              ]"
-            >
-
-              <span class="position">
-                {{ posicao + 1 }}
-              </span>
-
-              <div class="ranking-animal">
-                <strong>
-                  {{ animal.identificacao }}
-                </strong>
-
-                <small>
-                  {{ animal.rebanhoNome }}
-                </small>
-              </div>
-
-              <div class="ranking-value positive">
-                <strong>
-                  +{{
-                    animal.gmdKgDia
-                      | number:'1.0-2':'pt-BR'
-                  }}
-                </strong>
-
-                <span>kg/dia</span>
-              </div>
-
-            </a>
-
-          } @empty {
-
-            <div class="panel-empty compact">
-              <p>
-                Sem animais com GMD calculado.
-              </p>
-            </div>
-
-          }
-
-        </div>
-
-      </section>
-
-
-      <section class="panel">
-
-        <div class="panel-header">
-
-          <div>
-            <span class="eyebrow">
-              ACOMPANHAMENTO
-            </span>
-
-            <h2>
-              Menores GMDs
-            </h2>
-
-            <p>
-              Animais que merecem ser avaliados primeiro.
-            </p>
-          </div>
-
-          <mat-icon>priority_high</mat-icon>
-
-        </div>
-
-
-        <div class="ranking-list">
-
-          @for (
-            animal of desempenho.rankingAtencao;
-            track animal.animalId;
-            let posicao = $index
-          ) {
-
-            <a
-              class="ranking-row"
-              [routerLink]="[
-                '/app/animais',
-                animal.animalId
-              ]"
-            >
-
-              <span class="position warning">
-                {{ posicao + 1 }}
-              </span>
-
-              <div class="ranking-animal">
-                <strong>
-                  {{ animal.identificacao }}
-                </strong>
-
-                <small>
-                  {{ animal.rebanhoNome }}
-                </small>
-              </div>
-
-              <div
-                class="ranking-value"
-                [class.negative]="
-                  (animal.gmdKgDia ?? 0) < 0
-                "
-              >
-                <strong>
-                  {{
-                    animal.gmdKgDia
-                      | number:'1.0-2':'pt-BR'
-                  }}
-                </strong>
-
-                <span>kg/dia</span>
-              </div>
-
-            </a>
-
-          } @empty {
-
-            <div class="panel-empty compact">
-              <p>
-                Sem animais com GMD calculado.
-              </p>
-            </div>
-
-          }
-
-        </div>
-
-      </section>
-
-    </div>
-
+    <!-- ========================================
+         TABELA POR REBANHO
+    ========================================= -->
 
     <section class="panel herd-table-panel">
 
       <div class="panel-header">
 
         <div>
+
           <span class="eyebrow">
             REBANHOS
           </span>
@@ -600,12 +980,15 @@
           </h2>
 
           <p>
-            Peso atual, GMD, cobertura de dados
-            e ocorrências que exigem acompanhamento.
+            Compare cobertura, peso, GMD
+            e ocorrências em uma única visão.
           </p>
+
         </div>
 
-        <mat-icon>groups</mat-icon>
+        <mat-icon>
+          groups
+        </mat-icon>
 
       </div>
 
@@ -619,6 +1002,7 @@
           <table>
 
             <thead>
+
               <tr>
                 <th>Rebanho</th>
                 <th class="numeric">Ativos</th>
@@ -629,6 +1013,7 @@
                 <th class="numeric">Em perda</th>
                 <th class="numeric">Pesagem atrasada</th>
               </tr>
+
             </thead>
 
             <tbody>
@@ -641,7 +1026,7 @@
                 <tr>
 
                   <td>
-                    <strong>
+                    <strong class="herd-name">
                       {{ rebanho.nome }}
                     </strong>
                   </td>
@@ -655,44 +1040,61 @@
                   </td>
 
                   <td class="numeric">
+
                     {{
                       rebanho.coberturaGmdPercentual
                         | number:'1.0-0':'pt-BR'
                     }}%
+
                   </td>
 
                   <td class="numeric">
+
                     @if (
                       rebanho.pesoMedioAtualKg !== null
                     ) {
+
                       {{
                         rebanho.pesoMedioAtualKg
                           | number:'1.0-1':'pt-BR'
                       }}
                       kg
+
                     } @else {
+
                       —
+
                     }
+
                   </td>
 
                   <td class="numeric gmd-cell">
+
                     @if (
                       rebanho.gmdMedioKgDia !== null
                     ) {
+
                       <strong
                         [class.negative]="
                           rebanho.gmdMedioKgDia < 0
                         "
                       >
+
                         {{
                           rebanho.gmdMedioKgDia
                             | number:'1.0-2':'pt-BR'
                         }}
+
                       </strong>
+
                       kg/d
+
                     } @else {
+
                       —
+
                     }
+
                   </td>
 
                   <td class="numeric">
@@ -717,34 +1119,17 @@
 
       } @else {
 
-        <div class="panel-empty">
+        <div class="panel-empty large">
+
           <p>
             Nenhum rebanho cadastrado.
           </p>
+
         </div>
 
       }
 
     </section>
-
-
-    <footer class="performance-footer">
-
-      <mat-icon>schedule</mat-icon>
-
-      <span>
-        Indicadores recalculados em
-        <strong>
-          {{
-            desempenho.calculadoEm
-              | date:'dd/MM/yyyy HH:mm'
-          }}
-        </strong>.
-        A projeção é linear e não representa
-        um modelo de inteligência artificial.
-      </span>
-
-    </footer>
 
   }
 
