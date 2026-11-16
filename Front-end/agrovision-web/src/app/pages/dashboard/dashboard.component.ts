@@ -16,8 +16,13 @@ import {
 } from '@angular/material/icon';
 
 import {
-  finalize
+  finalize,
+  forkJoin
 } from 'rxjs';
+
+import {
+  RouterLink
+} from '@angular/router';
 
 import {
   NgxEchartsDirective
@@ -39,6 +44,14 @@ import {
   DashboardResponse
 } from '../../core/dashboard/models/dashboard-response';
 
+import {
+  DesempenhoService
+} from '../../core/desempenho/services/desempenho.service';
+
+import {
+  DesempenhoFazenda
+} from '../../core/desempenho/models/desempenho';
+
 
 @Component({
   selector: 'app-dashboard',
@@ -49,6 +62,7 @@ import {
     MatIconModule,
     DecimalPipe,
     DatePipe,
+    RouterLink,
     NgxEchartsDirective
   ],
 
@@ -59,6 +73,9 @@ export class Dashboard {
 
   private readonly dashboardService =
     inject(DashboardService);
+
+  private readonly desempenhoService =
+    inject(DesempenhoService);
 
 
   readonly fazendaContext =
@@ -71,6 +88,11 @@ export class Dashboard {
 
   readonly dashboard =
     signal<DashboardResponse | null>(
+      null
+    );
+
+  readonly desempenho =
+    signal<DesempenhoFazenda | null>(
       null
     );
 
@@ -661,6 +683,10 @@ export class Dashboard {
         null
       );
 
+      this.desempenho.set(
+        null
+      );
+
 
       this.errorMessage.set(
         ''
@@ -683,19 +709,26 @@ export class Dashboard {
 
 
       const subscription =
-        this.dashboardService
-          .buscarPorFazenda(
-            fazendaId
-          )
+        forkJoin({
+
+          dashboard:
+            this.dashboardService
+              .buscarPorFazenda(
+                fazendaId
+              ),
+
+          desempenho:
+            this.desempenhoService
+              .buscarPorFazenda(
+                fazendaId
+              )
+
+        })
 
           .pipe(
 
             finalize(() => {
 
-              /*
-               * Só altera loading se ainda
-               * estivermos na mesma fazenda.
-               */
               if (
                 this.fazendaContext
                   .fazendaAtivaId() ===
@@ -716,12 +749,6 @@ export class Dashboard {
 
             next: response => {
 
-              /*
-               * Se o usuário trocou de fazenda
-               * enquanto a requisição estava
-               * sendo processada, descartamos
-               * a resposta antiga.
-               */
               if (
                 this.fazendaContext
                   .fazendaAtivaId() !==
@@ -733,7 +760,11 @@ export class Dashboard {
 
 
               this.dashboard.set(
-                response
+                response.dashboard
+              );
+
+              this.desempenho.set(
+                response.desempenho
               );
 
             },
@@ -781,6 +812,20 @@ export class Dashboard {
 
     });
 
+  }
+
+
+  gmdRebanho(
+    rebanhoId: string
+  ): number | null {
+
+    return this.desempenho()
+      ?.rebanhos
+      .find(
+        item =>
+          item.rebanhoId === rebanhoId
+      )
+      ?.gmdMedioKgDia ?? null;
   }
 
 
