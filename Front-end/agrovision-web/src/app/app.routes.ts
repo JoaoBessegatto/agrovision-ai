@@ -160,6 +160,19 @@ export const routes: Routes = [
 
 
       {
+        path: 'desempenho',
+
+        loadComponent: () =>
+          import(
+            './pages/desempenho/desempenho'
+          )
+            .then(
+              m => m.Desempenho
+            )
+      },
+
+
+      {
         path: 'rebanhos',
 
         loadComponent: () =>
