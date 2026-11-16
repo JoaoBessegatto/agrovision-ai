@@ -16,8 +16,10 @@ import {
 } from '@angular/material/icon';
 
 import {
+  catchError,
   finalize,
-  forkJoin
+  forkJoin,
+  of
 } from 'rxjs';
 
 import {
@@ -721,6 +723,17 @@ export class Dashboard {
             this.desempenhoService
               .buscarPorFazenda(
                 fazendaId
+              )
+              .pipe(
+                catchError(error => {
+
+                  console.error(
+                    'Erro ao carregar GMD no dashboard:',
+                    error
+                  );
+
+                  return of(null);
+                })
               )
 
         })
