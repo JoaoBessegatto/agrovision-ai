@@ -37,7 +37,10 @@
 
   display: grid;
   grid-template-columns:
-    repeat(4, minmax(0, 1fr));
+    repeat(
+      auto-fit,
+      minmax(220px, 1fr)
+    );
 
   gap: 14px;
 }
@@ -107,6 +110,25 @@
   background: #e7eff4;
 
   color: #3f6b81;
+}
+
+
+.kpi-icon.performance {
+  background: #e7f1e9;
+
+  color: #2f7a4b;
+}
+
+
+.performance-kpi {
+  border-color: #c8ddcd;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f4f9f5,
+      #ffffff
+    );
 }
 
 
@@ -560,6 +582,104 @@ tbody tr:hover {
 
 
 // =====================================
+// GMD / CTA DE DESEMPENHO
+// =====================================
+
+.gmd-value {
+  color: #2f7a4b;
+}
+
+.gmd-value.negative {
+  color: #a94747;
+}
+
+.performance-cta {
+  margin-bottom: 16px;
+  padding: 18px 20px;
+
+  display: grid;
+  grid-template-columns:
+    auto
+    minmax(0, 1fr)
+    auto;
+  align-items: center;
+
+  gap: 14px;
+
+  border: 1px solid #c8ddcd;
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      120deg,
+      #f2f8f3,
+      #ffffff
+    );
+
+  color: inherit;
+
+  text-decoration: none;
+}
+
+.performance-cta:hover {
+  border-color: #9fc3a8;
+
+  box-shadow:
+    0 8px 24px
+    rgba(47, 122, 75, 0.08);
+}
+
+.performance-cta-icon {
+  width: 46px;
+  height: 46px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 12px;
+
+  background: #dfeee2;
+  color: #2f7a4b;
+}
+
+.performance-cta strong {
+  display: block;
+
+  margin-top: 3px;
+
+  color: var(--av-ink);
+
+  font-family: var(--av-font-display);
+  font-size: 16px;
+}
+
+.performance-cta p {
+  margin: 3px 0 0;
+
+  color: var(--av-muted);
+
+  font-size: 11px;
+}
+
+.performance-cta-summary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  color: var(--av-green-600);
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.performance-cta-summary mat-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+}
+
+
+// =====================================
 // FOOTER
 // =====================================
 
@@ -648,5 +768,17 @@ tbody tr:hover {
 
   .chart-evolution {
     height: 360px;
+  }
+}
+
+@media (max-width: 650px) {
+  .performance-cta {
+    grid-template-columns: auto 1fr;
+  }
+
+  .performance-cta-summary {
+    grid-column: 1 / -1;
+
+    justify-content: flex-end;
   }
 }
