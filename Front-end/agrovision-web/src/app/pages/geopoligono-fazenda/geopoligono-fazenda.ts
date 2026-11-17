@@ -2204,7 +2204,7 @@ export class GeopoligonoFazenda
 
           this.draw
             .updateFeatureGeometry(
-              feature.id,
+              feature.id as string,
               this.clonarGeometria(
                 this
                   .ultimaGeometriaPiqueteValida
@@ -2241,7 +2241,7 @@ export class GeopoligonoFazenda
         try {
 
           this.draw.removeFeatures([
-            feature.id
+            feature.id as string
           ]);
 
         } finally {
@@ -2280,7 +2280,7 @@ export class GeopoligonoFazenda
 
         this.draw
           .updateFeatureGeometry(
-            feature.id,
+            feature.id as string,
             normalizada.geometry
           );
 
