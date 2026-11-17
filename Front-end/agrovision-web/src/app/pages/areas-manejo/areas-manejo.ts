@@ -1049,8 +1049,6 @@ export class AreasManejo
             resumo
           );
 
-          this.renderizarAreasSalvas();
-
           if (selecionarId) {
 
             const area =
@@ -1064,6 +1062,8 @@ export class AreasManejo
               area
             );
           }
+
+          this.renderizarAreasSalvas();
         },
 
         error: error => {
