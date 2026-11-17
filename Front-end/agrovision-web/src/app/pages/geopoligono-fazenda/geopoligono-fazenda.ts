@@ -976,6 +976,34 @@ export class GeopoligonoFazenda
       return;
     }
 
+    const nomeNormalizado =
+      nome.toLocaleLowerCase(
+        'pt-BR'
+      );
+
+    const nomeJaExiste =
+      (
+        this.resumoAreas()
+          ?.areas ?? []
+      )
+        .some(area =>
+          area.nome
+            .trim()
+            .toLocaleLowerCase(
+              'pt-BR'
+            ) ===
+              nomeNormalizado
+        );
+
+    if (nomeJaExiste) {
+
+      this.errorMessage.set(
+        'Já existe um piquete com este nome nesta Fazenda.'
+      );
+
+      return;
+    }
+
     const descricao =
       raw.descricao?.trim() ?? '';
 
