@@ -939,8 +939,8 @@ export class GeopoligonoFazenda
     );
 
 
-    this.map.on(
-      'load',
+    this.map.once(
+      'style.load',
       () => {
 
         this.mapLoaded = true;
@@ -959,6 +959,36 @@ export class GeopoligonoFazenda
         this.inicializarTerraDraw();
 
         this.aplicarDadosNoMapa();
+      }
+    );
+
+
+    this.map.on(
+      'error',
+      event => {
+
+        const mensagem =
+          event.error?.message ?? '';
+
+        if (
+          this.modoMapa() ===
+            'SATELITE' &&
+          mensagem
+        ) {
+
+          console.error(
+            'Erro no mapa de satélite:',
+            event.error
+          );
+
+          this.mapaPronto.set(
+            true
+          );
+
+          this.errorMessage.set(
+            'A imagem de satélite não pôde ser carregada. Verifique o token do Mapbox e tente novamente.'
+          );
+        }
       }
     );
   }
