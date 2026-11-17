@@ -14,6 +14,15 @@ public class GeometriaRuralService {
     private static final int SRID_WGS84 = 4326;
     private static final double RAIO_TERRA_METROS = 6_378_137.0;
 
+    /*
+     * Margem exclusivamente técnica para absorver
+     * diferenças de precisão entre desenho no browser,
+     * GeoJSON e operações JTS. Não representa uma
+     * expansão de negócio da propriedade.
+     */
+    private static final double TOLERANCIA_LIMITE_METROS = 1.5;
+    private static final double METROS_POR_GRAU_LATITUDE = 111_320.0;
+
     private final GeometryFactory geometryFactory =
             new GeometryFactory(
                     new PrecisionModel(),
@@ -176,9 +185,58 @@ public class GeometriaRuralService {
             Polygon area
     ) {
 
-        return limite.covers(
-                area
-        );
+        if (
+                limite.covers(
+                        area
+                )
+        ) {
+            return true;
+        }
+
+        /*
+         * Quando um vértice está visualmente sobre a
+         * cerca, diferenças mínimas de coordenadas podem
+         * colocá-lo alguns centímetros para fora.
+         *
+         * Aplicamos uma tolerância pequena (1,5 m) apenas
+         * na validação. A geometria oficial da Fazenda não
+         * é alterada nem aumentada no banco.
+         */
+        double latitude =
+                limite
+                        .getCentroid()
+                        .getY();
+
+        double metrosPorGrauLongitude =
+                METROS_POR_GRAU_LATITUDE *
+                        Math.max(
+                                0.2,
+                                Math.cos(
+                                        Math.toRadians(
+                                                latitude
+                                        )
+                                )
+                        );
+
+        double metrosPorGrau =
+                Math.min(
+                        METROS_POR_GRAU_LATITUDE,
+                        metrosPorGrauLongitude
+                );
+
+        double toleranciaGraus =
+                TOLERANCIA_LIMITE_METROS /
+                        metrosPorGrau;
+
+        Geometry limiteComTolerancia =
+                limite.buffer(
+                        toleranciaGraus
+                );
+
+        return limiteComTolerancia
+                .covers(
+                        area
+                );
     }
 
     public boolean possuiSobreposicaoReal(
