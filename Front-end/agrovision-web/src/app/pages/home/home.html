@@ -91,6 +91,21 @@
 
 
           @if (
+            fazendaContext.ehProprietario()
+          ) {
+
+            <a
+              routerLink="/app/fazenda/area"
+              class="btn btn-ghost"
+            >
+              <mat-icon>map</mat-icon>
+              Área da fazenda
+            </a>
+
+          }
+
+
+          @if (
             fazendaContext.podeGerenciarFuncionarios()
           ) {
 
@@ -630,6 +645,36 @@
           arrow_forward
         </mat-icon>
       </a>
+
+
+      @if (
+        fazendaContext.ehProprietario()
+      ) {
+
+        <a
+          routerLink="/app/fazenda/area"
+          class="shortcut"
+        >
+          <span class="shortcut-icon">
+            <mat-icon>map</mat-icon>
+          </span>
+
+          <span class="shortcut-text">
+            <strong>
+              Área da propriedade
+            </strong>
+
+            <span>
+              Delimite a fazenda sobre o mapa de satélite.
+            </span>
+          </span>
+
+          <mat-icon class="shortcut-go">
+            arrow_forward
+          </mat-icon>
+        </a>
+
+      }
 
 
       @if (
