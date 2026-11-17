@@ -1400,6 +1400,17 @@ export class GeopoligonoFazenda
           );
 
           this.aplicarDadosNoMapa();
+
+          if (
+            !this.onboarding &&
+            response.geopoligono
+              .configurado
+          ) {
+
+            this.carregarAreasManejo(
+              fazendaId
+            );
+          }
         },
 
         error: error => {
@@ -1571,9 +1582,45 @@ export class GeopoligonoFazenda
                 updateType === 'commit'
               ) {
 
-                return ValidateNotSelfIntersecting(
-                  feature
-                );
+                const autoIntersecao =
+                  ValidateNotSelfIntersecting(
+                    feature
+                  );
+
+                if (!autoIntersecao.valid) {
+                  return autoIntersecao;
+                }
+
+                if (
+                  this.modoGestao() ===
+                    'PIQUETES' &&
+                  feature.geometry.type ===
+                    'Polygon'
+                ) {
+
+                  const geometry:
+                    GeoJsonPolygon = {
+
+                      type: 'Polygon',
+
+                      coordinates:
+                        feature.geometry
+                          .coordinates as number[][][]
+                    };
+
+                  if (
+                    !this
+                      .normalizarPiqueteAoLimite(
+                        geometry
+                      )
+                      .valida
+                  ) {
+
+                    return {
+                      valid: false
+                    };
+                  }
+                }
               }
 
               return {
@@ -1652,13 +1699,38 @@ export class GeopoligonoFazenda
           context.action === 'draw'
         ) {
 
-          this.modoEdicao.set(
-            'NAVEGAR'
-          );
+          if (
+            this.modoGestao() ===
+              'PIQUETES'
+          ) {
 
-          this.draw?.setMode(
-            'select'
-          );
+            this.modoEdicao.set(
+              'EDITAR'
+            );
+
+            this.draw?.setMode(
+              'select'
+            );
+
+            if (
+              this.featureId !== null
+            ) {
+
+              this.draw?.selectFeature(
+                this.featureId as string
+              );
+            }
+
+          } else {
+
+            this.modoEdicao.set(
+              'NAVEGAR'
+            );
+
+            this.draw?.setMode(
+              'select'
+            );
+          }
         }
       }
     );
@@ -1679,6 +1751,57 @@ export class GeopoligonoFazenda
 
     this.draw.clear();
     this.featureId = null;
+
+    if (
+      this.modoGestao() ===
+        'PIQUETES'
+    ) {
+
+      this.sincronizandoMapa = false;
+
+      this.renderizarCamadasPiquetes();
+      this.limitarMapaAoLimiteFazenda();
+
+      const draft =
+        this.piqueteGeometria();
+
+      if (draft) {
+
+        this.carregarGeometriaPiqueteNoDraw(
+          draft
+        );
+      } else {
+
+        this.draw.setMode(
+          'select'
+        );
+      }
+
+      const limite =
+        this.geometriaAtual();
+
+      if (limite) {
+
+        this.enquadrarPoligono(
+          limite
+        );
+      }
+
+      return;
+    }
+
+    this.removerCamadasPiquetes();
+
+    if (this.map) {
+
+      this.map.setMaxBounds(
+        null
+      );
+
+      this.map.setMinZoom(
+        0
+      );
+    }
 
     const geometry =
       this.geometriaAtual();
@@ -1719,7 +1842,6 @@ export class GeopoligonoFazenda
 
     this.sincronizandoMapa = false;
 
-
     const fazenda =
       this.fazenda();
 
@@ -1742,7 +1864,6 @@ export class GeopoligonoFazenda
       return;
     }
 
-
     if (fazenda) {
 
       this.localizarCidade(
@@ -1752,8 +1873,16 @@ export class GeopoligonoFazenda
     }
   }
 
-
   private sincronizarDesenho(): void {
+
+    if (
+      this.modoGestao() ===
+        'PIQUETES'
+    ) {
+
+      this.sincronizarDesenhoPiquete();
+      return;
+    }
 
     if (!this.draw) {
       return;
