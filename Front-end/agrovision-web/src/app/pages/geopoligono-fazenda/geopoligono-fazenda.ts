@@ -591,12 +591,18 @@ export class GeopoligonoFazenda
     this.mapaPronto.set(false);
 
     this.map.setStyle(
-      this.styleDefinition(modo)
+      this.styleUrl(modo)
     );
 
     this.map.once(
       'style.load',
       () => {
+
+        if (
+          modo === 'SATELITE'
+        ) {
+          this.configurarSateliteLimpo();
+        }
 
         this.inicializarTerraDraw();
 
@@ -868,9 +874,24 @@ export class GeopoligonoFazenda
             .nativeElement,
 
         style:
-          this.styleDefinition(
+          this.styleUrl(
             this.modoMapa()
           ),
+
+        config:
+          this.modoMapa() === 'SATELITE'
+            ? {
+                basemap: {
+                  showPedestrianRoads: false,
+                  showPlaceLabels: false,
+                  showPointOfInterestLabels: false,
+                  showRoadLabels: false,
+                  showTransitLabels: false,
+                  showAdminBoundaries: false,
+                  showRoadsAndTransit: false
+                }
+              }
+            : undefined,
 
         center: [
           -51.9253,
@@ -923,6 +944,13 @@ export class GeopoligonoFazenda
       () => {
 
         this.mapLoaded = true;
+
+        if (
+          this.modoMapa() ===
+          'SATELITE'
+        ) {
+          this.configurarSateliteLimpo();
+        }
 
         this.mapaPronto.set(
           true
@@ -1363,45 +1391,67 @@ export class GeopoligonoFazenda
   }
 
 
-  private styleDefinition(
+  private styleUrl(
     modo: ModoMapa
-  ): string | mapboxgl.StyleSpecification {
+  ): string {
 
-    if (modo === 'MAPA') {
-      return 'mapbox://styles/mapbox/standard';
+    return modo === 'SATELITE'
+      ? 'mapbox://styles/mapbox/standard-satellite'
+      : 'mapbox://styles/mapbox/standard';
+  }
+
+
+  private configurarSateliteLimpo(): void {
+
+    if (!this.map) {
+      return;
     }
 
     /*
-     * Satélite direto pelo tileset raster.
-     *
-     * Evita depender do style clássico satellite-v9
-     * e entrega a imagem fotográfica pura que o
-     * produtor precisa para visualizar pastos,
-     * cercas, carreadores e divisas.
+     * Standard Satellite é o estilo atual recomendado
+     * pelo Mapbox. Mantemos somente a fotografia,
+     * removendo elementos cartográficos que atrapalham
+     * a leitura de pastos, cercas e divisas.
      */
-    return {
-      version: 8,
+    const configuracoes:
+      Array<[string, boolean]> = [
 
-      sources: {
-        'agrovision-satellite': {
-          type: 'raster',
-          url: 'mapbox://mapbox.satellite',
-          tileSize: 256
-        }
-      },
+        ['showPedestrianRoads', false],
+        ['showPlaceLabels', false],
+        ['showPointOfInterestLabels', false],
+        ['showRoadLabels', false],
+        ['showTransitLabels', false],
+        ['showAdminBoundaries', false],
+        ['showRoadsAndTransit', false]
+      ];
 
-      layers: [
-        {
-          id: 'agrovision-satellite',
-          type: 'raster',
-          source: 'agrovision-satellite',
+    for (
+      const [
+        propriedade,
+        valor
+      ] of configuracoes
+    ) {
 
-          paint: {
-            'raster-fade-duration': 0
-          }
-        }
-      ]
-    };
+      try {
+
+        this.map.setConfigProperty(
+          'basemap',
+          propriedade,
+          valor
+        );
+
+      } catch {
+
+        /*
+         * A configuração visual não deve impedir
+         * o carregamento da imagem caso alguma
+         * propriedade mude entre versões.
+         */
+      }
+    }
+
+    this.map.setPitch(0);
+    this.map.setBearing(0);
   }
 
 
