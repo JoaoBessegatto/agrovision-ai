@@ -68,7 +68,6 @@ import {
 
 type ModoMapa =
   | 'SATELITE'
-  | 'HIBRIDO'
   | 'MAPA';
 
 type ModoEdicao =
@@ -592,7 +591,7 @@ export class GeopoligonoFazenda
     this.mapaPronto.set(false);
 
     this.map.setStyle(
-      this.styleUrl(modo)
+      this.styleDefinition(modo)
     );
 
     this.map.once(
@@ -869,7 +868,7 @@ export class GeopoligonoFazenda
             .nativeElement,
 
         style:
-          this.styleUrl(
+          this.styleDefinition(
             this.modoMapa()
           ),
 
@@ -878,16 +877,37 @@ export class GeopoligonoFazenda
           -14.235
         ],
 
-        zoom: 4
+        zoom: 4,
+
+        /*
+         * O controle territorial funciona em planta:
+         * norte para cima e visão perpendicular ao solo.
+         */
+        bearing: 0,
+        pitch: 0,
+        minPitch: 0,
+        maxPitch: 0,
+        dragRotate: false,
+        pitchWithRotate: false,
+        touchPitch: false,
+        projection: 'mercator'
       });
 
 
     this.map.addControl(
       new mapboxgl.NavigationControl({
-        visualizePitch: true
+        showCompass: false,
+        showZoom: true
       }),
       'top-right'
     );
+
+    /*
+     * Mantém pinch-to-zoom em telas touch,
+     * mas bloqueia qualquer rotação.
+     */
+    this.map.touchZoomRotate
+      .disableRotation();
 
 
     this.map.addControl(
@@ -1343,31 +1363,45 @@ export class GeopoligonoFazenda
   }
 
 
-  private styleUrl(
+  private styleDefinition(
     modo: ModoMapa
-  ): string {
+  ): string | mapboxgl.StyleSpecification {
 
-    switch (modo) {
-
-      case 'SATELITE':
-        /*
-         * Imagem fotográfica pura, sem a camada
-         * cartográfica do Standard Satellite.
-         * É a visualização principal para cercas,
-         * pastos, carreadores e divisões rurais.
-         */
-        return 'mapbox://styles/mapbox/satellite-v9';
-
-      case 'HIBRIDO':
-        /*
-         * Mantém a imagem aérea, acrescentando
-         * estradas e referências de localização.
-         */
-        return 'mapbox://styles/mapbox/satellite-streets-v12';
-
-      default:
-        return 'mapbox://styles/mapbox/standard';
+    if (modo === 'MAPA') {
+      return 'mapbox://styles/mapbox/standard';
     }
+
+    /*
+     * Satélite direto pelo tileset raster.
+     *
+     * Evita depender do style clássico satellite-v9
+     * e entrega a imagem fotográfica pura que o
+     * produtor precisa para visualizar pastos,
+     * cercas, carreadores e divisas.
+     */
+    return {
+      version: 8,
+
+      sources: {
+        'agrovision-satellite': {
+          type: 'raster',
+          url: 'mapbox://mapbox.satellite',
+          tileSize: 256
+        }
+      },
+
+      layers: [
+        {
+          id: 'agrovision-satellite',
+          type: 'raster',
+          source: 'agrovision-satellite',
+
+          paint: {
+            'raster-fade-duration': 0
+          }
+        }
+      ]
+    };
   }
 
 
