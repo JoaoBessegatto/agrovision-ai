@@ -1141,9 +1141,13 @@ export class AreasManejo
               }
             );
 
+        const feature =
+          features[0] as {
+            properties?: Record<string, unknown>
+          } | undefined;
+
         const id =
-          features[0]
-            ?.properties?.['id'];
+          feature?.properties?.['id'];
 
         if (!id) {
           return;
