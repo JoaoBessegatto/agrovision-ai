@@ -67,5 +67,12 @@ public class Fazenda {
     @OneToMany(mappedBy = "fazenda", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Rebanho> rebanhos;
 
+    @OneToMany(
+            mappedBy = "fazenda",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<AreaManejo> areasManejo;
+
 
 }
