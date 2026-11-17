@@ -296,7 +296,10 @@
           ></div>
 
 
-          @if (!mapaPronto()) {
+          @if (
+            mapaConfigurado() &&
+            !mapaPronto()
+          ) {
 
             <div class="map-loading">
               <div class="loader"></div>
