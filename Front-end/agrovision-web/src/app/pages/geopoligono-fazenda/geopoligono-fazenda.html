@@ -704,9 +704,10 @@
                     track area.id
                   ) {
 
-                    <button
-                      type="button"
+                    <article
                       class="paddock-list-card"
+                      role="button"
+                      tabindex="0"
                       [class.selected]="
                         piqueteSelecionado()?.id ===
                           area.id
@@ -715,6 +716,7 @@
                         corPiquete(area)
                       "
                       (click)="selecionarPiquete(area)"
+                      (keydown.enter)="selecionarPiquete(area)"
                     >
 
                       <div class="paddock-list-main">
@@ -776,7 +778,7 @@
 
                       </div>
 
-                    </button>
+                    </article>
 
                   } @empty {
 
