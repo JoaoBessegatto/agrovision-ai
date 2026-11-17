@@ -46,10 +46,6 @@ import {
 } from 'terra-draw-mapbox-gl-adapter';
 
 import {
-  MAPBOX_ACCESS_TOKEN
-} from '../../core/config/mapbox.config';
-
-import {
   MAPTILER_API_KEY
 } from '../../core/config/maptiler.config';
 
@@ -202,9 +198,6 @@ export class AreasManejo
 
   readonly mapaConfigurado =
     signal(
-      MAPBOX_ACCESS_TOKEN
-        .trim()
-        .startsWith('pk.') &&
       MAPTILER_API_KEY
         .trim()
         .length > 0
@@ -293,6 +286,12 @@ export class AreasManejo
 
   private sincronizandoMapa =
     false;
+
+  private ultimaGeometriaValida:
+    GeoJsonPolygon | null = null;
+
+  private readonly toleranciaSnapPx =
+    8;
 
 
   constructor() {
@@ -396,6 +395,9 @@ export class AreasManejo
       null
     );
 
+    this.ultimaGeometriaValida =
+      null;
+
     this.modoEditor.set(
       'DESENHAR'
     );
@@ -405,6 +407,7 @@ export class AreasManejo
     );
 
     this.renderizarAreasSalvas();
+    this.enquadrarFazenda();
   }
 
 
@@ -469,6 +472,11 @@ export class AreasManejo
       area.areaCalculadaHa
     );
 
+    this.ultimaGeometriaValida =
+      this.clonarGeometria(
+        area.geometry
+      );
+
     this.modoEditor.set(
       'EDITAR'
     );
@@ -502,6 +510,9 @@ export class AreasManejo
     this.areaPreviewHa.set(
       null
     );
+
+    this.ultimaGeometriaValida =
+      null;
 
     this.modoEditor.set(
       'NAVEGAR'
@@ -561,6 +572,9 @@ export class AreasManejo
     this.areaPreviewHa.set(
       null
     );
+
+    this.ultimaGeometriaValida =
+      null;
 
     this.modoEditor.set(
       'DESENHAR'
@@ -875,6 +889,28 @@ export class AreasManejo
           );
 
           if (
+            base.limite.configurado
+          ) {
+
+            /*
+             * Libera a tela imediatamente com o limite
+             * oficial da Fazenda. A listagem real de
+             * piquetes chega logo depois e apenas atualiza
+             * as camadas já existentes.
+             */
+            this.resumo.set(
+              this.criarResumoInicial(
+                fazendaId,
+                base.limite
+              )
+            );
+
+            this.loading.set(
+              false
+            );
+          }
+
+          if (
             !base.limite.configurado
           ) {
 
@@ -1022,6 +1058,9 @@ export class AreasManejo
       null
     );
 
+    this.ultimaGeometriaValida =
+      null;
+
     this.modoEditor.set(
       'NAVEGAR'
     );
@@ -1049,9 +1088,6 @@ export class AreasManejo
 
     this.map =
       new mapboxgl.Map({
-
-        accessToken:
-          MAPBOX_ACCESS_TOKEN,
 
         container:
           this.mapContainer
@@ -1203,9 +1239,32 @@ export class AreasManejo
                 updateType === 'commit'
               ) {
 
-                return ValidateNotSelfIntersecting(
-                  feature
-                );
+                const autoIntersecao =
+                  ValidateNotSelfIntersecting(
+                    feature
+                  );
+
+                if (!autoIntersecao.valid) {
+                  return autoIntersecao;
+                }
+
+                if (
+                  feature.geometry.type ===
+                    'Polygon' &&
+                  !this.geometriaPermitidaNoLimite(
+                    {
+                      type: 'Polygon',
+                      coordinates:
+                        feature.geometry
+                          .coordinates as number[][][]
+                    }
+                  )
+                ) {
+
+                  return {
+                    valid: false
+                  };
+                }
               }
 
               return {
@@ -1228,7 +1287,7 @@ export class AreasManejo
             flags: {
               polygon: {
                 feature: {
-                  draggable: true,
+                  draggable: false,
                   coordinates: {
 
                     midpoints: {
@@ -1393,7 +1452,7 @@ export class AreasManejo
       return;
     }
 
-    const geometry:
+    const geometryOriginal:
       GeoJsonPolygon = {
 
         type: 'Polygon',
@@ -1403,20 +1462,106 @@ export class AreasManejo
             .coordinates as number[][][]
       };
 
+    const normalizada =
+      this.normalizarGeometriaAoLimite(
+        geometryOriginal
+      );
+
+    if (!normalizada.valida) {
+
+      /*
+       * Edição fora da propriedade: volta para o
+       * último estado válido. Dessa forma o usuário
+       * não consegue arrastar um vértice para fora.
+       */
+      if (
+        this.ultimaGeometriaValida &&
+        feature.id !== undefined
+      ) {
+
+        this.sincronizandoMapa =
+          true;
+
+        try {
+
+          this.draw
+            .updateFeatureGeometry(
+              feature.id,
+              this.clonarGeometria(
+                this.ultimaGeometriaValida
+              )
+            );
+
+        } finally {
+
+          this.sincronizandoMapa =
+            false;
+        }
+
+        this.geometriaRascunho.set(
+          this.clonarGeometria(
+            this.ultimaGeometriaValida
+          )
+        );
+
+        this.areaPreviewHa.set(
+          this.calcularAreaHa(
+            this.ultimaGeometriaValida
+          )
+        );
+      }
+
+      return;
+    }
+
+    if (
+      normalizada.ajustada &&
+      feature.id !== undefined
+    ) {
+
+      /*
+       * Se o vértice caiu poucos pixels para fora
+       * ou muito próximo da cerca, ele é encaixado
+       * exatamente na linha oficial da Fazenda.
+       */
+      this.sincronizandoMapa =
+        true;
+
+      try {
+
+        this.draw
+          .updateFeatureGeometry(
+            feature.id,
+            normalizada.geometry
+          );
+
+      } finally {
+
+        this.sincronizandoMapa =
+          false;
+      }
+    }
+
     this.featureId =
       feature.id as string;
 
+    this.ultimaGeometriaValida =
+      this.clonarGeometria(
+        normalizada.geometry
+      );
+
     this.geometriaRascunho.set(
-      geometry
+      this.clonarGeometria(
+        normalizada.geometry
+      )
     );
 
     this.areaPreviewHa.set(
       this.calcularAreaHa(
-        geometry
+        normalizada.geometry
       )
     );
   }
-
 
   private renderizarCamadas(): void {
 
@@ -1428,8 +1573,8 @@ export class AreasManejo
     }
 
     this.renderizarFocoFazenda();
-    this.renderizarLimiteFazenda();
     this.renderizarAreasSalvas();
+    this.renderizarLimiteFazenda();
     this.limitarNavegacaoNaFazenda();
   }
 
@@ -1658,7 +1803,7 @@ export class AreasManejo
     const margem =
       this.expandirBounds(
         bounds,
-        0.08
+        0.02
       );
 
     this.map.setMinZoom(0);
@@ -1667,8 +1812,8 @@ export class AreasManejo
       this.map.cameraForBounds(
         bounds,
         {
-          padding: 70,
-          maxZoom: 18
+          padding: 36,
+          maxZoom: 19
         }
       );
 
@@ -1679,7 +1824,7 @@ export class AreasManejo
       this.map.setMinZoom(
         Math.max(
           0,
-          camera.zoom - 0.35
+          camera.zoom - 0.08
         )
       );
     }
@@ -1691,8 +1836,8 @@ export class AreasManejo
     this.map.fitBounds(
       bounds,
       {
-        padding: 70,
-        maxZoom: 18,
+        padding: 36,
+        maxZoom: 19,
         duration: 650
       }
     );
@@ -1855,7 +2000,7 @@ export class AreasManejo
 
       paint: {
         'fill-color': '#07110a',
-        'fill-opacity': 0.52
+        'fill-opacity': 0.93
       }
     });
   }
@@ -1882,7 +2027,7 @@ export class AreasManejo
     this.map.setMaxBounds(
       this.expandirBounds(
         bounds,
-        0.08
+        0.02
       )
     );
   }
@@ -1948,6 +2093,689 @@ export class AreasManejo
         north + latitudeMargin
       ]
     ];
+  }
+
+
+  private criarResumoInicial(
+    fazendaId: string,
+    limite: FazendaGeopoligonoResponse
+  ): ResumoAreasManejo {
+
+    return {
+      fazendaId,
+      areaFazendaDelimitadaHa:
+        limite.areaCalculadaHa ?? 0,
+      areaMapeadaHa: 0,
+      areaLivreHa:
+        limite.areaCalculadaHa ?? 0,
+      percentualAreaMapeada: 0,
+      totalAreas: 0,
+      totalPastos: 0,
+      totalConfinamentos: 0,
+      areaPastoHa: 0,
+      areaConfinamentoHa: 0,
+      rebanhosAssociados: 0,
+      rebanhosSemArea:
+        this.rebanhos().length,
+      animaisAtivosEmAreas: 0,
+      areas: []
+    };
+  }
+
+
+  private geometriaPermitidaNoLimite(
+    geometry: GeoJsonPolygon
+  ): boolean {
+
+    return this
+      .normalizarGeometriaAoLimite(
+        geometry
+      )
+      .valida;
+  }
+
+
+  private normalizarGeometriaAoLimite(
+    geometry: GeoJsonPolygon
+  ): {
+    geometry: GeoJsonPolygon;
+    ajustada: boolean;
+    valida: boolean;
+  } {
+
+    const limite =
+      this.limiteFazenda()
+        ?.geometry;
+
+    if (!limite) {
+
+      return {
+        geometry,
+        ajustada: false,
+        valida: false
+      };
+    }
+
+    let ajustada = false;
+    let valida = true;
+
+    const rings =
+      geometry.coordinates
+        .map(ring => {
+
+          if (ring.length === 0) {
+            return ring;
+          }
+
+          const fechada =
+            this.mesmoPonto(
+              ring[0],
+              ring[
+                ring.length - 1
+              ]
+            );
+
+          const pontos =
+            fechada
+              ? ring.slice(0, -1)
+              : [...ring];
+
+          const normalizados =
+            pontos.map(point => {
+
+              const normalizado =
+                this.normalizarPontoAoLimite(
+                  point,
+                  limite
+                );
+
+              if (!normalizado.valido) {
+                valida = false;
+              }
+
+              if (normalizado.ajustado) {
+                ajustada = true;
+              }
+
+              return normalizado.ponto;
+            });
+
+          if (
+            normalizados.length > 0
+          ) {
+
+            normalizados.push([
+              normalizados[0][0],
+              normalizados[0][1]
+            ]);
+          }
+
+          return normalizados;
+        });
+
+    const resultado:
+      GeoJsonPolygon = {
+
+        type: 'Polygon',
+        coordinates: rings
+      };
+
+    if (
+      valida &&
+      !this.segmentosDentroDoLimite(
+        resultado,
+        limite
+      )
+    ) {
+
+      valida = false;
+    }
+
+    return {
+      geometry: resultado,
+      ajustada,
+      valida
+    };
+  }
+
+
+  private normalizarPontoAoLimite(
+    point: number[],
+    limite: GeoJsonPolygon
+  ): {
+    ponto: number[];
+    ajustado: boolean;
+    valido: boolean;
+  } {
+
+    if (
+      point.length < 2 ||
+      !Number.isFinite(point[0]) ||
+      !Number.isFinite(point[1])
+    ) {
+
+      return {
+        ponto: point,
+        ajustado: false,
+        valido: false
+      };
+    }
+
+    const maisProximo =
+      this.pontoMaisProximoNoLimite(
+        point,
+        limite
+      );
+
+    const distanciaPx =
+      maisProximo
+        ? this.distanciaPixels(
+            point,
+            maisProximo
+          )
+        : Number.POSITIVE_INFINITY;
+
+    const dentro =
+      this.pontoDentroPoligono(
+        point,
+        limite
+      );
+
+    /*
+     * Também encaixa pontos que estão por dentro,
+     * porém visualmente muito próximos da cerca.
+     * Isso facilita dividir piquetes usando a própria
+     * divisa oficial como lado do novo polígono.
+     */
+    if (
+      maisProximo &&
+      distanciaPx <=
+        this.toleranciaSnapPx
+    ) {
+
+      return {
+        ponto: maisProximo,
+        ajustado:
+          !this.mesmoPonto(
+            point,
+            maisProximo
+          ),
+        valido: true
+      };
+    }
+
+    return {
+      ponto: [
+        point[0],
+        point[1]
+      ],
+      ajustado: false,
+      valido: dentro
+    };
+  }
+
+
+  private segmentosDentroDoLimite(
+    geometry: GeoJsonPolygon,
+    limite: GeoJsonPolygon
+  ): boolean {
+
+    for (
+      const ring of geometry.coordinates
+    ) {
+
+      for (
+        let i = 0;
+        i < ring.length - 1;
+        i++
+      ) {
+
+        const inicio =
+          ring[i];
+
+        const fim =
+          ring[i + 1];
+
+        /*
+         * Vértices dentro não garantem que a linha
+         * inteira esteja dentro quando a Fazenda tem
+         * formato côncavo. Amostramos o segmento para
+         * bloquear esse atalho visual; o backend JTS
+         * continua sendo a validação geométrica final.
+         */
+        for (
+          let passo = 1;
+          passo < 16;
+          passo++
+        ) {
+
+          const t =
+            passo / 16;
+
+          const ponto = [
+            inicio[0] +
+              (
+                fim[0] -
+                inicio[0]
+              ) * t,
+            inicio[1] +
+              (
+                fim[1] -
+                inicio[1]
+              ) * t
+          ];
+
+          if (
+            !this.pontoDentroPoligono(
+              ponto,
+              limite
+            )
+          ) {
+
+            const proximo =
+              this.pontoMaisProximoNoLimite(
+                ponto,
+                limite
+              );
+
+            if (
+              !proximo ||
+              this.distanciaPixels(
+                ponto,
+                proximo
+              ) >
+                this.toleranciaSnapPx
+            ) {
+
+              return false;
+            }
+          }
+        }
+      }
+    }
+
+    return true;
+  }
+
+
+  private pontoDentroPoligono(
+    point: number[],
+    polygon: GeoJsonPolygon
+  ): boolean {
+
+    const rings =
+      polygon.coordinates;
+
+    if (
+      rings.length === 0 ||
+      !this.pontoDentroOuNaBordaDoAnel(
+        point,
+        rings[0]
+      )
+    ) {
+      return false;
+    }
+
+    for (
+      let i = 1;
+      i < rings.length;
+      i++
+    ) {
+
+      if (
+        this.pontoDentroAnel(
+          point,
+          rings[i]
+        ) &&
+        !this.pontoNaBordaDoAnel(
+          point,
+          rings[i]
+        )
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+
+  private pontoDentroOuNaBordaDoAnel(
+    point: number[],
+    ring: number[][]
+  ): boolean {
+
+    return (
+      this.pontoNaBordaDoAnel(
+        point,
+        ring
+      ) ||
+      this.pontoDentroAnel(
+        point,
+        ring
+      )
+    );
+  }
+
+
+  private pontoDentroAnel(
+    point: number[],
+    ring: number[][]
+  ): boolean {
+
+    if (ring.length < 3) {
+      return false;
+    }
+
+    const x =
+      point[0];
+
+    const y =
+      point[1];
+
+    let inside = false;
+
+    for (
+      let i = 0,
+      j = ring.length - 1;
+      i < ring.length;
+      j = i++
+    ) {
+
+      const xi =
+        ring[i][0];
+
+      const yi =
+        ring[i][1];
+
+      const xj =
+        ring[j][0];
+
+      const yj =
+        ring[j][1];
+
+      const intersecta =
+        (
+          yi > y
+        ) !==
+          (
+            yj > y
+          ) &&
+        x <
+          (
+            (
+              xj - xi
+            ) *
+              (
+                y - yi
+              )
+          ) /
+            (
+              yj -
+                yi ||
+              Number.EPSILON
+            ) +
+            xi;
+
+      if (intersecta) {
+        inside = !inside;
+      }
+    }
+
+    return inside;
+  }
+
+
+  private pontoNaBordaDoAnel(
+    point: number[],
+    ring: number[][]
+  ): boolean {
+
+    const tolerancia =
+      1e-10;
+
+    for (
+      let i = 0;
+      i < ring.length - 1;
+      i++
+    ) {
+
+      const a =
+        ring[i];
+
+      const b =
+        ring[i + 1];
+
+      const abX =
+        b[0] - a[0];
+
+      const abY =
+        b[1] - a[1];
+
+      const apX =
+        point[0] - a[0];
+
+      const apY =
+        point[1] - a[1];
+
+      const cross =
+        Math.abs(
+          abX * apY -
+          abY * apX
+        );
+
+      if (cross > tolerancia) {
+        continue;
+      }
+
+      const dot =
+        apX * abX +
+        apY * abY;
+
+      if (dot < -tolerancia) {
+        continue;
+      }
+
+      const lengthSquared =
+        abX * abX +
+        abY * abY;
+
+      if (
+        dot -
+          lengthSquared >
+        tolerancia
+      ) {
+        continue;
+      }
+
+      return true;
+    }
+
+    return false;
+  }
+
+
+  private pontoMaisProximoNoLimite(
+    point: number[],
+    polygon: GeoJsonPolygon
+  ): number[] | null {
+
+    if (!this.map) {
+      return null;
+    }
+
+    const alvo =
+      this.map.project({
+        lng: point[0],
+        lat: point[1]
+      });
+
+    let melhor:
+      number[] | null = null;
+
+    let melhorDistancia =
+      Number.POSITIVE_INFINITY;
+
+    for (
+      const ring of polygon.coordinates
+    ) {
+
+      for (
+        let i = 0;
+        i < ring.length - 1;
+        i++
+      ) {
+
+        const a =
+          this.map.project({
+            lng: ring[i][0],
+            lat: ring[i][1]
+          });
+
+        const b =
+          this.map.project({
+            lng: ring[i + 1][0],
+            lat: ring[i + 1][1]
+          });
+
+        const abX =
+          b.x - a.x;
+
+        const abY =
+          b.y - a.y;
+
+        const tamanho2 =
+          abX * abX +
+          abY * abY;
+
+        const t =
+          tamanho2 === 0
+            ? 0
+            : Math.max(
+                0,
+                Math.min(
+                  1,
+                  (
+                    (
+                      alvo.x - a.x
+                    ) * abX +
+                    (
+                      alvo.y - a.y
+                    ) * abY
+                  ) /
+                    tamanho2
+                )
+              );
+
+        const x =
+          a.x + abX * t;
+
+        const y =
+          a.y + abY * t;
+
+        const dx =
+          alvo.x - x;
+
+        const dy =
+          alvo.y - y;
+
+        const distancia =
+          Math.sqrt(
+            dx * dx +
+            dy * dy
+          );
+
+        if (
+          distancia <
+          melhorDistancia
+        ) {
+
+          const lngLat =
+            this.map.unproject([
+              x,
+              y
+            ]);
+
+          melhorDistancia =
+            distancia;
+
+          melhor = [
+            lngLat.lng,
+            lngLat.lat
+          ];
+        }
+      }
+    }
+
+    return melhor;
+  }
+
+
+  private distanciaPixels(
+    a: number[],
+    b: number[]
+  ): number {
+
+    if (!this.map) {
+      return Number.POSITIVE_INFINITY;
+    }
+
+    const pa =
+      this.map.project({
+        lng: a[0],
+        lat: a[1]
+      });
+
+    const pb =
+      this.map.project({
+        lng: b[0],
+        lat: b[1]
+      });
+
+    const dx =
+      pa.x - pb.x;
+
+    const dy =
+      pa.y - pb.y;
+
+    return Math.sqrt(
+      dx * dx +
+      dy * dy
+    );
+  }
+
+
+  private mesmoPonto(
+    a: number[],
+    b: number[]
+  ): boolean {
+
+    return (
+      Math.abs(
+        a[0] - b[0]
+      ) < 1e-12 &&
+      Math.abs(
+        a[1] - b[1]
+      ) < 1e-12
+    );
+  }
+
+
+  private clonarGeometria(
+    geometry: GeoJsonPolygon
+  ): GeoJsonPolygon {
+
+    return {
+      type: 'Polygon',
+      coordinates:
+        geometry.coordinates
+          .map(ring =>
+            ring.map(point => [
+              point[0],
+              point[1]
+            ])
+          )
+    };
   }
 
 
