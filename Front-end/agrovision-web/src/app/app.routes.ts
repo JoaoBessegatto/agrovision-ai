@@ -256,6 +256,19 @@ export const routes: Routes = [
             .then(
               m => m.GeopoligonoFazenda
             )
+      },
+
+
+      {
+        path: 'fazenda/piquetes',
+
+        loadComponent: () =>
+          import(
+            './pages/areas-manejo/areas-manejo'
+          )
+            .then(
+              m => m.AreasManejo
+            )
       }
 
     ]
