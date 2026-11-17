@@ -106,6 +106,78 @@ class GeometriaRuralServiceTest {
     }
 
     @Test
+    void deveAceitarPequenaDiferencaDePrecisaoNaBorda() {
+
+        Polygon fazenda =
+                service.converterParaPolygon(
+                        polygon(
+                                -50.00, -21.00,
+                                -49.90, -21.00,
+                                -49.90, -20.90,
+                                -50.00, -20.90
+                        ),
+                        "Fazenda"
+                );
+
+        /*
+         * Aproximadamente meio metro além da borda
+         * leste. Deve ser absorvido pela tolerância
+         * exclusivamente técnica da validação.
+         */
+        Polygon piquete =
+                service.converterParaPolygon(
+                        polygon(
+                                -49.95, -20.98,
+                                -49.899995, -20.98,
+                                -49.899995, -20.95,
+                                -49.95, -20.95
+                        ),
+                        "Piquete"
+                );
+
+        assertTrue(
+                service.estaContido(
+                        fazenda,
+                        piquete
+                )
+        );
+    }
+
+    @Test
+    void deveRejeitarAreaClaramenteForaMesmoComTolerancia() {
+
+        Polygon fazenda =
+                service.converterParaPolygon(
+                        polygon(
+                                -50.00, -21.00,
+                                -49.90, -21.00,
+                                -49.90, -20.90,
+                                -50.00, -20.90
+                        ),
+                        "Fazenda"
+                );
+
+        Polygon piquete =
+                service.converterParaPolygon(
+                        polygon(
+                                -49.95, -20.98,
+                                -49.8998, -20.98,
+                                -49.8998, -20.95,
+                                -49.95, -20.95
+                        ),
+                        "Piquete"
+                );
+
+        assertFalse(
+                service.estaContido(
+                        fazenda,
+                        piquete
+                )
+        );
+    }
+
+
+    @Test
     void devePermitirPiquetesQueApenasCompartilhamCerca() {
 
         Polygon primeiro =
