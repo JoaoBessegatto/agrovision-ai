@@ -180,6 +180,57 @@
 
 
 // =====================================
+// ÁREA DE MANEJO
+// =====================================
+
+.area-location {
+  margin-top: 14px;
+  padding: 10px 11px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 1px solid #dce8df;
+  border-radius: 10px;
+
+  background: #f5faf6;
+  color: #536159;
+
+  font-size: 11px;
+}
+
+.area-location mat-icon {
+  width: 18px;
+  height: 18px;
+
+  flex: 0 0 auto;
+
+  color: #2f7a4b;
+  font-size: 18px;
+}
+
+.area-location span {
+  min-width: 0;
+}
+
+.area-location strong {
+  color: var(--av-ink);
+}
+
+.area-location small {
+  margin-left: 6px;
+  color: var(--av-muted);
+}
+
+.area-location.empty {
+  border-color: #e4e8e5;
+  background: #fafbfa;
+  color: var(--av-muted);
+}
+
+
+// =====================================
 // QUANTIDADE
 // =====================================
 
