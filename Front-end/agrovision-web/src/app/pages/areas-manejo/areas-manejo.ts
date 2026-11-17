@@ -619,6 +619,9 @@ export class AreasManejo
     const raw =
       this.form.getRawValue();
 
+    const descricao =
+      raw.descricao?.trim() ?? '';
+
     const request:
       AreaManejoRequest = {
 
@@ -626,8 +629,8 @@ export class AreasManejo
           raw.nome?.trim() ?? '',
 
         descricao:
-          raw.descricao?.trim()
-            ? raw.descricao.trim()
+          descricao
+            ? descricao
             : null,
 
         tipo:
