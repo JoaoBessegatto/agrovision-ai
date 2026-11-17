@@ -282,6 +282,39 @@
           </p>
 
 
+          <div
+            class="area-location"
+            [class.empty]="!rebanho.areaManejoId"
+          >
+            <mat-icon>
+              {{
+                rebanho.areaManejoTipo === 'CONFINAMENTO'
+                  ? 'warehouse'
+                  : 'location_on'
+              }}
+            </mat-icon>
+
+            <span>
+              @if (rebanho.areaManejoNome) {
+                Área atual:
+                <strong>
+                  {{ rebanho.areaManejoNome }}
+                </strong>
+
+                <small>
+                  {{
+                    rebanho.areaManejoTipo === 'CONFINAMENTO'
+                      ? 'Confinamento'
+                      : 'Pasto'
+                  }}
+                </small>
+              } @else {
+                Sem área de manejo associada
+              }
+            </span>
+          </div>
+
+
           <div class="card-count">
 
             <strong>
