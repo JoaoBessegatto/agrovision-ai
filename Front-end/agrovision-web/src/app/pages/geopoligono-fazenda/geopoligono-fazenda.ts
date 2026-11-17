@@ -68,6 +68,7 @@ import {
 
 type ModoMapa =
   | 'SATELITE'
+  | 'HIBRIDO'
   | 'MAPA';
 
 type ModoEdicao =
@@ -688,7 +689,7 @@ export class GeopoligonoFazenda
           Number(coordinates[0]),
           Number(coordinates[1])
         ],
-        zoom: 14,
+        zoom: 16,
         duration: 1200
       });
 
@@ -1328,7 +1329,7 @@ export class GeopoligonoFazenda
           Number(coordinates[0]),
           Number(coordinates[1])
         ],
-        zoom: 11,
+        zoom: 13,
         duration: 700
       });
 
@@ -1346,9 +1347,27 @@ export class GeopoligonoFazenda
     modo: ModoMapa
   ): string {
 
-    return modo === 'SATELITE'
-      ? 'mapbox://styles/mapbox/standard-satellite'
-      : 'mapbox://styles/mapbox/standard';
+    switch (modo) {
+
+      case 'SATELITE':
+        /*
+         * Imagem fotográfica pura, sem a camada
+         * cartográfica do Standard Satellite.
+         * É a visualização principal para cercas,
+         * pastos, carreadores e divisões rurais.
+         */
+        return 'mapbox://styles/mapbox/satellite-v9';
+
+      case 'HIBRIDO':
+        /*
+         * Mantém a imagem aérea, acrescentando
+         * estradas e referências de localização.
+         */
+        return 'mapbox://styles/mapbox/satellite-streets-v12';
+
+      default:
+        return 'mapbox://styles/mapbox/standard';
+    }
   }
 
 
