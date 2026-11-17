@@ -2010,7 +2010,7 @@ export class AreasManejo
 
       paint: {
         'fill-color': '#07110a',
-        'fill-opacity': 0.93
+        'fill-opacity': 1
       }
     });
   }
@@ -2084,13 +2084,13 @@ export class AreasManejo
     const longitudeMargin =
       Math.max(
         (east - west) * percentual,
-        0.0005
+        0.0001
       );
 
     const latitudeMargin =
       Math.max(
         (north - south) * percentual,
-        0.0005
+        0.0001
       );
 
     return [
