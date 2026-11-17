@@ -1,0 +1,610 @@
+<div
+  class="geo-page"
+  [class.onboarding]="onboarding"
+>
+
+  <header class="page-header">
+
+    <div>
+
+      <span class="eyebrow">
+        TERRITÓRIO DA PROPRIEDADE
+      </span>
+
+      <h1>
+        Delimitar área da fazenda
+      </h1>
+
+      @if (
+        fazenda();
+        as dadosFazenda
+      ) {
+
+        <p>
+          Desenhe o limite real da
+          <strong>{{ dadosFazenda.nome }}</strong>
+          sobre a imagem de satélite.
+        </p>
+
+      }
+
+    </div>
+
+
+    @if (onboarding) {
+
+      <button
+        type="button"
+        class="skip-button"
+        (click)="concluirOuPular()"
+      >
+        Fazer depois
+        <mat-icon>arrow_forward</mat-icon>
+      </button>
+
+    } @else {
+
+      <button
+        type="button"
+        class="back-button"
+        (click)="voltar()"
+      >
+        <mat-icon>arrow_back</mat-icon>
+        Voltar
+      </button>
+
+    }
+
+  </header>
+
+
+  @if (errorMessage()) {
+
+    <div
+      class="message error"
+      role="alert"
+    >
+      <mat-icon>error_outline</mat-icon>
+
+      <span>
+        {{ errorMessage() }}
+      </span>
+
+      <button
+        type="button"
+        (click)="limparMensagens()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+  }
+
+
+  @if (successMessage()) {
+
+    <div
+      class="message success"
+      role="status"
+    >
+      <mat-icon>check_circle_outline</mat-icon>
+
+      <span>
+        {{ successMessage() }}
+      </span>
+
+      <button
+        type="button"
+        (click)="limparMensagens()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+  }
+
+
+  @if (loading()) {
+
+    <section class="loading-state">
+      <div class="loader"></div>
+
+      <h2>
+        Preparando o mapa
+      </h2>
+
+      <p>
+        Carregando os dados da propriedade.
+      </p>
+    </section>
+
+  } @else {
+
+    <section class="overview-grid">
+
+      <article class="info-card">
+
+        <div class="info-icon">
+          <mat-icon>agriculture</mat-icon>
+        </div>
+
+        <div>
+          <span>
+            Área informada
+          </span>
+
+          <strong>
+            {{
+              fazenda()?.areaTotalHa
+                | number:'1.0-2':'pt-BR'
+            }}
+            ha
+          </strong>
+
+          <small>
+            Cadastro administrativo
+          </small>
+        </div>
+
+      </article>
+
+
+      <article
+        class="info-card"
+        [class.highlight]="
+          areaPreviewHa() !== null
+        "
+      >
+
+        <div class="info-icon measured">
+          <mat-icon>square_foot</mat-icon>
+        </div>
+
+        <div>
+          <span>
+            Área delimitada
+          </span>
+
+          <strong>
+
+            @if (
+              areaPreviewHa() !== null
+            ) {
+
+              {{
+                areaPreviewHa()
+                  | number:'1.0-2':'pt-BR'
+              }}
+              ha
+
+            } @else {
+
+              —
+
+            }
+
+          </strong>
+
+          <small>
+            Calculada pelas coordenadas
+          </small>
+        </div>
+
+      </article>
+
+
+      <article class="info-card">
+
+        <div class="info-icon location">
+          <mat-icon>location_on</mat-icon>
+        </div>
+
+        <div>
+          <span>
+            Localização
+          </span>
+
+          <strong>
+            {{ fazenda()?.cidade }}
+            ·
+            {{ fazenda()?.estado }}
+          </strong>
+
+          <small>
+            Referência da propriedade
+          </small>
+        </div>
+
+      </article>
+
+    </section>
+
+
+    @if (!mapaConfigurado()) {
+
+      <section class="token-state">
+
+        <div class="token-icon">
+          <mat-icon>map</mat-icon>
+        </div>
+
+        <div>
+          <span class="eyebrow">
+            CONFIGURAÇÃO NECESSÁRIA
+          </span>
+
+          <h2>
+            Adicione o token público do Mapbox
+          </h2>
+
+          <p>
+            Preencha
+            <code>
+              src/app/core/config/mapbox.config.ts
+            </code>
+            com um token público iniciado por
+            <strong>pk.</strong>
+            para habilitar o mapa de satélite.
+          </p>
+        </div>
+
+      </section>
+
+    } @else {
+
+      <section class="map-section">
+
+        <div class="map-toolbar">
+
+          <div class="search-box">
+
+            <mat-icon>
+              search
+            </mat-icon>
+
+            <input
+              type="search"
+              [value]="buscaLocal()"
+              placeholder="Cidade, endereço ou referência próxima"
+              (input)="atualizarBusca($event)"
+              (keydown.enter)="buscarNoMapa()"
+            >
+
+            <button
+              type="button"
+              [disabled]="buscandoLocal()"
+              (click)="buscarNoMapa()"
+            >
+              @if (buscandoLocal()) {
+                Buscando...
+              } @else {
+                Localizar
+              }
+            </button>
+
+          </div>
+
+
+          <div class="map-style-toggle">
+
+            <button
+              type="button"
+              [class.active]="
+                modoMapa() === 'SATELITE'
+              "
+              (click)="alterarMapa('SATELITE')"
+            >
+              <mat-icon>satellite_alt</mat-icon>
+              Satélite
+            </button>
+
+            <button
+              type="button"
+              [class.active]="
+                modoMapa() === 'MAPA'
+              "
+              (click)="alterarMapa('MAPA')"
+            >
+              <mat-icon>map</mat-icon>
+              Mapa
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div class="map-layout">
+
+          <div class="map-wrapper">
+
+            <div
+              #mapContainer
+              class="map-container"
+              aria-label="Mapa da propriedade"
+            ></div>
+
+
+            @if (!mapaPronto()) {
+
+              <div class="map-loading">
+                <div class="loader"></div>
+                <span>
+                  Carregando imagem de satélite...
+                </span>
+              </div>
+
+            }
+
+
+            @if (alteracoesPendentes()) {
+
+              <span class="unsaved-badge">
+                Alterações não salvas
+              </span>
+
+            }
+
+          </div>
+
+
+          <aside class="map-panel">
+
+            <div class="panel-heading">
+
+              <span class="eyebrow">
+                DELIMITAÇÃO
+              </span>
+
+              <h2>
+                Limite da propriedade
+              </h2>
+
+              <p>
+                Marque os vértices acompanhando
+                cercas, estradas, cursos d'água
+                ou outras referências visíveis.
+              </p>
+
+            </div>
+
+
+            @if (podeEditar()) {
+
+              <div class="tool-list">
+
+                <button
+                  type="button"
+                  class="tool-button primary"
+                  [class.active]="
+                    modoEdicao() === 'DESENHAR'
+                  "
+                  [disabled]="
+                    geometriaAtual() !== null ||
+                    !mapaPronto()
+                  "
+                  (click)="iniciarDesenho()"
+                >
+                  <mat-icon>polyline</mat-icon>
+
+                  <span>
+                    <strong>
+                      Desenhar limite
+                    </strong>
+
+                    <small>
+                      Clique no mapa para criar os vértices.
+                    </small>
+                  </span>
+                </button>
+
+
+                <button
+                  type="button"
+                  class="tool-button"
+                  [class.active]="
+                    modoEdicao() === 'EDITAR'
+                  "
+                  [disabled]="
+                    geometriaAtual() === null ||
+                    !mapaPronto()
+                  "
+                  (click)="editarPontos()"
+                >
+                  <mat-icon>edit_location_alt</mat-icon>
+
+                  <span>
+                    <strong>
+                      Editar pontos
+                    </strong>
+
+                    <small>
+                      Arraste vértices ou ajuste o limite.
+                    </small>
+                  </span>
+                </button>
+
+
+                <button
+                  type="button"
+                  class="tool-button"
+                  [disabled]="
+                    geometriaAtual() === null
+                  "
+                  (click)="limparDesenho()"
+                >
+                  <mat-icon>restart_alt</mat-icon>
+
+                  <span>
+                    <strong>
+                      Refazer desenho
+                    </strong>
+
+                    <small>
+                      Limpa o limite atual para começar novamente.
+                    </small>
+                  </span>
+                </button>
+
+              </div>
+
+
+              <div class="save-card">
+
+                <span>
+                  Área calculada
+                </span>
+
+                <strong>
+                  @if (
+                    areaPreviewHa() !== null
+                  ) {
+
+                    {{
+                      areaPreviewHa()
+                        | number:'1.0-4':'pt-BR'
+                    }}
+                    ha
+
+                  } @else {
+
+                    Delimite a propriedade
+
+                  }
+                </strong>
+
+
+                @if (
+                  geopoligonoSalvo()?.diferencaPercentual !== null &&
+                  geopoligonoSalvo()?.diferencaPercentual !== undefined &&
+                  !alteracoesPendentes()
+                ) {
+
+                  <small>
+                    Diferença de
+                    {{
+                      geopoligonoSalvo()!
+                        .diferencaPercentual
+                        | number:'1.0-2':'pt-BR'
+                    }}%
+                    em relação à área informada.
+                  </small>
+
+                } @else {
+
+                  <small>
+                    O servidor recalcula a área ao salvar.
+                  </small>
+
+                }
+
+
+                <button
+                  type="button"
+                  class="save-button"
+                  [disabled]="
+                    geometriaAtual() === null ||
+                    saving() ||
+                    !alteracoesPendentes()
+                  "
+                  (click)="salvar()"
+                >
+                  @if (saving()) {
+                    Salvando...
+                  } @else {
+                    <mat-icon>save</mat-icon>
+                    Salvar delimitação
+                  }
+                </button>
+
+              </div>
+
+
+              @if (
+                geopoligonoSalvo()?.configurado
+              ) {
+
+                <button
+                  type="button"
+                  class="remove-button"
+                  [disabled]="removendo()"
+                  (click)="removerGeopoligono()"
+                >
+                  <mat-icon>delete_outline</mat-icon>
+                  Remover limite salvo
+                </button>
+
+              }
+
+            } @else {
+
+              <div class="readonly-note">
+
+                <mat-icon>visibility</mat-icon>
+
+                <div>
+                  <strong>
+                    Visualização
+                  </strong>
+
+                  <p>
+                    Apenas o proprietário pode alterar
+                    o limite geográfico desta fazenda.
+                  </p>
+                </div>
+
+              </div>
+
+            }
+
+
+            <div class="map-tip">
+
+              <mat-icon>lightbulb</mat-icon>
+
+              <p>
+                Use bastante zoom e marque mudanças
+                de direção da divisa. Quanto melhor
+                o desenho, melhor será o controle
+                de áreas internas na próxima etapa.
+              </p>
+
+            </div>
+
+          </aside>
+
+        </div>
+
+      </section>
+
+    }
+
+
+    @if (onboarding) {
+
+      <div class="onboarding-actions">
+
+        <button
+          type="button"
+          class="secondary-action"
+          (click)="concluirOuPular()"
+        >
+          Pular por agora
+        </button>
+
+        <button
+          type="button"
+          class="primary-action"
+          (click)="concluirOuPular()"
+        >
+          Entrar no AgroVision
+          <mat-icon>arrow_forward</mat-icon>
+        </button>
+
+      </div>
+
+    }
+
+  }
+
+</div>
