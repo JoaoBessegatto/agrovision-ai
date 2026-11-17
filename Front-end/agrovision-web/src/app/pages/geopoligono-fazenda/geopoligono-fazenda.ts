@@ -344,10 +344,15 @@ export class GeopoligonoFazenda
    */
   private sincronizandoMapa = false;
 
-  private ultimaGeometriaPiqueteValida:
-    GeoJsonPolygon | null = null;
-
   private readonly toleranciaSnapPiquetePx =
+    8;
+
+  /*
+   * Terra Draw valida a precisão das coordenadas.
+   * O renderer pode devolver 12-15 casas via unproject(),
+   * então normalizamos antes de armazenar/salvar.
+   */
+  private readonly precisaoCoordenadas =
     8;
 
 
@@ -804,9 +809,6 @@ export class GeopoligonoFazenda
       null
     );
 
-    this.ultimaGeometriaPiqueteValida =
-      null;
-
     this.piqueteSelecionado.set(
       null
     );
@@ -850,9 +852,6 @@ export class GeopoligonoFazenda
     this.piqueteAreaPreviewHa.set(
       null
     );
-
-    this.ultimaGeometriaPiqueteValida =
-      null;
 
     this.modoEdicao.set(
       'NAVEGAR'
@@ -1672,7 +1671,7 @@ export class GeopoligonoFazenda
             flags: {
               polygon: {
                 feature: {
-                  draggable: true,
+                  draggable: false,
                   coordinates: {
 
                     midpoints: {
@@ -2175,143 +2174,83 @@ export class GeopoligonoFazenda
       return;
     }
 
-    const geometry:
-      GeoJsonPolygon = {
+    /*
+     * IMPORTANTE:
+     * não chamamos updateFeatureGeometry/removeFeatures
+     * dentro do evento change do Terra Draw.
+     *
+     * Fazer isso reentra no store interno da biblioteca
+     * enquanto ela ainda está processando a mesma feature,
+     * causando "No feature with this id" e loops de change.
+     */
+    const geometry =
+      this.normalizarPrecisaoGeometria({
 
         type: 'Polygon',
 
         coordinates:
           feature.geometry
             .coordinates as number[][][]
-      };
+      });
 
     const normalizada =
       this.normalizarPiqueteAoLimite(
         geometry
       );
 
+    this.featureId =
+      feature.id as string;
+
     if (!normalizada.valida) {
 
+      this.piqueteGeometria.set(
+        null
+      );
+
+      this.piqueteAreaPreviewHa.set(
+        null
+      );
+
       if (
-        this.ultimaGeometriaPiqueteValida &&
-        feature.id !== undefined
-      ) {
-
-        this.sincronizandoMapa =
-          true;
-
-        try {
-
-          this.draw
-            .updateFeatureGeometry(
-              feature.id as string,
-              this.clonarGeometria(
-                this
-                  .ultimaGeometriaPiqueteValida
-              )
-            );
-
-        } finally {
-
-          this.sincronizandoMapa =
-            false;
-        }
-
-        this.piqueteGeometria.set(
-          this.clonarGeometria(
-            this
-              .ultimaGeometriaPiqueteValida
+        !this.errorMessage()
+          .includes(
+            'limite amarelo'
           )
-        );
-
-        this.piqueteAreaPreviewHa.set(
-          this.calcularAreaHa(
-            this
-              .ultimaGeometriaPiqueteValida
-          )
-        );
-
-      } else if (
-        feature.id !== undefined
       ) {
-
-        this.sincronizandoMapa =
-          true;
-
-        try {
-
-          this.draw.removeFeatures([
-            feature.id as string
-          ]);
-
-        } finally {
-
-          this.sincronizandoMapa =
-            false;
-        }
-
-        this.featureId = null;
-
-        this.piqueteGeometria.set(
-          null
-        );
-
-        this.piqueteAreaPreviewHa.set(
-          null
-        );
 
         this.errorMessage.set(
-          'O piquete precisa ficar dentro do limite amarelo da Fazenda.'
+          'O piquete precisa ficar totalmente dentro do limite amarelo da Fazenda.'
         );
       }
 
       return;
     }
 
-    if (
-      normalizada.ajustada &&
-      feature.id !== undefined
-    ) {
-
-      this.sincronizandoMapa =
-        true;
-
-      try {
-
-        this.draw
-          .updateFeatureGeometry(
-            feature.id as string,
-            normalizada.geometry
-          );
-
-      } finally {
-
-        this.sincronizandoMapa =
-          false;
-      }
-    }
-
-    this.featureId =
-      feature.id as string;
-
-    this.ultimaGeometriaPiqueteValida =
-      this.clonarGeometria(
+    const geometryFinal =
+      this.normalizarPrecisaoGeometria(
         normalizada.geometry
       );
 
     this.piqueteGeometria.set(
-      this.clonarGeometria(
-        normalizada.geometry
-      )
+      geometryFinal
     );
 
     this.piqueteAreaPreviewHa.set(
       this.calcularAreaHa(
-        normalizada.geometry
+        geometryFinal
       )
     );
-  }
 
+    if (
+      this.errorMessage()
+        .includes(
+          'limite amarelo'
+        )
+    ) {
+
+      this.errorMessage.set('');
+    }
+  }
 
   private carregarGeometriaPiqueteNoDraw(
     geometry: GeoJsonPolygon
@@ -2320,6 +2259,11 @@ export class GeopoligonoFazenda
     if (!this.draw) {
       return;
     }
+
+    const geometryNormalizada =
+      this.normalizarPrecisaoGeometria(
+        geometry
+      );
 
     this.sincronizandoMapa =
       true;
@@ -2333,7 +2277,8 @@ export class GeopoligonoFazenda
           properties: {
             mode: 'polygon'
           },
-          geometry
+          geometry:
+            geometryNormalizada
         }
       ]);
 
@@ -2866,6 +2811,11 @@ export class GeopoligonoFazenda
     valida: boolean;
   } {
 
+    const geometrySegura =
+      this.normalizarPrecisaoGeometria(
+        geometry
+      );
+
     const limite =
       this.geometriaAtual();
 
@@ -2882,7 +2832,7 @@ export class GeopoligonoFazenda
     let valida = true;
 
     const coordinates =
-      geometry.coordinates
+      geometrySegura.coordinates
         .map(ring => {
 
           if (ring.length === 0) {
@@ -2979,7 +2929,10 @@ export class GeopoligonoFazenda
     ) {
 
       return {
-        ponto: proximo,
+        ponto:
+          this.arredondarPonto(
+            proximo
+          ),
         ajustado:
           !this.mesmoPonto(
             point,
@@ -2990,10 +2943,10 @@ export class GeopoligonoFazenda
     }
 
     return {
-      ponto: [
-        point[0],
-        point[1]
-      ],
+      ponto:
+        this.arredondarPonto(
+          point
+        ),
       ajustado: false,
       valido: dentro
     };
@@ -3318,7 +3271,7 @@ export class GeopoligonoFazenda
   }
 
 
-  private clonarGeometria(
+  private normalizarPrecisaoGeometria(
     geometry: GeoJsonPolygon
   ): GeoJsonPolygon {
 
@@ -3328,12 +3281,55 @@ export class GeopoligonoFazenda
       coordinates:
         geometry.coordinates
           .map(ring =>
-            ring.map(point => [
-              point[0],
-              point[1]
-            ])
+            ring.map(point =>
+              this.arredondarPonto(
+                point
+              )
+            )
           )
     };
+  }
+
+
+  private arredondarPonto(
+    point: number[]
+  ): number[] {
+
+    return [
+      this.arredondarCoordenada(
+        point[0]
+      ),
+      this.arredondarCoordenada(
+        point[1]
+      )
+    ];
+  }
+
+
+  private arredondarCoordenada(
+    value: number
+  ): number {
+
+    if (!Number.isFinite(value)) {
+      return value;
+    }
+
+    return Number(
+      value.toFixed(
+        this.precisaoCoordenadas
+      )
+    );
+  }
+
+
+  private clonarGeometria(
+    geometry: GeoJsonPolygon
+  ): GeoJsonPolygon {
+
+    return this
+      .normalizarPrecisaoGeometria(
+        geometry
+      );
   }
 
 
