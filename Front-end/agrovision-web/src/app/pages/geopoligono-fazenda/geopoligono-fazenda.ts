@@ -19,6 +19,12 @@ import {
 } from '@angular/router';
 
 import {
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
+
+import {
   MatIconModule
 } from '@angular/material/icon';
 
@@ -69,6 +75,25 @@ import {
   GeoJsonPolygon
 } from '../../core/fazenda/models/fazenda-geopoligono';
 
+import {
+  AreaManejo,
+  AreaManejoRequest,
+  ResumoAreasManejo,
+  TipoAreaManejo
+} from '../../core/area-manejo/models/area-manejo';
+
+import {
+  AreaManejoService
+} from '../../core/area-manejo/services/area-manejo.service';
+
+import {
+  RebanhoResponse
+} from '../../core/rebanho/models/rebanho-response';
+
+import {
+  RebanhoService
+} from '../../core/rebanho/services/rebanho.service';
+
 
 type ModoMapa =
   | 'SATELITE'
@@ -79,6 +104,10 @@ type ModoEdicao =
   | 'DESENHAR'
   | 'EDITAR';
 
+type ModoGestaoTerritorial =
+  | 'LIMITE'
+  | 'PIQUETES';
+
 
 @Component({
   selector: 'app-geopoligono-fazenda',
@@ -86,6 +115,7 @@ type ModoEdicao =
 
   imports: [
     DecimalPipe,
+    ReactiveFormsModule,
     MatIconModule
   ],
 
@@ -130,6 +160,15 @@ export class GeopoligonoFazenda
 
   private readonly geopoligonoService =
     inject(FazendaGeopoligonoService);
+
+  private readonly areaManejoService =
+    inject(AreaManejoService);
+
+  private readonly rebanhoService =
+    inject(RebanhoService);
+
+  private readonly formBuilder =
+    inject(FormBuilder);
 
   readonly fazendaContext =
     inject(FazendaContextService);
@@ -210,6 +249,81 @@ export class GeopoligonoFazenda
     signal('');
 
 
+  readonly modoGestao =
+    signal<ModoGestaoTerritorial>(
+      'LIMITE'
+    );
+
+  readonly resumoAreas =
+    signal<ResumoAreasManejo | null>(
+      null
+    );
+
+  readonly rebanhos =
+    signal<RebanhoResponse[]>([]);
+
+  readonly piqueteGeometria =
+    signal<GeoJsonPolygon | null>(
+      null
+    );
+
+  readonly piqueteAreaPreviewHa =
+    signal<number | null>(
+      null
+    );
+
+  readonly piqueteSaving =
+    signal(false);
+
+  readonly piqueteDeleting =
+    signal(false);
+
+  readonly piquetesLoading =
+    signal(false);
+
+  readonly piqueteSelecionado =
+    signal<AreaManejo | null>(
+      null
+    );
+
+  readonly piqueteForm =
+    this.formBuilder.group({
+
+      nome: [
+        '',
+        [
+          Validators.required,
+          Validators.maxLength(120)
+        ]
+      ],
+
+      descricao: [
+        '',
+        [
+          Validators.maxLength(500)
+        ]
+      ],
+
+      tipo: [
+        'PASTO' as TipoAreaManejo,
+        [
+          Validators.required
+        ]
+      ],
+
+      capacidadeMaximaCabecas: [
+        null as number | null,
+        [
+          Validators.min(1)
+        ]
+      ],
+
+      rebanhoId: [
+        ''
+      ]
+    });
+
+
   private map:
     mapboxgl.Map | null = null;
 
@@ -229,6 +343,12 @@ export class GeopoligonoFazenda
    * carregar geometria salva como edição manual.
    */
   private sincronizandoMapa = false;
+
+  private ultimaGeometriaPiqueteValida:
+    GeoJsonPolygon | null = null;
+
+  private readonly toleranciaSnapPiquetePx =
+    8;
 
 
   constructor() {
