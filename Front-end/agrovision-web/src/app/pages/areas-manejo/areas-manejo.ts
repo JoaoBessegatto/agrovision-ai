@@ -86,10 +86,6 @@ import {
 } from '../../core/area-manejo/models/area-manejo';
 
 
-type ModoMapa =
-  | 'SATELITE'
-  | 'MAPA';
-
 type ModoEditor =
   | 'NAVEGAR'
   | 'DESENHAR'
@@ -204,24 +200,11 @@ export class AreasManejo
   readonly mapaPronto =
     signal(false);
 
-  readonly modoMapa =
-    signal<ModoMapa>(
-      MAPTILER_API_KEY
-        .trim()
-        .length > 0
-          ? 'SATELITE'
-          : 'MAPA'
-    );
-
   readonly mapaConfigurado =
     signal(
       MAPBOX_ACCESS_TOKEN
         .trim()
-        .startsWith('pk.')
-    );
-
-  readonly sateliteConfigurado =
-    signal(
+        .startsWith('pk.') &&
       MAPTILER_API_KEY
         .trim()
         .length > 0
@@ -785,72 +768,12 @@ export class AreasManejo
   }
 
 
-  alterarMapa(
-    modo: ModoMapa
-  ): void {
+  corArea(
+    area: AreaManejo
+  ): string {
 
-    if (
-      modo === 'SATELITE' &&
-      !this.sateliteConfigurado()
-    ) {
-
-      this.errorMessage.set(
-        'Configure a chave pública do MapTiler para habilitar o satélite.'
-      );
-
-      return;
-    }
-
-    this.modoMapa.set(
-      modo
-    );
-
-    if (!this.map) {
-      return;
-    }
-
-    const draft =
-      this.geometriaRascunho();
-
-    try {
-      this.draw?.stop();
-    } catch {
-      // Recriado após style.load.
-    }
-
-    this.draw = null;
-    this.featureId = null;
-    this.mapaPronto.set(false);
-
-    this.map.setStyle(
-      this.styleDefinition(
-        modo
-      )
-    );
-
-    this.map.once(
-      'style.load',
-      () => {
-
-        this.mapaPronto.set(
-          true
-        );
-
-        this.inicializarTerraDraw();
-
-        this.renderizarCamadas();
-
-        if (
-          draft &&
-          this.modoEditor() !==
-            'NAVEGAR'
-        ) {
-
-          this.carregarAreaNoEditor(
-            draft
-          );
-        }
-      }
+    return this.corPorId(
+      area.id
     );
   }
 
@@ -1135,9 +1058,7 @@ export class AreasManejo
             .nativeElement,
 
         style:
-          this.styleDefinition(
-            this.modoMapa()
-          ),
+          this.styleDefinition(),
 
         center: [
           -51.9253,
@@ -1502,8 +1423,10 @@ export class AreasManejo
       return;
     }
 
+    this.renderizarFocoFazenda();
     this.renderizarLimiteFazenda();
     this.renderizarAreasSalvas();
+    this.limitarNavegacaoNaFazenda();
   }
 
 
@@ -1554,8 +1477,8 @@ export class AreasManejo
       type: 'fill',
       source: 'fazenda-boundary',
       paint: {
-        'fill-color': '#f1c232',
-        'fill-opacity': 0.05
+        'fill-color': '#f5c842',
+        'fill-opacity': 0.12
       }
     });
 
@@ -1564,12 +1487,8 @@ export class AreasManejo
       type: 'line',
       source: 'fazenda-boundary',
       paint: {
-        'line-color': '#f1c232',
-        'line-width': 3,
-        'line-dasharray': [
-          2,
-          1.5
-        ]
+        'line-color': '#ffd54a',
+        'line-width': 4.5
       }
     });
   }
@@ -1606,6 +1525,10 @@ export class AreasManejo
             id: area.id,
             nome: area.nome,
             tipo: area.tipo,
+            cor:
+              this.corArea(
+                area
+              ),
             selecionada:
               area.id ===
               this.areaSelecionada()
@@ -1651,13 +1574,8 @@ export class AreasManejo
 
       paint: {
         'fill-color': [
-          'match',
-          ['get', 'tipo'],
-          'PASTO',
-          '#3d8a50',
-          'CONFINAMENTO',
-          '#b8752c',
-          '#6f7a73'
+          'get',
+          'cor'
         ],
 
         'fill-opacity': [
@@ -1667,8 +1585,8 @@ export class AreasManejo
             ['get', 'selecionada'],
             1
           ],
-          0.48,
-          0.3
+          0.58,
+          0.38
         ]
       }
     });
@@ -1680,13 +1598,17 @@ export class AreasManejo
 
       paint: {
         'line-color': [
-          'match',
-          ['get', 'tipo'],
-          'PASTO',
-          '#225c32',
-          'CONFINAMENTO',
-          '#7d4818',
-          '#4c5750'
+          'case',
+          [
+            '==',
+            ['get', 'selecionada'],
+            1
+          ],
+          '#ffffff',
+          [
+            'get',
+            'cor'
+          ]
         ],
 
         'line-width': [
@@ -1696,8 +1618,8 @@ export class AreasManejo
             ['get', 'selecionada'],
             1
           ],
-          4,
-          2
+          4.5,
+          2.5
         ]
       }
     });
@@ -1710,15 +1632,68 @@ export class AreasManejo
       this.limiteFazenda()
         ?.geometry;
 
-    if (geometry) {
+    if (
+      !geometry ||
+      !this.map
+    ) {
+      return;
+    }
 
-      this.enquadrarPoligono(
-        geometry,
-        17
+    const bounds =
+      this.obterBounds(
+        geometry
+      );
+
+    /*
+     * O mapa de piquetes é operacional, não um
+     * mapa de navegação geral. O usuário consegue
+     * trabalhar dentro da propriedade e em uma
+     * pequena margem ao redor dela, sem se perder
+     * em outras regiões.
+     */
+    const margem =
+      this.expandirBounds(
+        bounds,
+        0.08
+      );
+
+    this.map.setMinZoom(0);
+    this.map.setMaxBounds(null);
+
+    const camera =
+      this.map.cameraForBounds(
+        bounds,
+        {
+          padding: 70,
+          maxZoom: 18
+        }
+      );
+
+    if (
+      camera?.zoom !== undefined
+    ) {
+
+      this.map.setMinZoom(
+        Math.max(
+          0,
+          camera.zoom - 0.35
+        )
       );
     }
-  }
 
+    this.map.setMaxBounds(
+      margem
+    );
+
+    this.map.fitBounds(
+      bounds,
+      {
+        padding: 70,
+        maxZoom: 18,
+        duration: 650
+      }
+    );
+  }
 
   private enquadrarPoligono(
     geometry: GeoJsonPolygon,
@@ -1761,13 +1736,8 @@ export class AreasManejo
   }
 
 
-  private styleDefinition(
-    modo: ModoMapa
-  ): string | mapboxgl.StyleSpecification {
-
-    if (modo === 'MAPA') {
-      return 'mapbox://styles/mapbox/standard';
-    }
+  private styleDefinition():
+    mapboxgl.StyleSpecification {
 
     return {
       version: 8,
@@ -1798,6 +1768,225 @@ export class AreasManejo
     };
   }
 
+
+  private renderizarFocoFazenda(): void {
+
+    if (!this.map) {
+      return;
+    }
+
+    const geometry =
+      this.limiteFazenda()
+        ?.geometry;
+
+    const ring =
+      geometry?.coordinates?.[0];
+
+    if (
+      !ring ||
+      ring.length < 4
+    ) {
+      return;
+    }
+
+    /*
+     * Máscara visual: a imagem de satélite continua
+     * existindo, mas tudo que está fora da propriedade
+     * fica escurecido. O interior da Fazenda permanece
+     * totalmente legível para desenhar os piquetes.
+     */
+    const worldRing = [
+      [-180, -85],
+      [180, -85],
+      [180, 85],
+      [-180, 85],
+      [-180, -85]
+    ];
+
+    const farmHole =
+      ring
+        .map(point => [
+          point[0],
+          point[1]
+        ])
+        .reverse();
+
+    const data = {
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          worldRing,
+          farmHole
+        ]
+      }
+    } as any;
+
+    const source =
+      this.map.getSource(
+        'farm-focus-mask'
+      ) as mapboxgl.GeoJSONSource | undefined;
+
+    if (source) {
+
+      source.setData(
+        data
+      );
+
+      return;
+    }
+
+    this.map.addSource(
+      'farm-focus-mask',
+      {
+        type: 'geojson',
+        data
+      }
+    );
+
+    this.map.addLayer({
+      id: 'farm-focus-mask',
+      type: 'fill',
+      source: 'farm-focus-mask',
+
+      paint: {
+        'fill-color': '#07110a',
+        'fill-opacity': 0.52
+      }
+    });
+  }
+
+
+  private limitarNavegacaoNaFazenda(): void {
+
+    const geometry =
+      this.limiteFazenda()
+        ?.geometry;
+
+    if (
+      !geometry ||
+      !this.map
+    ) {
+      return;
+    }
+
+    const bounds =
+      this.obterBounds(
+        geometry
+      );
+
+    this.map.setMaxBounds(
+      this.expandirBounds(
+        bounds,
+        0.08
+      )
+    );
+  }
+
+
+  private obterBounds(
+    geometry: GeoJsonPolygon
+  ): mapboxgl.LngLatBounds {
+
+    const bounds =
+      new mapboxgl.LngLatBounds();
+
+    geometry.coordinates
+      .flat()
+      .forEach(point => {
+
+        bounds.extend([
+          point[0],
+          point[1]
+        ]);
+      });
+
+    return bounds;
+  }
+
+
+  private expandirBounds(
+    bounds: mapboxgl.LngLatBounds,
+    percentual: number
+  ): mapboxgl.LngLatBoundsLike {
+
+    const west =
+      bounds.getWest();
+
+    const east =
+      bounds.getEast();
+
+    const south =
+      bounds.getSouth();
+
+    const north =
+      bounds.getNorth();
+
+    const longitudeMargin =
+      Math.max(
+        (east - west) * percentual,
+        0.0005
+      );
+
+    const latitudeMargin =
+      Math.max(
+        (north - south) * percentual,
+        0.0005
+      );
+
+    return [
+      [
+        west - longitudeMargin,
+        south - latitudeMargin
+      ],
+      [
+        east + longitudeMargin,
+        north + latitudeMargin
+      ]
+    ];
+  }
+
+
+  private corPorId(
+    id: string
+  ): string {
+
+    const paleta = [
+      '#2e7d32',
+      '#1565c0',
+      '#ef6c00',
+      '#7b1fa2',
+      '#00838f',
+      '#c62828',
+      '#558b2f',
+      '#6d4c41',
+      '#283593',
+      '#ad1457',
+      '#0277bd',
+      '#9e6b00'
+    ];
+
+    let hash = 0;
+
+    for (
+      let i = 0;
+      i < id.length;
+      i++
+    ) {
+
+      hash =
+        (
+          hash * 31 +
+          id.charCodeAt(i)
+        ) | 0;
+    }
+
+    return paleta[
+      Math.abs(hash) %
+        paleta.length
+    ];
+  }
 
   private calcularAreaHa(
     geometry: GeoJsonPolygon
