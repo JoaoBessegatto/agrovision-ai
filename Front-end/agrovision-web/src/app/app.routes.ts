@@ -120,6 +120,27 @@ export const routes: Routes = [
 
 
   {
+    path: 'onboarding/fazenda/geopoligono/:fazendaId',
+
+    canActivate: [
+      authGuard
+    ],
+
+    data: {
+      onboarding: true
+    },
+
+    loadComponent: () =>
+      import(
+        './pages/geopoligono-fazenda/geopoligono-fazenda'
+      )
+        .then(
+          m => m.GeopoligonoFazenda
+        )
+  },
+
+
+  {
     path: 'app',
 
     canActivate: [
@@ -221,6 +242,19 @@ export const routes: Routes = [
           )
             .then(
               m => m.Funcionarios
+            )
+      },
+
+
+      {
+        path: 'fazenda/area',
+
+        loadComponent: () =>
+          import(
+            './pages/geopoligono-fazenda/geopoligono-fazenda'
+          )
+            .then(
+              m => m.GeopoligonoFazenda
             )
       }
 
