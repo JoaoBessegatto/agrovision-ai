@@ -1125,6 +1125,35 @@ export class GeopoligonoFazenda
   }
 
 
+  rebanhosDisponiveisPiquete():
+    RebanhoResponse[] {
+
+    const ocupados =
+      new Set(
+        (
+          this.resumoAreas()
+            ?.areas ?? []
+        )
+          .map(area =>
+            area.rebanhoId
+          )
+          .filter(
+            (
+              id
+            ): id is string =>
+              Boolean(id)
+          )
+      );
+
+    return this.rebanhos()
+      .filter(rebanho =>
+        !ocupados.has(
+          rebanho.id
+        )
+      );
+  }
+
+
   alterarMapa(
     modo: ModoMapa
   ): void {
