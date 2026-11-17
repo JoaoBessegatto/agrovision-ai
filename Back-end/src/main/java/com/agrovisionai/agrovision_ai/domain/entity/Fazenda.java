@@ -43,8 +43,22 @@ public class Fazenda {
     @Column(nullable = false)
     private TipoExploracao exploracao;
 
+    /*
+     * Campo legado mantido temporariamente por compatibilidade
+     * com versões anteriores do DTO. A delimitação oficial
+     * passa a ser FazendaGeopoligono.geometria.
+     */
+    @Deprecated
     @Column(columnDefinition = "TEXT")
     private String geopoligono;
+
+    @OneToOne(
+            mappedBy = "fazenda",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private FazendaGeopoligono limiteGeografico;
 
     @ManyToOne
     @JoinColumn(name = "produtor_id")
