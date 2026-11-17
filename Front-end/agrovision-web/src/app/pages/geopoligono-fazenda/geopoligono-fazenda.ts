@@ -702,6 +702,429 @@ export class GeopoligonoFazenda
   }
 
 
+  abrirPiquetes(): void {
+
+    if (
+      this.onboarding ||
+      !this.geopoligonoSalvo()
+        ?.configurado ||
+      !this.geometriaAtual()
+    ) {
+
+      this.errorMessage.set(
+        'Salve primeiro o limite da Fazenda para delimitar os piquetes.'
+      );
+
+      return;
+    }
+
+    this.limparMensagens();
+
+    this.modoGestao.set(
+      'PIQUETES'
+    );
+
+    this.cancelarNovoPiquete(
+      false
+    );
+
+    if (
+      this.sateliteConfigurado() &&
+      this.modoMapa() !==
+        'SATELITE'
+    ) {
+
+      this.alterarMapa(
+        'SATELITE'
+      );
+
+      return;
+    }
+
+    this.aplicarDadosNoMapa();
+  }
+
+
+  abrirLimiteFazenda(): void {
+
+    this.limparMensagens();
+
+    this.modoGestao.set(
+      'LIMITE'
+    );
+
+    this.cancelarNovoPiquete(
+      false
+    );
+
+    if (this.map) {
+
+      this.map.setMaxBounds(
+        null
+      );
+
+      this.map.setMinZoom(
+        0
+      );
+    }
+
+    this.removerCamadasPiquetes();
+    this.aplicarDadosNoMapa();
+  }
+
+
+  iniciarNovoPiquete(): void {
+
+    if (
+      !this.podeEditar() ||
+      this.modoGestao() !==
+        'PIQUETES' ||
+      !this.draw
+    ) {
+      return;
+    }
+
+    this.limparMensagens();
+
+    this.sincronizandoMapa =
+      true;
+
+    this.draw.clear();
+
+    this.sincronizandoMapa =
+      false;
+
+    this.featureId = null;
+
+    this.piqueteGeometria.set(
+      null
+    );
+
+    this.piqueteAreaPreviewHa.set(
+      null
+    );
+
+    this.ultimaGeometriaPiqueteValida =
+      null;
+
+    this.piqueteSelecionado.set(
+      null
+    );
+
+    this.piqueteForm.reset({
+      nome: '',
+      descricao: '',
+      tipo: 'PASTO',
+      capacidadeMaximaCabecas: null,
+      rebanhoId: ''
+    });
+
+    this.modoEdicao.set(
+      'DESENHAR'
+    );
+
+    this.draw.setMode(
+      'polygon'
+    );
+  }
+
+
+  cancelarNovoPiquete(
+    reRenderizar = true
+  ): void {
+
+    this.sincronizandoMapa =
+      true;
+
+    this.draw?.clear();
+
+    this.sincronizandoMapa =
+      false;
+
+    this.featureId = null;
+
+    this.piqueteGeometria.set(
+      null
+    );
+
+    this.piqueteAreaPreviewHa.set(
+      null
+    );
+
+    this.ultimaGeometriaPiqueteValida =
+      null;
+
+    this.modoEdicao.set(
+      'NAVEGAR'
+    );
+
+    this.piqueteForm.reset({
+      nome: '',
+      descricao: '',
+      tipo: 'PASTO',
+      capacidadeMaximaCabecas: null,
+      rebanhoId: ''
+    });
+
+    if (reRenderizar) {
+      this.renderizarCamadasPiquetes();
+    }
+  }
+
+
+  alterarTipoPiquete(): void {
+
+    if (
+      this.piqueteForm.controls
+        .tipo.value === 'PASTO'
+    ) {
+
+      this.piqueteForm.controls
+        .capacidadeMaximaCabecas
+        .setValue(
+          null
+        );
+    }
+  }
+
+
+  salvarPiquete(): void {
+
+    const fazendaId =
+      this.loadedFazendaId;
+
+    const geometry =
+      this.piqueteGeometria();
+
+    if (
+      !fazendaId ||
+      !geometry ||
+      !this.podeEditar()
+    ) {
+
+      this.errorMessage.set(
+        'Desenhe o piquete dentro do limite da Fazenda antes de salvar.'
+      );
+
+      return;
+    }
+
+    if (this.piqueteForm.invalid) {
+
+      this.piqueteForm
+        .markAllAsTouched();
+
+      return;
+    }
+
+    const raw =
+      this.piqueteForm
+        .getRawValue();
+
+    const descricao =
+      raw.descricao?.trim() ?? '';
+
+    const request:
+      AreaManejoRequest = {
+
+        nome:
+          raw.nome?.trim() ?? '',
+
+        descricao:
+          descricao
+            ? descricao
+            : null,
+
+        tipo:
+          (
+            raw.tipo ??
+            'PASTO'
+          ) as TipoAreaManejo,
+
+        geometry,
+
+        capacidadeMaximaCabecas:
+          raw.tipo ===
+            'CONFINAMENTO'
+            ? raw
+                .capacidadeMaximaCabecas
+            : null,
+
+        rebanhoId:
+          raw.rebanhoId
+            ? raw.rebanhoId
+            : null
+      };
+
+    this.piqueteSaving.set(
+      true
+    );
+
+    this.limparMensagens();
+
+    this.areaManejoService
+      .cadastrar(
+        fazendaId,
+        request
+      )
+      .pipe(
+        finalize(() =>
+          this.piqueteSaving.set(
+            false
+          )
+        )
+      )
+      .subscribe({
+
+        next: area => {
+
+          this.successMessage.set(
+            `Piquete "${area.nome}" salvo com sucesso.`
+          );
+
+          this.cancelarNovoPiquete(
+            false
+          );
+
+          this.carregarAreasManejo(
+            fazendaId,
+            area.id
+          );
+        },
+
+        error: error => {
+
+          this.errorMessage.set(
+            this.extrairMensagemErro(
+              error,
+              'Não foi possível salvar o piquete.'
+            )
+          );
+        }
+      });
+  }
+
+
+  selecionarPiquete(
+    area: AreaManejo
+  ): void {
+
+    if (
+      this.modoEdicao() !==
+        'NAVEGAR'
+    ) {
+      return;
+    }
+
+    this.piqueteSelecionado.set(
+      area
+    );
+
+    this.renderizarCamadasPiquetes();
+
+    this.enquadrarPoligono(
+      area.geometry
+    );
+  }
+
+
+  excluirPiquete(
+    area: AreaManejo
+  ): void {
+
+    if (
+      !this.podeEditar() ||
+      this.piqueteDeleting()
+    ) {
+      return;
+    }
+
+    const confirmou =
+      window.confirm(
+        `Excluir o piquete "${area.nome}"? O rebanho associado não será excluído.`
+      );
+
+    if (!confirmou) {
+      return;
+    }
+
+    this.piqueteDeleting.set(
+      true
+    );
+
+    this.limparMensagens();
+
+    this.areaManejoService
+      .deletar(
+        area.id
+      )
+      .pipe(
+        finalize(() =>
+          this.piqueteDeleting.set(
+            false
+          )
+        )
+      )
+      .subscribe({
+
+        next: () => {
+
+          if (
+            this.piqueteSelecionado()
+              ?.id === area.id
+          ) {
+
+            this.piqueteSelecionado.set(
+              null
+            );
+          }
+
+          this.successMessage.set(
+            'Piquete excluído.'
+          );
+
+          if (this.loadedFazendaId) {
+
+            this.carregarAreasManejo(
+              this.loadedFazendaId
+            );
+          }
+        },
+
+        error: error => {
+
+          this.errorMessage.set(
+            this.extrairMensagemErro(
+              error,
+              'Não foi possível excluir o piquete.'
+            )
+          );
+        }
+      });
+  }
+
+
+  corPiquete(
+    area: AreaManejo
+  ): string {
+
+    return this.corPorId(
+      area.id
+    );
+  }
+
+
+  labelTipoPiquete(
+    tipo: TipoAreaManejo
+  ): string {
+
+    return tipo ===
+      'CONFINAMENTO'
+        ? 'Confinamento'
+        : 'Pasto';
+  }
+
+
   alterarMapa(
     modo: ModoMapa
   ): void {
