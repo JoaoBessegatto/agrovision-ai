@@ -46,6 +46,10 @@ import {
 } from 'terra-draw-mapbox-gl-adapter';
 
 import {
+  MAPBOX_ACCESS_TOKEN
+} from '../../core/config/mapbox.config';
+
+import {
   MAPTILER_API_KEY
 } from '../../core/config/maptiler.config';
 
@@ -198,6 +202,9 @@ export class AreasManejo
 
   readonly mapaConfigurado =
     signal(
+      MAPBOX_ACCESS_TOKEN
+        .trim()
+        .startsWith('pk.') &&
       MAPTILER_API_KEY
         .trim()
         .length > 0
@@ -1088,6 +1095,9 @@ export class AreasManejo
 
     this.map =
       new mapboxgl.Map({
+
+        accessToken:
+          MAPBOX_ACCESS_TOKEN,
 
         container:
           this.mapContainer
