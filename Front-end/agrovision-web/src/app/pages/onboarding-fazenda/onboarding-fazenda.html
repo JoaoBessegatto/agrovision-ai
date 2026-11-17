@@ -358,8 +358,11 @@
             </span>
 
             <span class="disclosure-text">
-              <strong>Localização no mapa</strong>
-              <small>Opcional. Você pode informar depois.</small>
+              <strong>Ponto de referência no mapa</strong>
+              <small>
+                Opcional. O limite completo poderá ser desenhado
+                na próxima etapa.
+              </small>
             </span>
 
             <mat-icon>
@@ -445,19 +448,6 @@
               </div>
 
 
-              <div class="field full">
-
-                <label for="geopoligono">Geopolígono</label>
-
-                <textarea
-                  id="geopoligono"
-                  formControlName="geopoligono"
-                  rows="4"
-                  placeholder="Cole aqui apenas se já tiver esse dado."
-                ></textarea>
-
-              </div>
-
             </div>
 
           }
@@ -489,8 +479,8 @@
 
             } @else {
 
-              Concluir configuração
-              <mat-icon>check</mat-icon>
+              Continuar para o mapa
+              <mat-icon>arrow_forward</mat-icon>
 
             }
 
