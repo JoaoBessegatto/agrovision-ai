@@ -153,6 +153,16 @@
         </span>
 
         <a
+          routerLink="/app/fazenda/area"
+          routerLinkActive="active"
+          ariaCurrentWhenActive="page"
+          (click)="fecharSidebar()"
+        >
+          <mat-icon>map</mat-icon>
+          <span>Área da fazenda</span>
+        </a>
+
+        <a
           routerLink="/app/funcionarios"
           routerLinkActive="active"
           ariaCurrentWhenActive="page"
