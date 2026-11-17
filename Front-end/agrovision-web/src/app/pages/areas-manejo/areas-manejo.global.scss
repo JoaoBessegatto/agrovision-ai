@@ -1,10 +1,6 @@
 @use '../../shared/styles/page-shared';
 
 app-areas-manejo {
-  :host {
-    display: block;
-  }
-
   * {
     box-sizing: border-box;
   }
