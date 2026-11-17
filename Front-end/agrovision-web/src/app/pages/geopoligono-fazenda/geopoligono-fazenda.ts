@@ -272,6 +272,10 @@ export class GeopoligonoFazenda
       null
     );
 
+
+  readonly piqueteFinalizado =
+    signal(false);
+
   readonly piqueteSaving =
     signal(false);
 
@@ -809,6 +813,10 @@ export class GeopoligonoFazenda
       null
     );
 
+    this.piqueteFinalizado.set(
+      false
+    );
+
     this.piqueteSelecionado.set(
       null
     );
@@ -853,6 +861,10 @@ export class GeopoligonoFazenda
       null
     );
 
+    this.piqueteFinalizado.set(
+      false
+    );
+
     this.modoEdicao.set(
       'NAVEGAR'
     );
@@ -889,6 +901,10 @@ export class GeopoligonoFazenda
 
   salvarPiquete(): void {
 
+    if (this.piqueteSaving()) {
+      return;
+    }
+
     const fazendaId =
       this.loadedFazendaId;
 
@@ -898,11 +914,12 @@ export class GeopoligonoFazenda
     if (
       !fazendaId ||
       !geometry ||
+      !this.piqueteFinalizado() ||
       !this.podeEditar()
     ) {
 
       this.errorMessage.set(
-        'Desenhe o piquete dentro do limite da Fazenda antes de salvar.'
+        'Conclua o desenho do piquete dentro do limite da Fazenda antes de salvar.'
       );
 
       return;
@@ -913,12 +930,51 @@ export class GeopoligonoFazenda
       this.piqueteForm
         .markAllAsTouched();
 
+      this.errorMessage.set(
+        'Preencha os campos obrigatórios do piquete.'
+      );
+
       return;
     }
+
+    const normalizada =
+      this.normalizarPiqueteAoLimite(
+        geometry
+      );
+
+    if (!normalizada.valida) {
+
+      this.piqueteFinalizado.set(
+        false
+      );
+
+      this.errorMessage.set(
+        'O piquete precisa ficar totalmente dentro do limite amarelo da Fazenda.'
+      );
+
+      return;
+    }
+
+    const geometryRequest =
+      this.normalizarPrecisaoGeometria(
+        normalizada.geometry
+      );
 
     const raw =
       this.piqueteForm
         .getRawValue();
+
+    const nome =
+      raw.nome?.trim() ?? '';
+
+    if (!nome) {
+
+      this.errorMessage.set(
+        'Informe um nome para o piquete.'
+      );
+
+      return;
+    }
 
     const descricao =
       raw.descricao?.trim() ?? '';
@@ -926,8 +982,7 @@ export class GeopoligonoFazenda
     const request:
       AreaManejoRequest = {
 
-        nome:
-          raw.nome?.trim() ?? '',
+        nome,
 
         descricao:
           descricao
@@ -940,7 +995,8 @@ export class GeopoligonoFazenda
             'PASTO'
           ) as TipoAreaManejo,
 
-        geometry,
+        geometry:
+          geometryRequest,
 
         capacidadeMaximaCabecas:
           raw.tipo ===
@@ -993,16 +1049,29 @@ export class GeopoligonoFazenda
 
         error: error => {
 
-          this.errorMessage.set(
+          const mensagem =
             this.extrairMensagemErro(
               error,
               'Não foi possível salvar o piquete.'
-            )
+            );
+
+          console.error(
+            'Erro ao salvar piquete:',
+            {
+              status:
+                error?.status,
+              mensagem,
+              resposta:
+                error?.error
+            }
+          );
+
+          this.errorMessage.set(
+            mensagem
           );
         }
       });
   }
-
 
   selecionarPiquete(
     area: AreaManejo
@@ -1501,7 +1570,9 @@ export class GeopoligonoFazenda
         dragRotate: false,
         pitchWithRotate: false,
         touchPitch: false,
-        projection: 'mercator'
+        projection: 'mercator',
+        performanceMetricsCollection:
+          false
       });
 
 
@@ -1734,6 +1805,11 @@ export class GeopoligonoFazenda
 
             this.modoEdicao.set(
               'EDITAR'
+            );
+
+            this.piqueteFinalizado.set(
+              this.piqueteGeometria() !==
+                null
             );
 
             this.draw?.setMode(
@@ -2203,6 +2279,10 @@ export class GeopoligonoFazenda
 
     if (!normalizada.valida) {
 
+      this.piqueteFinalizado.set(
+        false
+      );
+
       this.piqueteGeometria.set(
         null
       );
@@ -2234,6 +2314,16 @@ export class GeopoligonoFazenda
     this.piqueteGeometria.set(
       geometryFinal
     );
+
+    if (
+      this.modoEdicao() ===
+        'EDITAR'
+    ) {
+
+      this.piqueteFinalizado.set(
+        true
+      );
+    }
 
     this.piqueteAreaPreviewHa.set(
       this.calcularAreaHa(
@@ -2302,6 +2392,10 @@ export class GeopoligonoFazenda
 
       this.draw.selectFeature(
         this.featureId as string
+      );
+
+      this.piqueteFinalizado.set(
+        true
       );
     }
   }
@@ -2887,14 +2981,113 @@ export class GeopoligonoFazenda
           return normalizados;
         });
 
-    return {
-      geometry: {
+    const geometryNormalizada:
+      GeoJsonPolygon = {
+
         type: 'Polygon',
         coordinates
-      },
+      };
+
+    if (
+      valida &&
+      !this.segmentosPiqueteDentroDoLimite(
+        geometryNormalizada,
+        limite
+      )
+    ) {
+
+      valida = false;
+    }
+
+    return {
+      geometry:
+        geometryNormalizada,
       ajustada,
       valida
     };
+  }
+
+
+  private segmentosPiqueteDentroDoLimite(
+    geometry: GeoJsonPolygon,
+    limite: GeoJsonPolygon
+  ): boolean {
+
+    for (
+      const ring of geometry.coordinates
+    ) {
+
+      for (
+        let i = 0;
+        i < ring.length - 1;
+        i++
+      ) {
+
+        const inicio =
+          ring[i];
+
+        const fim =
+          ring[i + 1];
+
+        /*
+         * Em uma Fazenda côncava, dois vértices podem
+         * estar dentro enquanto o segmento entre eles
+         * atravessa uma região externa. Amostramos a
+         * linha para bloquear esse caso antes do POST.
+         */
+        for (
+          let passo = 1;
+          passo < 20;
+          passo++
+        ) {
+
+          const t =
+            passo / 20;
+
+          const ponto = [
+            inicio[0] +
+              (
+                fim[0] -
+                inicio[0]
+              ) * t,
+            inicio[1] +
+              (
+                fim[1] -
+                inicio[1]
+              ) * t
+          ];
+
+          if (
+            this.pontoDentroPoligono(
+              ponto,
+              limite
+            )
+          ) {
+            continue;
+          }
+
+          const proximo =
+            this.pontoMaisProximoNoLimite(
+              ponto,
+              limite
+            );
+
+          if (
+            !proximo ||
+            this.distanciaPixels(
+              ponto,
+              proximo
+            ) >
+              this.toleranciaSnapPiquetePx
+          ) {
+
+            return false;
+          }
+        }
+      }
+    }
+
+    return true;
   }
 
 
