@@ -969,7 +969,19 @@ export class GeopoligonoFazenda
 
     this.draw.on(
       'change',
-      () => {
+      (_ids, _type, context) => {
+
+        /*
+         * addFeatures/clear usados para carregar
+         * dados salvos não representam edição
+         * do produtor.
+         */
+        if (
+          context?.origin === 'api'
+        ) {
+          return;
+        }
+
         this.sincronizarDesenho();
       }
     );
