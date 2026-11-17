@@ -11,6 +11,7 @@ import com.agrovisionai.agrovision_ai.domain.enums.SituacaoAnimal;
 import com.agrovisionai.agrovision_ai.exception.BusinessException;
 import com.agrovisionai.agrovision_ai.exception.ResouceNotFoundException;
 import com.agrovisionai.agrovision_ai.repository.AnimalRepository;
+import com.agrovisionai.agrovision_ai.repository.AreaManejoRepository;
 import com.agrovisionai.agrovision_ai.repository.RebanhoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,15 +24,18 @@ public class RebanhoService {
 
     private final RebanhoRepository rebanhoRepository;
     private final AnimalRepository animalRepository;
+    private final AreaManejoRepository areaManejoRepository;
     private final FazendaAccessService fazendaAccessService;
 
     public RebanhoService(
             RebanhoRepository rebanhoRepository,
             AnimalRepository animalRepository,
+            AreaManejoRepository areaManejoRepository,
             FazendaAccessService fazendaAccessService
     ) {
         this.rebanhoRepository = rebanhoRepository;
         this.animalRepository = animalRepository;
+        this.areaManejoRepository = areaManejoRepository;
         this.fazendaAccessService = fazendaAccessService;
     }
 
@@ -175,6 +179,17 @@ public class RebanhoService {
                     "Não é possível excluir um rebanho que possui animais cadastrados."
             );
         }
+
+        areaManejoRepository
+                .findByRebanhoId(
+                        rebanhoId
+                )
+                .ifPresent(area -> {
+                    area.setRebanho(null);
+                    area.setAtualizadoEm(
+                            java.time.LocalDateTime.now()
+                    );
+                });
 
         rebanhoRepository.delete(rebanho);
     }
