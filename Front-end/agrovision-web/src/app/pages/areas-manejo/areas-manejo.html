@@ -242,47 +242,25 @@
         <div class="legend">
 
           <span>
-            <i class="legend-dot pasture"></i>
-            Pasto
-          </span>
-
-          <span>
-            <i class="legend-dot confinement"></i>
-            Confinamento
-          </span>
-
-          <span>
             <i class="legend-line"></i>
             Limite da fazenda
+          </span>
+
+          <span>
+            <i class="legend-paddock"></i>
+            Cada cor representa uma área
           </span>
 
         </div>
 
 
-        <div class="map-style-toggle">
+        <div class="satellite-mode">
+          <mat-icon>satellite_alt</mat-icon>
 
-          <button
-            type="button"
-            [class.active]="
-              modoMapa() === 'SATELITE'
-            "
-            (click)="alterarMapa('SATELITE')"
-          >
-            <mat-icon>satellite_alt</mat-icon>
-            Satélite
-          </button>
-
-          <button
-            type="button"
-            [class.active]="
-              modoMapa() === 'MAPA'
-            "
-            (click)="alterarMapa('MAPA')"
-          >
-            <mat-icon>map</mat-icon>
-            Mapa
-          </button>
-
+          <div>
+            <strong>Satélite</strong>
+            <small>Foco na propriedade</small>
+          </div>
         </div>
 
       </div>
@@ -291,6 +269,25 @@
       <div class="map-layout">
 
         <div class="map-wrapper">
+
+          @if (!mapaConfigurado()) {
+
+            <div class="map-config-required">
+
+              <mat-icon>satellite_alt</mat-icon>
+
+              <strong>
+                Imagem de satélite não configurada
+              </strong>
+
+              <span>
+                Configure o token público do Mapbox e a chave
+                do MapTiler para habilitar o mapa de piquetes.
+              </span>
+
+            </div>
+
+          }
 
           <div
             #mapContainer
@@ -932,6 +929,7 @@
           <button
             type="button"
             class="area-card"
+            [style.border-left-color]="corArea(area)"
             [class.selected]="
               areaSelecionada()?.id === area.id
             "
@@ -943,14 +941,23 @@
 
             <div class="area-card-header">
 
-              <span
-                class="type-chip"
+              <div class="area-card-type">
+
+                <i
+                  class="area-color-dot"
+                  [style.background]="corArea(area)"
+                ></i>
+
+                <span
+                  class="type-chip"
                 [class.confinement]="
                   area.tipo === 'CONFINAMENTO'
                 "
-              >
-                {{ labelTipo(area.tipo) }}
-              </span>
+                >
+                  {{ labelTipo(area.tipo) }}
+                </span>
+
+              </div>
 
               <strong>
                 {{
