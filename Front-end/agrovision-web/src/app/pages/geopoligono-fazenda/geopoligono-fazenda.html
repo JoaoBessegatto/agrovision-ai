@@ -588,8 +588,8 @@
 
                         <span>
                           Arraste os vértices para ajustar.
-                          Próximo à borda amarela o ponto
-                          encaixa automaticamente.
+                          Pontos próximos à borda são
+                          normalizados para a divisa ao salvar.
                         </span>
                       </div>
 
@@ -655,7 +655,8 @@
                       class="save-button"
                       [disabled]="
                         piqueteSaving() ||
-                        !piqueteGeometria()
+                        !piqueteGeometria() ||
+                        !piqueteFinalizado()
                       "
                     >
                       @if (piqueteSaving()) {
