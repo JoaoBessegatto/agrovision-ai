@@ -32,7 +32,8 @@
             ],
             "styles": [
               "node_modules/mapbox-gl/dist/mapbox-gl.css",
-              "src/styles.scss"
+              "src/styles.scss",
+              "src/app/pages/areas-manejo/areas-manejo.global.scss"
             ]
           },
           "configurations": {
