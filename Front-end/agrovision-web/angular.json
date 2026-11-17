@@ -33,7 +33,8 @@
             "styles": [
               "node_modules/mapbox-gl/dist/mapbox-gl.css",
               "src/styles.scss",
-              "src/app/pages/areas-manejo/areas-manejo.global.scss"
+              "src/app/pages/areas-manejo/areas-manejo.global.scss",
+              "src/app/pages/geopoligono-fazenda/geopoligono-fazenda.global.scss"
             ]
           },
           "configurations": {
