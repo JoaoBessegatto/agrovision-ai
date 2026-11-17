@@ -545,9 +545,9 @@ public class AreaManejoService {
                             )
             ) {
                 throw new BusinessException(
-                        "A área desenhada se sobrepõe à área "" +
+                        "A área desenhada se sobrepõe à área '" +
                                 existente.getNome() +
-                                "". Ajuste os limites antes de salvar."
+                                "'. Ajuste os limites antes de salvar."
                 );
             }
         }
@@ -588,9 +588,9 @@ public class AreaManejoService {
                                     .equals(areaAtualId)
                     ) {
                         throw new BusinessException(
-                                "Este rebanho já está associado à área "" +
+                                "Este rebanho já está associado à área '" +
                                         areaExistente.getNome() +
-                                        ""."
+                                        "'."
                         );
                     }
                 });
