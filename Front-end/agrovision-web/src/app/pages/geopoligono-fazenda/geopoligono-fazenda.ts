@@ -207,6 +207,12 @@ export class GeopoligonoFazenda
   private featureId:
     string | number | null = null;
 
+  /*
+   * Evita tratar clear/addFeatures usados para
+   * carregar geometria salva como edição manual.
+   */
+  private sincronizandoMapa = false;
+
 
   constructor() {
 
@@ -976,14 +982,7 @@ export class GeopoligonoFazenda
 
                     draggable: true,
 
-                    deletable: true,
-
-                    validation: (
-                      feature
-                    ) =>
-                      ValidateNotSelfIntersecting(
-                        feature
-                      )
+                    deletable: true
                   }
                 }
               }
@@ -1009,16 +1008,9 @@ export class GeopoligonoFazenda
 
     this.draw.on(
       'change',
-      (_ids, _type, context) => {
+      () => {
 
-        /*
-         * addFeatures/clear usados para carregar
-         * dados salvos não representam edição
-         * do produtor.
-         */
-        if (
-          context?.origin === 'api'
-        ) {
+        if (this.sincronizandoMapa) {
           return;
         }
 
@@ -1060,6 +1052,8 @@ export class GeopoligonoFazenda
       return;
     }
 
+    this.sincronizandoMapa = true;
+
     this.draw.clear();
     this.featureId = null;
 
@@ -1095,8 +1089,12 @@ export class GeopoligonoFazenda
         );
       }
 
+      this.sincronizandoMapa = false;
+
       return;
     }
+
+    this.sincronizandoMapa = false;
 
 
     const fazenda =
