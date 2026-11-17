@@ -105,8 +105,7 @@
     </section>
 
   } @else if (
-    limiteFazenda() &&
-    !limiteFazenda()!.configurado
+    limiteFazenda()?.configurado === false
   ) {
 
     <section class="boundary-required">
