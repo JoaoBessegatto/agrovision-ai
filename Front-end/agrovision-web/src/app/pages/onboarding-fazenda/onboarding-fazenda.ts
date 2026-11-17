@@ -305,10 +305,6 @@ export class OnboardingFazenda
             180
           )
         ]
-      ],
-
-      geopoligono: [
-        ''
       ]
 
     });
@@ -458,10 +454,12 @@ export class OnboardingFazenda
           form.longitude
         ),
 
-      geopoligono:
-        form.geopoligono.trim()
-          ? form.geopoligono.trim()
-          : null
+      /*
+       * O limite da fazenda é configurado
+       * na etapa visual seguinte. Mantemos
+       * o campo legado da API vazio.
+       */
+      geopoligono: null
 
     };
 
@@ -481,10 +479,11 @@ export class OnboardingFazenda
 
       .subscribe({
 
-        next: () => {
+        next: fazenda => {
 
           this.router.navigate([
-            '/app'
+            '/onboarding/fazenda/geopoligono',
+            fazenda.id
           ]);
 
         },
