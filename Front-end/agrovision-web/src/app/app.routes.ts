@@ -261,14 +261,8 @@ export const routes: Routes = [
 
       {
         path: 'fazenda/piquetes',
-
-        loadComponent: () =>
-          import(
-            './pages/areas-manejo/areas-manejo'
-          )
-            .then(
-              m => m.AreasManejo
-            )
+        redirectTo: 'fazenda/area',
+        pathMatch: 'full'
       }
 
     ]
