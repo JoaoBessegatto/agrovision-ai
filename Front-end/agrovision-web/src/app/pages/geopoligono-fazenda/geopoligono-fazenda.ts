@@ -45,6 +45,10 @@ import {
 } from '../../core/config/mapbox.config';
 
 import {
+  MAPTILER_API_KEY
+} from '../../core/config/maptiler.config';
+
+import {
   FazendaService
 } from '../../core/fazenda/services/fazenda.service';
 
@@ -180,11 +184,24 @@ export class GeopoligonoFazenda
         .startsWith('pk.')
     );
 
+  readonly sateliteConfigurado =
+    signal(
+      MAPTILER_API_KEY
+        .trim()
+        .length > 0
+    );
+
   readonly mapaPronto =
     signal(false);
 
   readonly modoMapa =
-    signal<ModoMapa>('SATELITE');
+    signal<ModoMapa>(
+      MAPTILER_API_KEY
+        .trim()
+        .length > 0
+          ? 'SATELITE'
+          : 'MAPA'
+    );
 
   readonly modoEdicao =
     signal<ModoEdicao>('NAVEGAR');
@@ -569,6 +586,18 @@ export class GeopoligonoFazenda
     modo: ModoMapa
   ): void {
 
+    if (
+      modo === 'SATELITE' &&
+      !this.sateliteConfigurado()
+    ) {
+
+      this.errorMessage.set(
+        'Configure a chave pública do MapTiler para habilitar a imagem de satélite.'
+      );
+
+      return;
+    }
+
     this.modoMapa.set(
       modo
     );
@@ -591,18 +620,12 @@ export class GeopoligonoFazenda
     this.mapaPronto.set(false);
 
     this.map.setStyle(
-      this.styleUrl(modo)
+      this.styleDefinition(modo)
     );
 
     this.map.once(
       'style.load',
       () => {
-
-        if (
-          modo === 'SATELITE'
-        ) {
-          this.configurarSateliteLimpo();
-        }
 
         this.inicializarTerraDraw();
 
@@ -874,24 +897,9 @@ export class GeopoligonoFazenda
             .nativeElement,
 
         style:
-          this.styleUrl(
+          this.styleDefinition(
             this.modoMapa()
           ),
-
-        config:
-          this.modoMapa() === 'SATELITE'
-            ? {
-                basemap: {
-                  showPedestrianRoads: false,
-                  showPlaceLabels: false,
-                  showPointOfInterestLabels: false,
-                  showRoadLabels: false,
-                  showTransitLabels: false,
-                  showAdminBoundaries: false,
-                  showRoadsAndTransit: false
-                }
-              }
-            : undefined,
 
         center: [
           -51.9253,
@@ -945,13 +953,6 @@ export class GeopoligonoFazenda
 
         this.mapLoaded = true;
 
-        if (
-          this.modoMapa() ===
-          'SATELITE'
-        ) {
-          this.configurarSateliteLimpo();
-        }
-
         this.mapaPronto.set(
           true
         );
@@ -986,7 +987,7 @@ export class GeopoligonoFazenda
           );
 
           this.errorMessage.set(
-            'A imagem de satélite não pôde ser carregada. Verifique o token do Mapbox e tente novamente.'
+            'A imagem de satélite não pôde ser carregada. Verifique a chave do MapTiler e tente novamente.'
           );
         }
       }
@@ -1421,67 +1422,47 @@ export class GeopoligonoFazenda
   }
 
 
-  private styleUrl(
+  private styleDefinition(
     modo: ModoMapa
-  ): string {
+  ): string | mapboxgl.StyleSpecification {
 
-    return modo === 'SATELITE'
-      ? 'mapbox://styles/mapbox/standard-satellite'
-      : 'mapbox://styles/mapbox/standard';
-  }
-
-
-  private configurarSateliteLimpo(): void {
-
-    if (!this.map) {
-      return;
+    if (modo === 'MAPA') {
+      return 'mapbox://styles/mapbox/standard';
     }
 
     /*
-     * Standard Satellite é o estilo atual recomendado
-     * pelo Mapbox. Mantemos somente a fotografia,
-     * removendo elementos cartográficos que atrapalham
-     * a leitura de pastos, cercas e divisas.
+     * O Mapbox permanece como renderer e para o mapa
+     * vetorial/geocoding. A fotografia de satélite vem
+     * do MapTiler para não depender do Raster Tiles API
+     * do plano de avaliação do Mapbox.
      */
-    const configuracoes:
-      Array<[string, boolean]> = [
+    return {
+      version: 8,
 
-        ['showPedestrianRoads', false],
-        ['showPlaceLabels', false],
-        ['showPointOfInterestLabels', false],
-        ['showRoadLabels', false],
-        ['showTransitLabels', false],
-        ['showAdminBoundaries', false],
-        ['showRoadsAndTransit', false]
-      ];
+      sources: {
+        'agrovision-satellite': {
+          type: 'raster',
+          url:
+            'https://api.maptiler.com/tiles/satellite-v2/tiles.json' +
+            `?key=${encodeURIComponent(MAPTILER_API_KEY)}`,
+          tileSize: 512,
+          attribution:
+            '© MapTiler'
+        }
+      },
 
-    for (
-      const [
-        propriedade,
-        valor
-      ] of configuracoes
-    ) {
+      layers: [
+        {
+          id: 'agrovision-satellite',
+          type: 'raster',
+          source: 'agrovision-satellite',
 
-      try {
-
-        this.map.setConfigProperty(
-          'basemap',
-          propriedade,
-          valor
-        );
-
-      } catch {
-
-        /*
-         * A configuração visual não deve impedir
-         * o carregamento da imagem caso alguma
-         * propriedade mude entre versões.
-         */
-      }
-    }
-
-    this.map.setPitch(0);
-    this.map.setBearing(0);
+          paint: {
+            'raster-fade-duration': 0
+          }
+        }
+      ]
+    };
   }
 
 
