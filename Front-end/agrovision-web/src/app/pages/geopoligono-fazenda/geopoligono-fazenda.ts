@@ -343,7 +343,12 @@ export class GeopoligonoFazenda
       'select'
     );
 
-    this.draw.deselectFeature();
+    if (this.featureId !== null) {
+
+      this.draw.deselectFeature(
+        this.featureId as string
+      );
+    }
 
     this.modoEdicao.set(
       'NAVEGAR'
@@ -559,8 +564,39 @@ export class GeopoligonoFazenda
       return;
     }
 
+    const geometry =
+      this.geometriaAtual();
+
+    try {
+      this.draw?.stop();
+    } catch {
+      // A troca de estilo recria as camadas do Terra Draw.
+    }
+
+    this.draw = null;
+    this.featureId = null;
+    this.mapaPronto.set(false);
+
     this.map.setStyle(
       this.styleUrl(modo)
+    );
+
+    this.map.once(
+      'style.load',
+      () => {
+
+        this.inicializarTerraDraw();
+
+        if (geometry) {
+          this.geometriaAtual.set(
+            geometry
+          );
+        }
+
+        this.mapaPronto.set(true);
+
+        this.aplicarDadosNoMapa();
+      }
     );
   }
 
@@ -881,7 +917,6 @@ export class GeopoligonoFazenda
         adapter:
           new TerraDrawMapboxGLAdapter({
             map: this.map,
-            lib: mapboxgl,
             ignoreMismatchedPointerEvents:
               true
           }),
