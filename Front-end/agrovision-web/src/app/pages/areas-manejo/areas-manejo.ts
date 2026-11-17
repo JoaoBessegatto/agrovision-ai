@@ -440,6 +440,8 @@ export class AreasManejo
       area
     );
 
+    this.renderizarAreasSalvas();
+
     this.enquadrarPoligono(
       area.geometry,
       16
@@ -897,6 +899,14 @@ export class AreasManejo
 
     this.loadedFazendaId =
       fazendaId;
+
+    this.areaSelecionada.set(
+      null
+    );
+
+    this.resumo.set(
+      null
+    );
 
     this.loading.set(
       true
