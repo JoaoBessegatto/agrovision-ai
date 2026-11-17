@@ -1662,7 +1662,6 @@ export class AreasManejo
       );
 
     this.map.setMinZoom(0);
-    this.map.setMaxBounds(null);
 
     const camera =
       this.map.cameraForBounds(
