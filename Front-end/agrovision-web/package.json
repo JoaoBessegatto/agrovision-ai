@@ -22,7 +22,10 @@
     "echarts": "^6.1.0",
     "ngx-echarts": "^22.0.0",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "mapbox-gl": "^3.35.0",
+    "terra-draw": "^1.40.0",
+    "terra-draw-mapbox-gl-adapter": "^1.4.0"
   },
   "devDependencies": {
     "@angular/build": "^22.1.3",
