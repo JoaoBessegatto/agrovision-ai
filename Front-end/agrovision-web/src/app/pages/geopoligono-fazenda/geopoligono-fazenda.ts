@@ -1,5 +1,4 @@
 import {
-  AfterViewInit,
   Component,
   ElementRef,
   OnDestroy,
@@ -89,13 +88,30 @@ type ModoEdicao =
   styleUrl: './geopoligono-fazenda.scss'
 })
 export class GeopoligonoFazenda
-  implements OnInit, AfterViewInit, OnDestroy {
+  implements OnInit, OnDestroy {
+
+  private mapContainer?:
+    ElementRef<HTMLDivElement>;
 
   @ViewChild(
     'mapContainer'
   )
-  private mapContainer?:
-    ElementRef<HTMLDivElement>;
+  set mapContainerRef(
+    ref: ElementRef<HTMLDivElement> | undefined
+  ) {
+
+    this.mapContainer = ref;
+
+    if (
+      ref &&
+      this.mapaConfigurado()
+    ) {
+
+      queueMicrotask(
+        () => this.inicializarMapa()
+      );
+    }
+  }
 
 
   private readonly route =
@@ -249,16 +265,6 @@ export class GeopoligonoFazenda
       fazendaId,
       true
     );
-  }
-
-
-  ngAfterViewInit(): void {
-
-    if (!this.mapaConfigurado()) {
-      return;
-    }
-
-    this.inicializarMapa();
   }
 
 
