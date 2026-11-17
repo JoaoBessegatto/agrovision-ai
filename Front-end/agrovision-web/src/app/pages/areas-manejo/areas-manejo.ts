@@ -1952,21 +1952,6 @@ export class AreasManejo
     id: string
   ): string {
 
-    const paleta = [
-      '#2e7d32',
-      '#1565c0',
-      '#ef6c00',
-      '#7b1fa2',
-      '#00838f',
-      '#c62828',
-      '#558b2f',
-      '#6d4c41',
-      '#283593',
-      '#ad1457',
-      '#0277bd',
-      '#9e6b00'
-    ];
-
     let hash = 0;
 
     for (
@@ -1982,10 +1967,110 @@ export class AreasManejo
         ) | 0;
     }
 
-    return paleta[
-      Math.abs(hash) %
-        paleta.length
-    ];
+    let hue =
+      Math.abs(hash) % 360;
+
+    /*
+     * Evita tons amarelos próximos ao contorno
+     * oficial da Fazenda, preservando a leitura
+     * visual do limite principal.
+     */
+    if (
+      hue >= 42 &&
+      hue <= 70
+    ) {
+      hue =
+        (hue + 75) % 360;
+    }
+
+    return this.hslParaHex(
+      hue,
+      64,
+      42
+    );
+  }
+
+
+  private hslParaHex(
+    hue: number,
+    saturation: number,
+    lightness: number
+  ): string {
+
+    const s =
+      saturation / 100;
+
+    const l =
+      lightness / 100;
+
+    const c =
+      (
+        1 -
+        Math.abs(
+          2 * l - 1
+        )
+      ) * s;
+
+    const x =
+      c *
+      (
+        1 -
+        Math.abs(
+          (
+            hue / 60
+          ) %
+            2 -
+            1
+        )
+      );
+
+    const m =
+      l - c / 2;
+
+    let r = 0;
+    let g = 0;
+    let b = 0;
+
+    if (hue < 60) {
+      r = c;
+      g = x;
+    } else if (hue < 120) {
+      r = x;
+      g = c;
+    } else if (hue < 180) {
+      g = c;
+      b = x;
+    } else if (hue < 240) {
+      g = x;
+      b = c;
+    } else if (hue < 300) {
+      r = x;
+      b = c;
+    } else {
+      r = c;
+      b = x;
+    }
+
+    const channel = (
+      value: number
+    ): string =>
+      Math.round(
+        (
+          value + m
+        ) * 255
+      )
+        .toString(16)
+        .padStart(
+          2,
+          '0'
+        );
+
+    return (
+      '#' +
+      channel(r) +
+      channel(g) +
+      channel(b)
+    );
   }
 
   private calcularAreaHa(
