@@ -1,7 +1,14 @@
 import {
   ApplicationConfig,
+  LOCALE_ID,
   provideBrowserGlobalErrorListeners
 } from '@angular/core';
+
+import {
+  registerLocaleData
+} from '@angular/common';
+
+import localePt from '@angular/common/locales/pt';
 
 import {
   provideRouter
@@ -29,11 +36,22 @@ import {
 } from './app.routes';
 
 
+registerLocaleData(
+  localePt,
+  'pt-BR'
+);
+
+
 export const appConfig: ApplicationConfig = {
 
   providers: [
 
     provideBrowserGlobalErrorListeners(),
+
+    {
+      provide: LOCALE_ID,
+      useValue: 'pt-BR'
+    },
 
     provideRouter(
       routes
