@@ -32,7 +32,8 @@ import mapboxgl from 'mapbox-gl';
 import {
   TerraDraw,
   TerraDrawPolygonMode,
-  TerraDrawSelectMode
+  TerraDrawSelectMode,
+  ValidateNotSelfIntersecting
 } from 'terra-draw';
 
 import {
@@ -930,6 +931,27 @@ export class GeopoligonoFazenda
         modes: [
 
           new TerraDrawPolygonMode({
+
+            validation: (
+              feature,
+              { updateType }
+            ) => {
+
+              if (
+                updateType === 'finish' ||
+                updateType === 'commit'
+              ) {
+
+                return ValidateNotSelfIntersecting(
+                  feature
+                );
+              }
+
+              return {
+                valid: true
+              };
+            },
+
             styles: {
               fillColor: '#e2a82e',
               fillOpacity: 0.24,
@@ -947,9 +969,21 @@ export class GeopoligonoFazenda
                 feature: {
                   draggable: true,
                   coordinates: {
-                    midpoints: true,
+
+                    midpoints: {
+                      draggable: true
+                    },
+
                     draggable: true,
-                    deletable: true
+
+                    deletable: true,
+
+                    validation: (
+                      feature
+                    ) =>
+                      ValidateNotSelfIntersecting(
+                        feature
+                      )
                   }
                 }
               }
