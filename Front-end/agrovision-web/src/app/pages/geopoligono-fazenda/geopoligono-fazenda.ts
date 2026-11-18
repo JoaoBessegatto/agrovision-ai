@@ -1,5 +1,6 @@
 import {
   Component,
+  DestroyRef,
   ElementRef,
   OnDestroy,
   OnInit,
@@ -32,6 +33,8 @@ import {
   finalize,
   forkJoin
 } from 'rxjs';
+
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import mapboxgl from 'mapbox-gl';
 
@@ -135,6 +138,10 @@ export class GeopoligonoFazenda
     ref: ElementRef<HTMLDivElement> | undefined
   ) {
 
+    if (!ref) {
+      this.destruirMapa();
+    }
+
     this.mapContainer = ref;
 
     if (
@@ -148,6 +155,8 @@ export class GeopoligonoFazenda
     }
   }
 
+
+  private readonly destroyRef = inject(DestroyRef);
 
   private readonly route =
     inject(ActivatedRoute);
@@ -422,6 +431,10 @@ export class GeopoligonoFazenda
 
 
   ngOnDestroy(): void {
+    this.destruirMapa();
+  }
+
+  private destruirMapa(): void {
 
     try {
       this.draw?.stop();
@@ -433,6 +446,9 @@ export class GeopoligonoFazenda
 
     this.map?.remove();
     this.map = null;
+    this.mapLoaded = false;
+    this.mapaPronto.set(false);
+    this.featureId = null;
   }
 
 
@@ -471,7 +487,7 @@ export class GeopoligonoFazenda
     if (
       !this.podeEditar() ||
       !this.draw ||
-      !this.featureId
+      this.featureId === null
     ) {
       return;
     }
@@ -580,6 +596,7 @@ export class GeopoligonoFazenda
         }
       )
       .pipe(
+        takeUntilDestroyed(this.destroyRef),
         finalize(() =>
           this.saving.set(false)
         )
@@ -650,6 +667,7 @@ export class GeopoligonoFazenda
         fazendaId
       )
       .pipe(
+        takeUntilDestroyed(this.destroyRef),
         finalize(() =>
           this.removendo.set(false)
         )
@@ -768,13 +786,7 @@ export class GeopoligonoFazenda
 
     if (this.map) {
 
-      this.map.setMaxBounds(
-        null
-      );
-
-      this.map.setMinZoom(
-        0
-      );
+      this.removerRestricaoDoMapa();
     }
 
     this.removerCamadasPiquetes();
@@ -1051,6 +1063,7 @@ export class GeopoligonoFazenda
         request
       )
       .pipe(
+        takeUntilDestroyed(this.destroyRef),
         finalize(() =>
           this.piqueteSaving.set(
             false
@@ -1155,6 +1168,7 @@ export class GeopoligonoFazenda
         area.id
       )
       .pipe(
+        takeUntilDestroyed(this.destroyRef),
         finalize(() =>
           this.piqueteDeleting.set(
             false
@@ -1266,6 +1280,10 @@ export class GeopoligonoFazenda
       return;
     }
 
+    if (this.map && !this.mapLoaded) {
+      return;
+    }
+
     this.modoMapa.set(
       modo
     );
@@ -1273,9 +1291,6 @@ export class GeopoligonoFazenda
     if (!this.map) {
       return;
     }
-
-    const geometry =
-      this.geometriaAtual();
 
     try {
       this.draw?.stop();
@@ -1287,27 +1302,22 @@ export class GeopoligonoFazenda
     this.featureId = null;
     this.mapaPronto.set(false);
 
-    this.map.setStyle(
-      this.styleDefinition(modo)
-    );
+    this.mapLoaded = false;
 
     this.map.once(
       'style.load',
       () => {
 
+        this.mapLoaded = true;
         this.inicializarTerraDraw();
-
-        if (geometry) {
-          this.geometriaAtual.set(
-            geometry
-          );
-        }
-
+        this.modoEdicao.set('NAVEGAR');
         this.mapaPronto.set(true);
 
         this.aplicarDadosNoMapa();
       }
     );
+
+    this.map.setStyle(this.styleDefinition(modo));
   }
 
 
@@ -1463,6 +1473,11 @@ export class GeopoligonoFazenda
       fazendaId;
 
     this.loading.set(true);
+    this.modoGestao.set('LIMITE');
+    this.cancelarNovoPiquete(false);
+    this.piqueteSelecionado.set(null);
+    this.resumoAreas.set(null);
+    this.rebanhos.set([]);
     this.podeEditar.set(
       podeEditar
     );
@@ -1483,6 +1498,7 @@ export class GeopoligonoFazenda
           )
     })
       .pipe(
+        takeUntilDestroyed(this.destroyRef),
         finalize(() =>
           this.loading.set(false)
         )
@@ -1559,6 +1575,7 @@ export class GeopoligonoFazenda
   private inicializarMapa(): void {
 
     if (
+      this.destroyRef.destroyed ||
       this.map ||
       !this.mapContainer
     ) {
@@ -1892,7 +1909,7 @@ export class GeopoligonoFazenda
       this.sincronizandoMapa = false;
 
       this.renderizarCamadasPiquetes();
-      this.limitarMapaAoLimiteFazenda();
+      this.removerRestricaoDoMapa();
 
       const draft =
         this.piqueteGeometria();
@@ -1902,6 +1919,7 @@ export class GeopoligonoFazenda
         this.carregarGeometriaPiqueteNoDraw(
           draft
         );
+        this.modoEdicao.set('EDITAR');
       } else {
 
         this.draw.setMode(
@@ -1926,13 +1944,7 @@ export class GeopoligonoFazenda
 
     if (this.map) {
 
-      this.map.setMaxBounds(
-        null
-      );
-
-      this.map.setMinZoom(
-        0
-      );
+      this.removerRestricaoDoMapa();
     }
 
     const geometry =
@@ -2042,6 +2054,7 @@ export class GeopoligonoFazenda
       this.areaPreviewHa.set(
         null
       );
+      this.alteracoesPendentes.set(true);
 
       return;
     }
@@ -2184,6 +2197,7 @@ export class GeopoligonoFazenda
           )
     })
       .pipe(
+        takeUntilDestroyed(this.destroyRef),
         finalize(() =>
           this.piquetesLoading.set(
             false
@@ -2274,6 +2288,7 @@ export class GeopoligonoFazenda
       this.piqueteAreaPreviewHa.set(
         null
       );
+      this.piqueteFinalizado.set(false);
 
       return;
     }
@@ -2431,9 +2446,11 @@ export class GeopoligonoFazenda
 
   private renderizarCamadasPiquetes(): void {
 
+    // clear()/setData() do Terra Draw deixam as fontes carregando. O estilo
+    // já inicializado permite desenhar o limite mesmo sem piquetes.
     if (
       !this.map ||
-      !this.map.isStyleLoaded() ||
+      !this.mapLoaded ||
       this.modoGestao() !==
         'PIQUETES'
     ) {
@@ -2754,7 +2771,7 @@ export class GeopoligonoFazenda
 
     if (
       !this.map ||
-      !this.map.isStyleLoaded()
+      !this.mapLoaded
     ) {
       return;
     }
@@ -2803,127 +2820,20 @@ export class GeopoligonoFazenda
   }
 
 
-  private limitarMapaAoLimiteFazenda(): void {
-
-    const limite =
-      this.geometriaAtual();
-
-    if (
-      !this.map ||
-      !limite
-    ) {
+  private removerRestricaoDoMapa(): void {
+    if (!this.map) {
       return;
     }
 
-    const bounds =
-      this.obterBounds(
-        limite
-      );
+    // O Mapbox aceita null em runtime para remover os limites, mas a
+    // declaração de setMaxBounds da versão instalada não inclui esse valor.
+    const setMaxBounds = this.map.setMaxBounds as (
+      bounds: mapboxgl.LngLatBoundsLike | null
+    ) => mapboxgl.Map;
 
-    const camera =
-      this.map.cameraForBounds(
-        bounds,
-        {
-          padding: 42,
-          maxZoom: 19
-        }
-      );
-
-    if (
-      camera?.zoom !== undefined
-    ) {
-
-      this.map.setMinZoom(
-        Math.max(
-          0,
-          camera.zoom - 0.15
-        )
-      );
-    }
-
-    this.map.setMaxBounds(
-      this.expandirBounds(
-        bounds,
-        0.025
-      )
-    );
-
-    this.map.fitBounds(
-      bounds,
-      {
-        padding: 42,
-        maxZoom: 19,
-        duration: 650
-      }
-    );
+    setMaxBounds.call(this.map, null);
+    this.map.setMinZoom(0);
   }
-
-
-  private obterBounds(
-    geometry: GeoJsonPolygon
-  ): mapboxgl.LngLatBounds {
-
-    const bounds =
-      new mapboxgl.LngLatBounds();
-
-    geometry.coordinates
-      .flat()
-      .forEach(point =>
-        bounds.extend([
-          point[0],
-          point[1]
-        ])
-      );
-
-    return bounds;
-  }
-
-
-  private expandirBounds(
-    bounds: mapboxgl.LngLatBounds,
-    percentual: number
-  ): mapboxgl.LngLatBoundsLike {
-
-    const west =
-      bounds.getWest();
-
-    const east =
-      bounds.getEast();
-
-    const south =
-      bounds.getSouth();
-
-    const north =
-      bounds.getNorth();
-
-    const lngMargin =
-      Math.max(
-        (
-          east - west
-        ) * percentual,
-        0.0001
-      );
-
-    const latMargin =
-      Math.max(
-        (
-          north - south
-        ) * percentual,
-        0.0001
-      );
-
-    return [
-      [
-        west - lngMargin,
-        south - latMargin
-      ],
-      [
-        east + lngMargin,
-        north + latMargin
-      ]
-    ];
-  }
-
 
   private normalizarPiqueteAoLimite(
     geometry: GeoJsonPolygon
@@ -3691,6 +3601,8 @@ export class GeopoligonoFazenda
       return;
     }
 
+    const mapa = this.map;
+    const fazendaId = this.loadedFazendaId;
     const termo =
       `${cidade}, ${estado}, Brasil`;
 
@@ -3725,7 +3637,11 @@ export class GeopoligonoFazenda
         return;
       }
 
-      this.map.flyTo({
+      if (this.map !== mapa || this.loadedFazendaId !== fazendaId) {
+        return;
+      }
+
+      mapa.flyTo({
         center: [
           Number(coordinates[0]),
           Number(coordinates[1])
