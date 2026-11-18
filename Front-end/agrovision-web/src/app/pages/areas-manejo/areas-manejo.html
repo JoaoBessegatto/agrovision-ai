@@ -1,0 +1,1071 @@
+<div class="areas-page">
+
+  <header class="page-header">
+
+    <div>
+      <span class="eyebrow">
+        GESTÃO TERRITORIAL
+      </span>
+
+      <h1>
+        Piquetes e áreas de manejo
+      </h1>
+
+      <p>
+        Divida a propriedade em áreas de pasto ou confinamento
+        e associe cada espaço ao rebanho que está ocupando o local.
+      </p>
+    </div>
+
+
+    @if (
+      limiteFazenda()?.configurado &&
+      fazendaContext.ehProprietario()
+    ) {
+
+      <button
+        type="button"
+        class="primary-button"
+        [disabled]="
+          modoEditor() !== 'NAVEGAR'
+        "
+        (click)="iniciarNovaArea()"
+      >
+        <mat-icon>add_location_alt</mat-icon>
+        Nova área
+      </button>
+
+    }
+
+  </header>
+
+
+  @if (errorMessage()) {
+
+    <div
+      class="message error"
+      role="alert"
+    >
+      <mat-icon>error_outline</mat-icon>
+
+      <span>
+        {{ errorMessage() }}
+      </span>
+
+      <button
+        type="button"
+        aria-label="Fechar mensagem"
+        (click)="limparMensagens()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+  }
+
+
+  @if (successMessage()) {
+
+    <div
+      class="message success"
+      role="status"
+    >
+      <mat-icon>check_circle_outline</mat-icon>
+
+      <span>
+        {{ successMessage() }}
+      </span>
+
+      <button
+        type="button"
+        aria-label="Fechar mensagem"
+        (click)="limparMensagens()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+  }
+
+
+  @if (loading()) {
+
+    <section class="loading-state">
+
+      <div class="loader"></div>
+
+      <h2>
+        Carregando áreas da propriedade
+      </h2>
+
+      <p>
+        Preparando o limite da fazenda, rebanhos e indicadores.
+      </p>
+
+    </section>
+
+  } @else if (
+    limiteFazenda()?.configurado === false
+  ) {
+
+    <section class="boundary-required">
+
+      <div class="required-icon">
+        <mat-icon>polyline</mat-icon>
+      </div>
+
+      <div>
+        <span class="eyebrow">
+          ETAPA NECESSÁRIA
+        </span>
+
+        <h2>
+          Delimite primeiro a área total da fazenda
+        </h2>
+
+        <p>
+          Os piquetes precisam ficar completamente dentro do
+          limite geográfico da propriedade. Configure a área
+          da fazenda antes de criar as divisões internas.
+        </p>
+
+        <a
+          routerLink="/app/fazenda/area"
+          class="primary-button link-button"
+        >
+          <mat-icon>map</mat-icon>
+          Delimitar fazenda
+        </a>
+      </div>
+
+    </section>
+
+  } @else if (
+    resumo();
+    as dados
+  ) {
+
+    <section
+      class="summary-grid"
+      aria-label="Resumo das áreas"
+    >
+
+      <article class="summary-card">
+        <span>Área delimitada</span>
+
+        <strong>
+          {{
+            dados.areaFazendaDelimitadaHa
+              | number:'1.0-2':'pt-BR'
+          }}
+          <small>ha</small>
+        </strong>
+
+        <p>
+          Limite geográfico total da fazenda.
+        </p>
+      </article>
+
+
+      <article class="summary-card mapped">
+        <span>Área já organizada</span>
+
+        <strong>
+          {{
+            dados.areaMapeadaHa
+              | number:'1.0-2':'pt-BR'
+          }}
+          <small>ha</small>
+        </strong>
+
+        <p>
+          {{
+            dados.percentualAreaMapeada
+              | number:'1.0-1':'pt-BR'
+          }}%
+          do limite distribuído em áreas.
+        </p>
+      </article>
+
+
+      <article class="summary-card">
+        <span>Área ainda livre</span>
+
+        <strong>
+          {{
+            dados.areaLivreHa
+              | number:'1.0-2':'pt-BR'
+          }}
+          <small>ha</small>
+        </strong>
+
+        <p>
+          Espaço delimitado sem piquete cadastrado.
+        </p>
+      </article>
+
+
+      <article class="summary-card">
+        <span>Áreas cadastradas</span>
+
+        <strong>
+          {{ dados.totalAreas }}
+        </strong>
+
+        <p>
+          {{ dados.totalPastos }} pasto(s) ·
+          {{ dados.totalConfinamentos }} confinamento(s).
+        </p>
+      </article>
+
+
+      <article class="summary-card">
+        <span>Rebanhos localizados</span>
+
+        <strong>
+          {{ dados.rebanhosAssociados }}
+        </strong>
+
+        <p>
+          {{ dados.rebanhosSemArea }}
+          rebanho(s) ainda sem área associada.
+        </p>
+      </article>
+
+    </section>
+
+
+    <section class="map-section">
+
+      <div class="map-toolbar">
+
+        <div class="legend">
+
+          <span>
+            <i class="legend-line"></i>
+            Limite oficial da fazenda
+          </span>
+
+          <span>
+            <i class="legend-paddock"></i>
+            Cada cor representa uma área
+          </span>
+
+        </div>
+
+
+        <div class="satellite-mode">
+          <mat-icon>satellite_alt</mat-icon>
+
+          <div>
+            <strong>Satélite</strong>
+            <small>Foco na propriedade</small>
+          </div>
+        </div>
+
+      </div>
+
+
+      <div class="map-layout">
+
+        <div class="map-wrapper">
+
+          @if (!mapaConfigurado()) {
+
+            <div class="map-config-required">
+
+              <mat-icon>satellite_alt</mat-icon>
+
+              <strong>
+                Imagem de satélite não configurada
+              </strong>
+
+              <span>
+                Configure o token público do Mapbox e a chave
+                do MapTiler para habilitar o mapa de piquetes.
+              </span>
+
+            </div>
+
+          }
+
+          <div
+            #mapContainer
+            class="map-container"
+            aria-label="Mapa de piquetes e áreas de manejo"
+          ></div>
+
+
+          @if (
+            mapaConfigurado() &&
+            !mapaPronto()
+          ) {
+
+            <div class="map-loading">
+              <div class="loader"></div>
+              <span>Preparando mapa...</span>
+            </div>
+
+          }
+
+
+          @if (
+            modoEditor() !== 'NAVEGAR'
+          ) {
+
+            <div class="editing-badge">
+
+              <mat-icon>
+                {{
+                  modoEditor() === 'DESENHAR'
+                    ? 'polyline'
+                    : 'edit_location_alt'
+                }}
+              </mat-icon>
+
+              {{
+                modoEditor() === 'DESENHAR'
+                  ? 'Desenhando nova área'
+                  : 'Editando área'
+              }}
+
+            </div>
+
+          }
+
+        </div>
+
+
+        <aside class="side-panel">
+
+          @if (
+            modoEditor() !== 'NAVEGAR'
+          ) {
+
+            <form
+              class="area-form"
+              [formGroup]="form"
+              (ngSubmit)="salvar()"
+            >
+
+              <div class="panel-heading">
+                <span class="eyebrow">
+                  {{
+                    modoEditor() === 'DESENHAR'
+                      ? 'NOVA ÁREA'
+                      : 'EDITAR ÁREA'
+                  }}
+                </span>
+
+                <h2>
+                  {{
+                    modoEditor() === 'DESENHAR'
+                      ? 'Cadastrar piquete'
+                      : areaSelecionada()?.nome
+                  }}
+                </h2>
+
+                <p>
+                  Defina o tipo de manejo, desenhe os limites
+                  e associe o rebanho que ocupa o espaço.
+                </p>
+              </div>
+
+
+              <label class="field">
+                <span>Nome da área</span>
+
+                <input
+                  type="text"
+                  formControlName="nome"
+                  placeholder="Ex.: Pasto Norte"
+                >
+              </label>
+
+
+              <label class="field">
+                <span>Tipo de área</span>
+
+                <select
+                  formControlName="tipo"
+                  (change)="alterarTipo()"
+                >
+                  <option value="PASTO">
+                    Pasto
+                  </option>
+
+                  <option value="CONFINAMENTO">
+                    Confinamento
+                  </option>
+                </select>
+              </label>
+
+
+              <label class="field">
+                <span>Rebanho atual</span>
+
+                <select formControlName="rebanhoId">
+
+                  <option value="">
+                    Nenhum rebanho
+                  </option>
+
+                  @for (
+                    rebanho of rebanhosDisponiveis();
+                    track rebanho.id
+                  ) {
+
+                    <option [value]="rebanho.id">
+                      {{ rebanho.nome }}
+                      · {{ rebanho.quantidadeAnimais }} animal(is)
+                    </option>
+
+                  }
+
+                </select>
+              </label>
+
+
+              @if (
+                tipoAtual() === 'CONFINAMENTO'
+              ) {
+
+                <label class="field">
+
+                  <span>
+                    Capacidade máxima
+                    <small>opcional</small>
+                  </span>
+
+                  <div class="input-suffix">
+                    <input
+                      type="number"
+                      min="1"
+                      formControlName="capacidadeMaximaCabecas"
+                      placeholder="Ex.: 80"
+                    >
+
+                    <b>cabeças</b>
+                  </div>
+
+                </label>
+
+              }
+
+
+              <label class="field">
+                <span>
+                  Observações
+                  <small>opcional</small>
+                </span>
+
+                <textarea
+                  rows="3"
+                  formControlName="descricao"
+                  placeholder="Ex.: pasto para recria, curral de terminação..."
+                ></textarea>
+              </label>
+
+
+              <div class="drawing-actions">
+
+                @if (
+                  geometriaRascunho()
+                ) {
+
+                  <button
+                    type="button"
+                    class="secondary-button"
+                    (click)="editarPontos()"
+                  >
+                    <mat-icon>edit_location_alt</mat-icon>
+                    Editar vértices
+                  </button>
+
+                  <button
+                    type="button"
+                    class="secondary-button"
+                    (click)="refazerDesenho()"
+                  >
+                    <mat-icon>restart_alt</mat-icon>
+                    Refazer
+                  </button>
+
+                } @else {
+
+                  <div class="draw-instruction">
+
+                    <mat-icon>touch_app</mat-icon>
+
+                    <span>
+                      Clique somente dentro da área amarela da Fazenda.
+                      Ao chegar perto da divisa, o vértice encaixa
+                      automaticamente na linha oficial.
+                    </span>
+
+                  </div>
+
+                }
+
+              </div>
+
+
+              <div class="area-preview">
+
+                <span>
+                  Área calculada
+                </span>
+
+                <strong>
+
+                  @if (
+                    areaPreviewHa() !== null
+                  ) {
+
+                    {{
+                      areaPreviewHa()
+                        | number:'1.0-4':'pt-BR'
+                    }}
+                    ha
+
+                  } @else {
+
+                    Aguardando desenho
+
+                  }
+
+                </strong>
+
+                <small>
+                  O backend valida novamente a área,
+                  contenção e sobreposição ao salvar.
+                </small>
+
+              </div>
+
+
+              <div class="form-actions">
+
+                <button
+                  type="button"
+                  class="secondary-button"
+                  (click)="cancelarEdicao()"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="submit"
+                  class="primary-button"
+                  [disabled]="saving()"
+                >
+                  <mat-icon>save</mat-icon>
+
+                  @if (saving()) {
+                    Salvando...
+                  } @else {
+                    Salvar área
+                  }
+                </button>
+
+              </div>
+
+            </form>
+
+          } @else if (
+            areaSelecionada();
+            as area
+          ) {
+
+            <div class="area-details">
+
+              <div class="panel-heading">
+
+                <span
+                  class="type-chip"
+                  [class.confinement]="
+                    area.tipo === 'CONFINAMENTO'
+                  "
+                >
+                  {{ labelTipo(area.tipo) }}
+                </span>
+
+                <h2>
+                  {{ area.nome }}
+                </h2>
+
+                @if (area.descricao) {
+                  <p>
+                    {{ area.descricao }}
+                  </p>
+                }
+
+              </div>
+
+
+              <div class="detail-main">
+
+                <div>
+                  <span>Área</span>
+
+                  <strong>
+                    {{
+                      area.areaCalculadaHa
+                        | number:'1.0-2':'pt-BR'
+                    }}
+                    ha
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Rebanho</span>
+
+                  <strong>
+                    {{
+                      area.rebanhoNome ??
+                      'Sem rebanho'
+                    }}
+                  </strong>
+                </div>
+
+              </div>
+
+
+              <div class="common-metrics">
+
+                <div>
+                  <span>Animais ativos</span>
+                  <strong>
+                    {{ area.indicadores.animaisAtivos }}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Peso vivo total</span>
+                  <strong>
+                    {{
+                      area.indicadores.pesoVivoTotalKg
+                        | number:'1.0-0':'pt-BR'
+                    }}
+                    kg
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Peso médio</span>
+                  <strong>
+                    @if (
+                      area.indicadores.pesoMedioKg !== null
+                    ) {
+                      {{
+                        area.indicadores.pesoMedioKg
+                          | number:'1.0-1':'pt-BR'
+                      }}
+                      kg
+                    } @else {
+                      —
+                    }
+                  </strong>
+                </div>
+
+              </div>
+
+
+              @if (area.tipo === 'PASTO') {
+
+                <div class="metric-section">
+
+                  <span class="section-label">
+                    INDICADORES DE PASTAGEM
+                  </span>
+
+                  <div class="metric-grid">
+
+                    <div>
+                      <span>Cabeças / ha</span>
+                      <strong>
+                        {{
+                          area.indicadores.cabecasPorHa
+                            | number:'1.0-2':'pt-BR'
+                        }}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>UA / ha</span>
+                      <strong>
+                        {{
+                          area.indicadores.uaPorHa
+                            | number:'1.0-2':'pt-BR'
+                        }}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>Unidades animais</span>
+                      <strong>
+                        {{
+                          area.indicadores.unidadesAnimais
+                            | number:'1.0-2':'pt-BR'
+                        }}
+                        UA
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>Peso vivo / ha</span>
+                      <strong>
+                        {{
+                          area.indicadores.pesoVivoPorHaKg
+                            | number:'1.0-0':'pt-BR'
+                        }}
+                        kg
+                      </strong>
+                    </div>
+
+                  </div>
+
+                  <p class="metric-note">
+                    1 UA = 450 kg de peso vivo. Estes indicadores
+                    mostram lotação atual, não a capacidade de suporte
+                    agronômica do pasto.
+                  </p>
+
+                </div>
+
+              } @else {
+
+                <div class="metric-section confinement-metrics">
+
+                  <span class="section-label">
+                    INDICADORES DE CONFINAMENTO
+                  </span>
+
+                  <div class="metric-grid">
+
+                    <div>
+                      <span>Espaço / cabeça</span>
+                      <strong>
+                        @if (
+                          area.indicadores
+                            .metrosQuadradosPorCabeca !== null
+                        ) {
+                          {{
+                            area.indicadores
+                              .metrosQuadradosPorCabeca
+                              | number:'1.0-1':'pt-BR'
+                          }}
+                          m²
+                        } @else {
+                          —
+                        }
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>Capacidade</span>
+                      <strong>
+                        {{
+                          area.indicadores
+                            .capacidadeMaximaCabecas ??
+                          '—'
+                        }}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>Ocupação</span>
+                      <strong>
+                        @if (
+                          area.indicadores
+                            .ocupacaoPercentual !== null
+                        ) {
+                          {{
+                            area.indicadores
+                              .ocupacaoPercentual
+                              | number:'1.0-1':'pt-BR'
+                          }}%
+                        } @else {
+                          —
+                        }
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>Situação</span>
+                      <strong>
+                        {{
+                          labelStatusConfinamento(
+                            area.indicadores
+                              .statusConfinamento
+                          )
+                        }}
+                      </strong>
+                    </div>
+
+                  </div>
+
+
+                  @if (
+                    area.indicadores.vagasDisponiveis !== null
+                  ) {
+
+                    <p class="metric-note">
+                      {{ area.indicadores.vagasDisponiveis }}
+                      vaga(s) disponível(is).
+
+                      @if (
+                        (area.indicadores.excedenteCabecas ?? 0) > 0
+                      ) {
+                        O espaço está
+                        {{ area.indicadores.excedenteCabecas }}
+                        cabeça(s) acima da capacidade informada.
+                      }
+                    </p>
+
+                  }
+
+                </div>
+
+              }
+
+
+              @if (
+                fazendaContext.ehProprietario()
+              ) {
+
+                <div class="detail-actions">
+
+                  <button
+                    type="button"
+                    class="secondary-button"
+                    (click)="editarArea(area)"
+                  >
+                    <mat-icon>edit</mat-icon>
+                    Editar
+                  </button>
+
+                  <button
+                    type="button"
+                    class="danger-button"
+                    [disabled]="deleting()"
+                    (click)="deletarArea(area)"
+                  >
+                    <mat-icon>delete_outline</mat-icon>
+                    Excluir
+                  </button>
+
+                </div>
+
+              }
+
+            </div>
+
+          } @else {
+
+            <div class="panel-empty">
+
+              <mat-icon>grid_view</mat-icon>
+
+              <h2>
+                Selecione uma área
+              </h2>
+
+              <p>
+                Clique em um piquete no mapa ou na lista
+                abaixo para visualizar os indicadores.
+              </p>
+
+              @if (
+                fazendaContext.ehProprietario()
+              ) {
+
+                <button
+                  type="button"
+                  class="primary-button"
+                  (click)="iniciarNovaArea()"
+                >
+                  <mat-icon>add</mat-icon>
+                  Criar primeira área
+                </button>
+
+              }
+
+            </div>
+
+          }
+
+        </aside>
+
+      </div>
+
+    </section>
+
+
+    <section class="areas-list-section">
+
+      <div class="section-heading">
+
+        <div>
+          <span class="eyebrow">
+            ÁREAS CADASTRADAS
+          </span>
+
+          <h2>
+            Organização da propriedade
+          </h2>
+        </div>
+
+        <span class="area-count">
+          {{ dados.totalAreas }}
+        </span>
+
+      </div>
+
+
+      <div class="areas-grid">
+
+        @for (
+          area of dados.areas;
+          track area.id
+        ) {
+
+          <button
+            type="button"
+            class="area-card"
+            [style.border-left-color]="corArea(area)"
+            [class.selected]="
+              areaSelecionada()?.id === area.id
+            "
+            [class.confinement]="
+              area.tipo === 'CONFINAMENTO'
+            "
+            (click)="selecionarArea(area)"
+          >
+
+            <div class="area-card-header">
+
+              <div class="area-card-type">
+
+                <i
+                  class="area-color-dot"
+                  [style.background]="corArea(area)"
+                ></i>
+
+                <span
+                  class="type-chip"
+                [class.confinement]="
+                  area.tipo === 'CONFINAMENTO'
+                "
+                >
+                  {{ labelTipo(area.tipo) }}
+                </span>
+
+              </div>
+
+              <strong>
+                {{
+                  area.areaCalculadaHa
+                    | number:'1.0-2':'pt-BR'
+                }}
+                ha
+              </strong>
+
+            </div>
+
+            <h3>
+              {{ area.nome }}
+            </h3>
+
+            <p>
+              <mat-icon>groups</mat-icon>
+
+              {{
+                area.rebanhoNome ??
+                'Sem rebanho associado'
+              }}
+            </p>
+
+
+            @if (area.tipo === 'PASTO') {
+
+              <div class="mini-metrics">
+
+                <span>
+                  <b>
+                    {{
+                      area.indicadores.uaPorHa
+                        | number:'1.0-2':'pt-BR'
+                    }}
+                  </b>
+                  UA/ha
+                </span>
+
+                <span>
+                  <b>
+                    {{ area.indicadores.animaisAtivos }}
+                  </b>
+                  animais
+                </span>
+
+              </div>
+
+            } @else {
+
+              <div class="mini-metrics">
+
+                <span>
+                  <b>
+                    {{ area.indicadores.animaisAtivos }}
+                  </b>
+                  alojados
+                </span>
+
+                <span>
+                  <b>
+                    @if (
+                      area.indicadores.ocupacaoPercentual !== null
+                    ) {
+                      {{
+                        area.indicadores.ocupacaoPercentual
+                          | number:'1.0-0':'pt-BR'
+                      }}%
+                    } @else {
+                      —
+                    }
+                  </b>
+                  ocupação
+                </span>
+
+              </div>
+
+            }
+
+          </button>
+
+        } @empty {
+
+          <div class="empty-list">
+
+            <mat-icon>landscape</mat-icon>
+
+            <h3>
+              Nenhuma área cadastrada
+            </h3>
+
+            <p>
+              Divida o limite da fazenda em pastos ou
+              áreas de confinamento para começar.
+            </p>
+
+          </div>
+
+        }
+
+      </div>
+
+    </section>
+
+  }
+
+</div>

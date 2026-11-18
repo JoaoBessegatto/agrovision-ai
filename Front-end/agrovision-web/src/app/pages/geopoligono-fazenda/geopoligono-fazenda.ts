@@ -1,5 +1,6 @@
 import {
   Component,
+  DestroyRef,
   ElementRef,
   OnDestroy,
   OnInit,
@@ -19,6 +20,12 @@ import {
 } from '@angular/router';
 
 import {
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
+
+import {
   MatIconModule
 } from '@angular/material/icon';
 
@@ -26,6 +33,8 @@ import {
   finalize,
   forkJoin
 } from 'rxjs';
+
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import mapboxgl from 'mapbox-gl';
 
@@ -69,6 +78,25 @@ import {
   GeoJsonPolygon
 } from '../../core/fazenda/models/fazenda-geopoligono';
 
+import {
+  AreaManejo,
+  AreaManejoRequest,
+  ResumoAreasManejo,
+  TipoAreaManejo
+} from '../../core/area-manejo/models/area-manejo';
+
+import {
+  AreaManejoService
+} from '../../core/area-manejo/services/area-manejo.service';
+
+import {
+  RebanhoResponse
+} from '../../core/rebanho/models/rebanho-response';
+
+import {
+  RebanhoService
+} from '../../core/rebanho/services/rebanho.service';
+
 
 type ModoMapa =
   | 'SATELITE'
@@ -79,6 +107,10 @@ type ModoEdicao =
   | 'DESENHAR'
   | 'EDITAR';
 
+type ModoGestaoTerritorial =
+  | 'LIMITE'
+  | 'PIQUETES';
+
 
 @Component({
   selector: 'app-geopoligono-fazenda',
@@ -86,6 +118,7 @@ type ModoEdicao =
 
   imports: [
     DecimalPipe,
+    ReactiveFormsModule,
     MatIconModule
   ],
 
@@ -105,6 +138,10 @@ export class GeopoligonoFazenda
     ref: ElementRef<HTMLDivElement> | undefined
   ) {
 
+    if (!ref) {
+      this.destruirMapa();
+    }
+
     this.mapContainer = ref;
 
     if (
@@ -119,6 +156,8 @@ export class GeopoligonoFazenda
   }
 
 
+  private readonly destroyRef = inject(DestroyRef);
+
   private readonly route =
     inject(ActivatedRoute);
 
@@ -130,6 +169,15 @@ export class GeopoligonoFazenda
 
   private readonly geopoligonoService =
     inject(FazendaGeopoligonoService);
+
+  private readonly areaManejoService =
+    inject(AreaManejoService);
+
+  private readonly rebanhoService =
+    inject(RebanhoService);
+
+  private readonly formBuilder =
+    inject(FormBuilder);
 
   readonly fazendaContext =
     inject(FazendaContextService);
@@ -210,6 +258,85 @@ export class GeopoligonoFazenda
     signal('');
 
 
+  readonly modoGestao =
+    signal<ModoGestaoTerritorial>(
+      'LIMITE'
+    );
+
+  readonly resumoAreas =
+    signal<ResumoAreasManejo | null>(
+      null
+    );
+
+  readonly rebanhos =
+    signal<RebanhoResponse[]>([]);
+
+  readonly piqueteGeometria =
+    signal<GeoJsonPolygon | null>(
+      null
+    );
+
+  readonly piqueteAreaPreviewHa =
+    signal<number | null>(
+      null
+    );
+
+
+  readonly piqueteFinalizado =
+    signal(false);
+
+  readonly piqueteSaving =
+    signal(false);
+
+  readonly piqueteDeleting =
+    signal(false);
+
+  readonly piquetesLoading =
+    signal(false);
+
+  readonly piqueteSelecionado =
+    signal<AreaManejo | null>(
+      null
+    );
+
+  readonly piqueteForm =
+    this.formBuilder.group({
+
+      nome: [
+        '',
+        [
+          Validators.required,
+          Validators.maxLength(120)
+        ]
+      ],
+
+      descricao: [
+        '',
+        [
+          Validators.maxLength(500)
+        ]
+      ],
+
+      tipo: [
+        'PASTO' as TipoAreaManejo,
+        [
+          Validators.required
+        ]
+      ],
+
+      capacidadeMaximaCabecas: [
+        null as number | null,
+        [
+          Validators.min(1)
+        ]
+      ],
+
+      rebanhoId: [
+        ''
+      ]
+    });
+
+
   private map:
     mapboxgl.Map | null = null;
 
@@ -229,6 +356,17 @@ export class GeopoligonoFazenda
    * carregar geometria salva como edição manual.
    */
   private sincronizandoMapa = false;
+
+  private readonly toleranciaSnapPiquetePx =
+    8;
+
+  /*
+   * Terra Draw valida a precisão das coordenadas.
+   * O renderer pode devolver 12-15 casas via unproject(),
+   * então normalizamos antes de armazenar/salvar.
+   */
+  private readonly precisaoCoordenadas =
+    8;
 
 
   constructor() {
@@ -293,6 +431,10 @@ export class GeopoligonoFazenda
 
 
   ngOnDestroy(): void {
+    this.destruirMapa();
+  }
+
+  private destruirMapa(): void {
 
     try {
       this.draw?.stop();
@@ -304,6 +446,9 @@ export class GeopoligonoFazenda
 
     this.map?.remove();
     this.map = null;
+    this.mapLoaded = false;
+    this.mapaPronto.set(false);
+    this.featureId = null;
   }
 
 
@@ -342,7 +487,7 @@ export class GeopoligonoFazenda
     if (
       !this.podeEditar() ||
       !this.draw ||
-      !this.featureId
+      this.featureId === null
     ) {
       return;
     }
@@ -451,6 +596,7 @@ export class GeopoligonoFazenda
         }
       )
       .pipe(
+        takeUntilDestroyed(this.destroyRef),
         finalize(() =>
           this.saving.set(false)
         )
@@ -521,6 +667,7 @@ export class GeopoligonoFazenda
         fazendaId
       )
       .pipe(
+        takeUntilDestroyed(this.destroyRef),
         finalize(() =>
           this.removendo.set(false)
         )
@@ -582,6 +729,541 @@ export class GeopoligonoFazenda
   }
 
 
+  abrirPiquetes(): void {
+
+    if (
+      this.onboarding ||
+      !this.geopoligonoSalvo()
+        ?.configurado ||
+      !this.geometriaAtual()
+    ) {
+
+      this.errorMessage.set(
+        'Salve primeiro o limite da Fazenda para delimitar os piquetes.'
+      );
+
+      return;
+    }
+
+    this.limparMensagens();
+
+    this.modoGestao.set(
+      'PIQUETES'
+    );
+
+    this.cancelarNovoPiquete(
+      false
+    );
+
+    if (
+      this.sateliteConfigurado() &&
+      this.modoMapa() !==
+        'SATELITE'
+    ) {
+
+      this.alterarMapa(
+        'SATELITE'
+      );
+
+      return;
+    }
+
+    this.aplicarDadosNoMapa();
+  }
+
+
+  abrirLimiteFazenda(): void {
+
+    this.limparMensagens();
+
+    this.modoGestao.set(
+      'LIMITE'
+    );
+
+    this.cancelarNovoPiquete(
+      false
+    );
+
+    if (this.map) {
+
+      this.removerRestricaoDoMapa();
+    }
+
+    this.removerCamadasPiquetes();
+    this.aplicarDadosNoMapa();
+  }
+
+
+  iniciarNovoPiquete(): void {
+
+    if (
+      !this.podeEditar() ||
+      this.modoGestao() !==
+        'PIQUETES' ||
+      !this.draw
+    ) {
+      return;
+    }
+
+    this.limparMensagens();
+
+    this.sincronizandoMapa =
+      true;
+
+    this.draw.clear();
+
+    this.sincronizandoMapa =
+      false;
+
+    this.featureId = null;
+
+    this.piqueteGeometria.set(
+      null
+    );
+
+    this.piqueteAreaPreviewHa.set(
+      null
+    );
+
+    this.piqueteFinalizado.set(
+      false
+    );
+
+    this.piqueteSelecionado.set(
+      null
+    );
+
+    this.piqueteForm.reset({
+      nome: '',
+      descricao: '',
+      tipo: 'PASTO',
+      capacidadeMaximaCabecas: null,
+      rebanhoId: ''
+    });
+
+    this.modoEdicao.set(
+      'DESENHAR'
+    );
+
+    this.draw.setMode(
+      'polygon'
+    );
+  }
+
+
+  cancelarNovoPiquete(
+    reRenderizar = true
+  ): void {
+
+    this.sincronizandoMapa =
+      true;
+
+    this.draw?.clear();
+
+    this.sincronizandoMapa =
+      false;
+
+    this.featureId = null;
+
+    this.piqueteGeometria.set(
+      null
+    );
+
+    this.piqueteAreaPreviewHa.set(
+      null
+    );
+
+    this.piqueteFinalizado.set(
+      false
+    );
+
+    this.modoEdicao.set(
+      'NAVEGAR'
+    );
+
+    this.piqueteForm.reset({
+      nome: '',
+      descricao: '',
+      tipo: 'PASTO',
+      capacidadeMaximaCabecas: null,
+      rebanhoId: ''
+    });
+
+    if (reRenderizar) {
+      this.renderizarCamadasPiquetes();
+    }
+  }
+
+
+  alterarTipoPiquete(): void {
+
+    if (
+      this.piqueteForm.controls
+        .tipo.value === 'PASTO'
+    ) {
+
+      this.piqueteForm.controls
+        .capacidadeMaximaCabecas
+        .setValue(
+          null
+        );
+    }
+  }
+
+
+  salvarPiquete(): void {
+
+    if (this.piqueteSaving()) {
+      return;
+    }
+
+    const fazendaId =
+      this.loadedFazendaId;
+
+    const geometry =
+      this.piqueteGeometria();
+
+    if (
+      !fazendaId ||
+      !geometry ||
+      !this.piqueteFinalizado() ||
+      !this.podeEditar()
+    ) {
+
+      this.errorMessage.set(
+        'Conclua o desenho do piquete dentro do limite da Fazenda antes de salvar.'
+      );
+
+      return;
+    }
+
+    if (this.piqueteForm.invalid) {
+
+      this.piqueteForm
+        .markAllAsTouched();
+
+      this.errorMessage.set(
+        'Preencha os campos obrigatórios do piquete.'
+      );
+
+      return;
+    }
+
+    const normalizada =
+      this.normalizarPiqueteAoLimite(
+        geometry
+      );
+
+    if (!normalizada.valida) {
+
+      this.piqueteFinalizado.set(
+        false
+      );
+
+      this.errorMessage.set(
+        'O piquete precisa ficar totalmente dentro do limite amarelo da Fazenda.'
+      );
+
+      return;
+    }
+
+    const geometryRequest =
+      this.normalizarPrecisaoGeometria(
+        normalizada.geometry
+      );
+
+    const raw =
+      this.piqueteForm
+        .getRawValue();
+
+    const nome =
+      raw.nome?.trim() ?? '';
+
+    if (!nome) {
+
+      this.errorMessage.set(
+        'Informe um nome para o piquete.'
+      );
+
+      return;
+    }
+
+    const nomeNormalizado =
+      nome.toLocaleLowerCase(
+        'pt-BR'
+      );
+
+    const nomeJaExiste =
+      (
+        this.resumoAreas()
+          ?.areas ?? []
+      )
+        .some(area =>
+          area.nome
+            .trim()
+            .toLocaleLowerCase(
+              'pt-BR'
+            ) ===
+              nomeNormalizado
+        );
+
+    if (nomeJaExiste) {
+
+      this.errorMessage.set(
+        'Já existe um piquete com este nome nesta Fazenda.'
+      );
+
+      return;
+    }
+
+    const descricao =
+      raw.descricao?.trim() ?? '';
+
+    const request:
+      AreaManejoRequest = {
+
+        nome,
+
+        descricao:
+          descricao
+            ? descricao
+            : null,
+
+        tipo:
+          (
+            raw.tipo ??
+            'PASTO'
+          ) as TipoAreaManejo,
+
+        geometry:
+          geometryRequest,
+
+        capacidadeMaximaCabecas:
+          raw.tipo ===
+            'CONFINAMENTO'
+            ? raw
+                .capacidadeMaximaCabecas
+            : null,
+
+        rebanhoId:
+          raw.rebanhoId
+            ? raw.rebanhoId
+            : null
+      };
+
+    this.piqueteSaving.set(
+      true
+    );
+
+    this.limparMensagens();
+
+    this.areaManejoService
+      .cadastrar(
+        fazendaId,
+        request
+      )
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() =>
+          this.piqueteSaving.set(
+            false
+          )
+        )
+      )
+      .subscribe({
+
+        next: area => {
+
+          this.successMessage.set(
+            `Piquete "${area.nome}" salvo com sucesso.`
+          );
+
+          this.cancelarNovoPiquete(
+            false
+          );
+
+          this.carregarAreasManejo(
+            fazendaId,
+            area.id
+          );
+        },
+
+        error: error => {
+
+          const mensagem =
+            this.extrairMensagemErro(
+              error,
+              'Não foi possível salvar o piquete.'
+            );
+
+          console.error(
+            'Erro ao salvar piquete:',
+            {
+              status:
+                error?.status,
+              mensagem,
+              resposta:
+                error?.error
+            }
+          );
+
+          this.errorMessage.set(
+            mensagem
+          );
+        }
+      });
+  }
+
+  selecionarPiquete(
+    area: AreaManejo
+  ): void {
+
+    if (
+      this.modoEdicao() !==
+        'NAVEGAR'
+    ) {
+      return;
+    }
+
+    this.piqueteSelecionado.set(
+      area
+    );
+
+    this.renderizarCamadasPiquetes();
+
+    this.enquadrarPoligono(
+      area.geometry
+    );
+  }
+
+
+  excluirPiquete(
+    area: AreaManejo
+  ): void {
+
+    if (
+      !this.podeEditar() ||
+      this.piqueteDeleting()
+    ) {
+      return;
+    }
+
+    const confirmou =
+      window.confirm(
+        `Excluir o piquete "${area.nome}"? O rebanho associado não será excluído.`
+      );
+
+    if (!confirmou) {
+      return;
+    }
+
+    this.piqueteDeleting.set(
+      true
+    );
+
+    this.limparMensagens();
+
+    this.areaManejoService
+      .deletar(
+        area.id
+      )
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() =>
+          this.piqueteDeleting.set(
+            false
+          )
+        )
+      )
+      .subscribe({
+
+        next: () => {
+
+          if (
+            this.piqueteSelecionado()
+              ?.id === area.id
+          ) {
+
+            this.piqueteSelecionado.set(
+              null
+            );
+          }
+
+          this.successMessage.set(
+            'Piquete excluído.'
+          );
+
+          if (this.loadedFazendaId) {
+
+            this.carregarAreasManejo(
+              this.loadedFazendaId
+            );
+          }
+        },
+
+        error: error => {
+
+          this.errorMessage.set(
+            this.extrairMensagemErro(
+              error,
+              'Não foi possível excluir o piquete.'
+            )
+          );
+        }
+      });
+  }
+
+
+  corPiquete(
+    area: AreaManejo
+  ): string {
+
+    return this.corPorId(
+      area.id
+    );
+  }
+
+
+  labelTipoPiquete(
+    tipo: TipoAreaManejo
+  ): string {
+
+    return tipo ===
+      'CONFINAMENTO'
+        ? 'Confinamento'
+        : 'Pasto';
+  }
+
+
+  rebanhosDisponiveisPiquete():
+    RebanhoResponse[] {
+
+    const ocupados =
+      new Set(
+        (
+          this.resumoAreas()
+            ?.areas ?? []
+        )
+          .map(area =>
+            area.rebanhoId
+          )
+          .filter(
+            (
+              id
+            ): id is string =>
+              Boolean(id)
+          )
+      );
+
+    return this.rebanhos()
+      .filter(rebanho =>
+        !ocupados.has(
+          rebanho.id
+        )
+      );
+  }
+
+
   alterarMapa(
     modo: ModoMapa
   ): void {
@@ -598,6 +1280,10 @@ export class GeopoligonoFazenda
       return;
     }
 
+    if (this.map && !this.mapLoaded) {
+      return;
+    }
+
     this.modoMapa.set(
       modo
     );
@@ -605,9 +1291,6 @@ export class GeopoligonoFazenda
     if (!this.map) {
       return;
     }
-
-    const geometry =
-      this.geometriaAtual();
 
     try {
       this.draw?.stop();
@@ -619,27 +1302,22 @@ export class GeopoligonoFazenda
     this.featureId = null;
     this.mapaPronto.set(false);
 
-    this.map.setStyle(
-      this.styleDefinition(modo)
-    );
+    this.mapLoaded = false;
 
     this.map.once(
       'style.load',
       () => {
 
+        this.mapLoaded = true;
         this.inicializarTerraDraw();
-
-        if (geometry) {
-          this.geometriaAtual.set(
-            geometry
-          );
-        }
-
+        this.modoEdicao.set('NAVEGAR');
         this.mapaPronto.set(true);
 
         this.aplicarDadosNoMapa();
       }
     );
+
+    this.map.setStyle(this.styleDefinition(modo));
   }
 
 
@@ -795,6 +1473,11 @@ export class GeopoligonoFazenda
       fazendaId;
 
     this.loading.set(true);
+    this.modoGestao.set('LIMITE');
+    this.cancelarNovoPiquete(false);
+    this.piqueteSelecionado.set(null);
+    this.resumoAreas.set(null);
+    this.rebanhos.set([]);
     this.podeEditar.set(
       podeEditar
     );
@@ -815,6 +1498,7 @@ export class GeopoligonoFazenda
           )
     })
       .pipe(
+        takeUntilDestroyed(this.destroyRef),
         finalize(() =>
           this.loading.set(false)
         )
@@ -857,6 +1541,17 @@ export class GeopoligonoFazenda
           );
 
           this.aplicarDadosNoMapa();
+
+          if (
+            !this.onboarding &&
+            response.geopoligono
+              .configurado
+          ) {
+
+            this.carregarAreasManejo(
+              fazendaId
+            );
+          }
         },
 
         error: error => {
@@ -880,6 +1575,7 @@ export class GeopoligonoFazenda
   private inicializarMapa(): void {
 
     if (
+      this.destroyRef.destroyed ||
       this.map ||
       !this.mapContainer
     ) {
@@ -919,7 +1615,9 @@ export class GeopoligonoFazenda
         dragRotate: false,
         pitchWithRotate: false,
         touchPitch: false,
-        projection: 'mercator'
+        projection: 'mercator',
+        performanceMetricsCollection:
+          false
       });
 
 
@@ -1028,9 +1726,45 @@ export class GeopoligonoFazenda
                 updateType === 'commit'
               ) {
 
-                return ValidateNotSelfIntersecting(
-                  feature
-                );
+                const autoIntersecao =
+                  ValidateNotSelfIntersecting(
+                    feature
+                  );
+
+                if (!autoIntersecao.valid) {
+                  return autoIntersecao;
+                }
+
+                if (
+                  this.modoGestao() ===
+                    'PIQUETES' &&
+                  feature.geometry.type ===
+                    'Polygon'
+                ) {
+
+                  const geometry:
+                    GeoJsonPolygon = {
+
+                      type: 'Polygon',
+
+                      coordinates:
+                        feature.geometry
+                          .coordinates as number[][][]
+                    };
+
+                  if (
+                    !this
+                      .normalizarPiqueteAoLimite(
+                        geometry
+                      )
+                      .valida
+                  ) {
+
+                    return {
+                      valid: false
+                    };
+                  }
+                }
               }
 
               return {
@@ -1053,7 +1787,7 @@ export class GeopoligonoFazenda
             flags: {
               polygon: {
                 feature: {
-                  draggable: true,
+                  draggable: false,
                   coordinates: {
 
                     midpoints: {
@@ -1109,13 +1843,43 @@ export class GeopoligonoFazenda
           context.action === 'draw'
         ) {
 
-          this.modoEdicao.set(
-            'NAVEGAR'
-          );
+          if (
+            this.modoGestao() ===
+              'PIQUETES'
+          ) {
 
-          this.draw?.setMode(
-            'select'
-          );
+            this.modoEdicao.set(
+              'EDITAR'
+            );
+
+            this.piqueteFinalizado.set(
+              this.piqueteGeometria() !==
+                null
+            );
+
+            this.draw?.setMode(
+              'select'
+            );
+
+            if (
+              this.featureId !== null
+            ) {
+
+              this.draw?.selectFeature(
+                this.featureId as string
+              );
+            }
+
+          } else {
+
+            this.modoEdicao.set(
+              'NAVEGAR'
+            );
+
+            this.draw?.setMode(
+              'select'
+            );
+          }
         }
       }
     );
@@ -1136,6 +1900,52 @@ export class GeopoligonoFazenda
 
     this.draw.clear();
     this.featureId = null;
+
+    if (
+      this.modoGestao() ===
+        'PIQUETES'
+    ) {
+
+      this.sincronizandoMapa = false;
+
+      this.renderizarCamadasPiquetes();
+      this.removerRestricaoDoMapa();
+
+      const draft =
+        this.piqueteGeometria();
+
+      if (draft) {
+
+        this.carregarGeometriaPiqueteNoDraw(
+          draft
+        );
+        this.modoEdicao.set('EDITAR');
+      } else {
+
+        this.draw.setMode(
+          'select'
+        );
+      }
+
+      const limite =
+        this.geometriaAtual();
+
+      if (limite) {
+
+        this.enquadrarPoligono(
+          limite
+        );
+      }
+
+      return;
+    }
+
+    this.removerCamadasPiquetes();
+
+    if (this.map) {
+
+      this.removerRestricaoDoMapa();
+    }
 
     const geometry =
       this.geometriaAtual();
@@ -1176,7 +1986,6 @@ export class GeopoligonoFazenda
 
     this.sincronizandoMapa = false;
 
-
     const fazenda =
       this.fazenda();
 
@@ -1199,7 +2008,6 @@ export class GeopoligonoFazenda
       return;
     }
 
-
     if (fazenda) {
 
       this.localizarCidade(
@@ -1209,8 +2017,16 @@ export class GeopoligonoFazenda
     }
   }
 
-
   private sincronizarDesenho(): void {
+
+    if (
+      this.modoGestao() ===
+        'PIQUETES'
+    ) {
+
+      this.sincronizarDesenhoPiquete();
+      return;
+    }
 
     if (!this.draw) {
       return;
@@ -1238,6 +2054,7 @@ export class GeopoligonoFazenda
       this.areaPreviewHa.set(
         null
       );
+      this.alteracoesPendentes.set(true);
 
       return;
     }
@@ -1356,6 +2173,1421 @@ export class GeopoligonoFazenda
   }
 
 
+  private carregarAreasManejo(
+    fazendaId: string,
+    selecionarId?: string
+  ): void {
+
+    this.piquetesLoading.set(
+      true
+    );
+
+    forkJoin({
+
+      resumo:
+        this.areaManejoService
+          .listarResumo(
+            fazendaId
+          ),
+
+      rebanhos:
+        this.rebanhoService
+          .listarPorFazenda(
+            fazendaId
+          )
+    })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() =>
+          this.piquetesLoading.set(
+            false
+          )
+        )
+      )
+      .subscribe({
+
+        next: response => {
+
+          if (
+            this.loadedFazendaId !==
+              fazendaId
+          ) {
+            return;
+          }
+
+          this.resumoAreas.set(
+            response.resumo
+          );
+
+          this.rebanhos.set(
+            response.rebanhos
+          );
+
+          if (selecionarId) {
+
+            this.piqueteSelecionado.set(
+              response.resumo
+                .areas
+                .find(area =>
+                  area.id ===
+                    selecionarId
+                ) ?? null
+            );
+          }
+
+          if (
+            this.modoGestao() ===
+              'PIQUETES'
+          ) {
+
+            this.renderizarCamadasPiquetes();
+          }
+        },
+
+        error: error => {
+
+          this.errorMessage.set(
+            this.extrairMensagemErro(
+              error,
+              'Não foi possível carregar os piquetes da Fazenda.'
+            )
+          );
+        }
+      });
+  }
+
+
+  private sincronizarDesenhoPiquete(): void {
+
+    if (!this.draw) {
+      return;
+    }
+
+    const feature =
+      this.draw
+        .getSnapshot()
+        .find(item =>
+          item.geometry.type ===
+            'Polygon' &&
+          item.properties.mode ===
+            'polygon'
+        );
+
+    if (
+      !feature ||
+      feature.geometry.type !==
+        'Polygon'
+    ) {
+
+      this.featureId = null;
+
+      this.piqueteGeometria.set(
+        null
+      );
+
+      this.piqueteAreaPreviewHa.set(
+        null
+      );
+      this.piqueteFinalizado.set(false);
+
+      return;
+    }
+
+    /*
+     * IMPORTANTE:
+     * não chamamos updateFeatureGeometry/removeFeatures
+     * dentro do evento change do Terra Draw.
+     *
+     * Fazer isso reentra no store interno da biblioteca
+     * enquanto ela ainda está processando a mesma feature,
+     * causando "No feature with this id" e loops de change.
+     */
+    const geometry =
+      this.normalizarPrecisaoGeometria({
+
+        type: 'Polygon',
+
+        coordinates:
+          feature.geometry
+            .coordinates as number[][][]
+      });
+
+    const normalizada =
+      this.normalizarPiqueteAoLimite(
+        geometry
+      );
+
+    this.featureId =
+      feature.id as string;
+
+    if (!normalizada.valida) {
+
+      this.piqueteFinalizado.set(
+        false
+      );
+
+      this.piqueteGeometria.set(
+        null
+      );
+
+      this.piqueteAreaPreviewHa.set(
+        null
+      );
+
+      if (
+        !this.errorMessage()
+          .includes(
+            'limite amarelo'
+          )
+      ) {
+
+        this.errorMessage.set(
+          'O piquete precisa ficar totalmente dentro do limite amarelo da Fazenda.'
+        );
+      }
+
+      return;
+    }
+
+    const geometryFinal =
+      this.normalizarPrecisaoGeometria(
+        normalizada.geometry
+      );
+
+    this.piqueteGeometria.set(
+      geometryFinal
+    );
+
+    if (
+      this.modoEdicao() ===
+        'EDITAR'
+    ) {
+
+      this.piqueteFinalizado.set(
+        true
+      );
+    }
+
+    this.piqueteAreaPreviewHa.set(
+      this.calcularAreaHa(
+        geometryFinal
+      )
+    );
+
+    if (
+      this.errorMessage()
+        .includes(
+          'limite amarelo'
+        )
+    ) {
+
+      this.errorMessage.set('');
+    }
+  }
+
+  private carregarGeometriaPiqueteNoDraw(
+    geometry: GeoJsonPolygon
+  ): void {
+
+    if (!this.draw) {
+      return;
+    }
+
+    const geometryNormalizada =
+      this.normalizarPrecisaoGeometria(
+        geometry
+      );
+
+    this.sincronizandoMapa =
+      true;
+
+    this.draw.clear();
+
+    const result =
+      this.draw.addFeatures([
+        {
+          type: 'Feature',
+          properties: {
+            mode: 'polygon'
+          },
+          geometry:
+            geometryNormalizada
+        }
+      ]);
+
+    this.sincronizandoMapa =
+      false;
+
+    const first =
+      result[0];
+
+    if (
+      first &&
+      first.valid
+    ) {
+
+      this.featureId =
+        first.id as string;
+
+      this.draw.setMode(
+        'select'
+      );
+
+      this.draw.selectFeature(
+        this.featureId as string
+      );
+
+      this.piqueteFinalizado.set(
+        true
+      );
+    }
+  }
+
+
+  private renderizarCamadasPiquetes(): void {
+
+    // clear()/setData() do Terra Draw deixam as fontes carregando. O estilo
+    // já inicializado permite desenhar o limite mesmo sem piquetes.
+    if (
+      !this.map ||
+      !this.mapLoaded ||
+      this.modoGestao() !==
+        'PIQUETES'
+    ) {
+      return;
+    }
+
+    const limite =
+      this.geometriaAtual();
+
+    if (!limite) {
+      return;
+    }
+
+    this.renderizarMascaraFazenda(
+      limite
+    );
+
+    const areas =
+      this.resumoAreas()
+        ?.areas ?? [];
+
+    const featureCollection = {
+      type: 'FeatureCollection',
+      features:
+        areas.map(area => ({
+          type: 'Feature',
+          properties: {
+            id: area.id,
+            nome: area.nome,
+            tipo: area.tipo,
+            cor:
+              this.corPiquete(
+                area
+              ),
+            selecionada:
+              this.piqueteSelecionado()
+                ?.id === area.id
+                  ? 1
+                  : 0
+          },
+          geometry:
+            area.geometry
+        }))
+    } as any;
+
+    const areaSource =
+      this.map.getSource(
+        'geo-page-paddocks'
+      ) as mapboxgl.GeoJSONSource | undefined;
+
+    if (areaSource) {
+
+      areaSource.setData(
+        featureCollection
+      );
+
+    } else {
+
+      this.map.addSource(
+        'geo-page-paddocks',
+        {
+          type: 'geojson',
+          data:
+            featureCollection
+        }
+      );
+
+      this.map.addLayer({
+        id: 'geo-page-paddocks-fill',
+        type: 'fill',
+        source: 'geo-page-paddocks',
+
+        paint: {
+          'fill-color': [
+            'get',
+            'cor'
+          ],
+
+          'fill-opacity': [
+            'case',
+            [
+              '==',
+              [
+                'get',
+                'selecionada'
+              ],
+              1
+            ],
+            0.58,
+            0.38
+          ]
+        }
+      });
+
+      this.map.addLayer({
+        id: 'geo-page-paddocks-line',
+        type: 'line',
+        source: 'geo-page-paddocks',
+
+        paint: {
+          'line-color': [
+            'case',
+            [
+              '==',
+              [
+                'get',
+                'selecionada'
+              ],
+              1
+            ],
+            '#ffffff',
+            [
+              'get',
+              'cor'
+            ]
+          ],
+
+          'line-width': [
+            'case',
+            [
+              '==',
+              [
+                'get',
+                'selecionada'
+              ],
+              1
+            ],
+            4,
+            2.5
+          ]
+        }
+      });
+    }
+
+    this.renderizarLimiteFixoFazenda(
+      limite
+    );
+  }
+
+
+  private renderizarMascaraFazenda(
+    limite: GeoJsonPolygon
+  ): void {
+
+    if (!this.map) {
+      return;
+    }
+
+    const ring =
+      limite.coordinates[0];
+
+    if (
+      !ring ||
+      ring.length < 4
+    ) {
+      return;
+    }
+
+    const worldRing = [
+      [-180, -85],
+      [180, -85],
+      [180, 85],
+      [-180, 85],
+      [-180, -85]
+    ];
+
+    const farmHole =
+      ring
+        .map(point => [
+          point[0],
+          point[1]
+        ])
+        .reverse();
+
+    const data = {
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          worldRing,
+          farmHole
+        ]
+      }
+    } as any;
+
+    const source =
+      this.map.getSource(
+        'geo-page-farm-mask'
+      ) as mapboxgl.GeoJSONSource | undefined;
+
+    if (source) {
+
+      source.setData(
+        data
+      );
+
+      return;
+    }
+
+    this.map.addSource(
+      'geo-page-farm-mask',
+      {
+        type: 'geojson',
+        data
+      }
+    );
+
+    this.map.addLayer({
+      id: 'geo-page-farm-mask',
+      type: 'fill',
+      source: 'geo-page-farm-mask',
+
+      paint: {
+        'fill-color': '#07110a',
+        'fill-opacity': 0.88
+      }
+    });
+  }
+
+
+  private renderizarLimiteFixoFazenda(
+    limite: GeoJsonPolygon
+  ): void {
+
+    if (!this.map) {
+      return;
+    }
+
+    const data = {
+      type: 'Feature',
+      properties: {},
+      geometry: limite
+    } as any;
+
+    const source =
+      this.map.getSource(
+        'geo-page-farm-boundary'
+      ) as mapboxgl.GeoJSONSource | undefined;
+
+    if (source) {
+
+      source.setData(
+        data
+      );
+
+      this.trazerLimiteParaFrente();
+      return;
+    }
+
+    this.map.addSource(
+      'geo-page-farm-boundary',
+      {
+        type: 'geojson',
+        data
+      }
+    );
+
+    this.map.addLayer({
+      id: 'geo-page-farm-fill',
+      type: 'fill',
+      source:
+        'geo-page-farm-boundary',
+
+      paint: {
+        'fill-color': '#f5c842',
+        'fill-opacity': 0.08
+      }
+    });
+
+    this.map.addLayer({
+      id: 'geo-page-farm-line',
+      type: 'line',
+      source:
+        'geo-page-farm-boundary',
+
+      paint: {
+        'line-color': '#ffd54a',
+        'line-width': 4
+      }
+    });
+
+    this.trazerLimiteParaFrente();
+  }
+
+
+  private trazerLimiteParaFrente(): void {
+
+    if (!this.map) {
+      return;
+    }
+
+    if (
+      this.map.getLayer(
+        'geo-page-farm-fill'
+      )
+    ) {
+
+      this.map.moveLayer(
+        'geo-page-farm-fill'
+      );
+    }
+
+    if (
+      this.map.getLayer(
+        'geo-page-farm-line'
+      )
+    ) {
+
+      this.map.moveLayer(
+        'geo-page-farm-line'
+      );
+    }
+  }
+
+
+  private removerCamadasPiquetes(): void {
+
+    if (
+      !this.map ||
+      !this.mapLoaded
+    ) {
+      return;
+    }
+
+    for (
+      const layer of [
+        'geo-page-farm-line',
+        'geo-page-farm-fill',
+        'geo-page-paddocks-line',
+        'geo-page-paddocks-fill',
+        'geo-page-farm-mask'
+      ]
+    ) {
+
+      if (
+        this.map.getLayer(
+          layer
+        )
+      ) {
+
+        this.map.removeLayer(
+          layer
+        );
+      }
+    }
+
+    for (
+      const source of [
+        'geo-page-farm-boundary',
+        'geo-page-paddocks',
+        'geo-page-farm-mask'
+      ]
+    ) {
+
+      if (
+        this.map.getSource(
+          source
+        )
+      ) {
+
+        this.map.removeSource(
+          source
+        );
+      }
+    }
+  }
+
+
+  private removerRestricaoDoMapa(): void {
+    if (!this.map) {
+      return;
+    }
+
+    // O Mapbox aceita null em runtime para remover os limites, mas a
+    // declaração de setMaxBounds da versão instalada não inclui esse valor.
+    const setMaxBounds = this.map.setMaxBounds as (
+      bounds: mapboxgl.LngLatBoundsLike | null
+    ) => mapboxgl.Map;
+
+    setMaxBounds.call(this.map, null);
+    this.map.setMinZoom(0);
+  }
+
+  private normalizarPiqueteAoLimite(
+    geometry: GeoJsonPolygon
+  ): {
+    geometry: GeoJsonPolygon;
+    ajustada: boolean;
+    valida: boolean;
+  } {
+
+    const geometrySegura =
+      this.normalizarPrecisaoGeometria(
+        geometry
+      );
+
+    const limite =
+      this.geometriaAtual();
+
+    if (!limite) {
+
+      return {
+        geometry,
+        ajustada: false,
+        valida: false
+      };
+    }
+
+    let ajustada = false;
+    let valida = true;
+
+    const coordinates =
+      geometrySegura.coordinates
+        .map(ring => {
+
+          if (ring.length === 0) {
+            return ring;
+          }
+
+          const fechado =
+            this.mesmoPonto(
+              ring[0],
+              ring[
+                ring.length - 1
+              ]
+            );
+
+          const pontos =
+            fechado
+              ? ring.slice(0, -1)
+              : [...ring];
+
+          const normalizados =
+            pontos.map(point => {
+
+              const normalizado =
+                this.normalizarPontoPiquete(
+                  point,
+                  limite
+                );
+
+              if (!normalizado.valido) {
+                valida = false;
+              }
+
+              if (
+                normalizado.ajustado
+              ) {
+                ajustada = true;
+              }
+
+              return normalizado.ponto;
+            });
+
+          if (
+            normalizados.length > 0
+          ) {
+
+            normalizados.push([
+              normalizados[0][0],
+              normalizados[0][1]
+            ]);
+          }
+
+          return normalizados;
+        });
+
+    const geometryNormalizada:
+      GeoJsonPolygon = {
+
+        type: 'Polygon',
+        coordinates
+      };
+
+    if (
+      valida &&
+      !this.segmentosPiqueteDentroDoLimite(
+        geometryNormalizada,
+        limite
+      )
+    ) {
+
+      valida = false;
+    }
+
+    return {
+      geometry:
+        geometryNormalizada,
+      ajustada,
+      valida
+    };
+  }
+
+
+  private segmentosPiqueteDentroDoLimite(
+    geometry: GeoJsonPolygon,
+    limite: GeoJsonPolygon
+  ): boolean {
+
+    for (
+      const ring of geometry.coordinates
+    ) {
+
+      for (
+        let i = 0;
+        i < ring.length - 1;
+        i++
+      ) {
+
+        const inicio =
+          ring[i];
+
+        const fim =
+          ring[i + 1];
+
+        /*
+         * Em uma Fazenda côncava, dois vértices podem
+         * estar dentro enquanto o segmento entre eles
+         * atravessa uma região externa. Amostramos a
+         * linha para bloquear esse caso antes do POST.
+         */
+        for (
+          let passo = 1;
+          passo < 20;
+          passo++
+        ) {
+
+          const t =
+            passo / 20;
+
+          const ponto = [
+            inicio[0] +
+              (
+                fim[0] -
+                inicio[0]
+              ) * t,
+            inicio[1] +
+              (
+                fim[1] -
+                inicio[1]
+              ) * t
+          ];
+
+          if (
+            this.pontoDentroPoligono(
+              ponto,
+              limite
+            )
+          ) {
+            continue;
+          }
+
+          const proximo =
+            this.pontoMaisProximoNoLimite(
+              ponto,
+              limite
+            );
+
+          if (
+            !proximo ||
+            this.distanciaPixels(
+              ponto,
+              proximo
+            ) >
+              this.toleranciaSnapPiquetePx
+          ) {
+
+            return false;
+          }
+        }
+      }
+    }
+
+    return true;
+  }
+
+
+  private normalizarPontoPiquete(
+    point: number[],
+    limite: GeoJsonPolygon
+  ): {
+    ponto: number[];
+    ajustado: boolean;
+    valido: boolean;
+  } {
+
+    const dentro =
+      this.pontoDentroPoligono(
+        point,
+        limite
+      );
+
+    const proximo =
+      this.pontoMaisProximoNoLimite(
+        point,
+        limite
+      );
+
+    if (
+      proximo &&
+      this.distanciaPixels(
+        point,
+        proximo
+      ) <=
+        this.toleranciaSnapPiquetePx
+    ) {
+
+      return {
+        ponto:
+          this.arredondarPonto(
+            proximo
+          ),
+        ajustado:
+          !this.mesmoPonto(
+            point,
+            proximo
+          ),
+        valido: true
+      };
+    }
+
+    return {
+      ponto:
+        this.arredondarPonto(
+          point
+        ),
+      ajustado: false,
+      valido: dentro
+    };
+  }
+
+
+  private pontoDentroPoligono(
+    point: number[],
+    polygon: GeoJsonPolygon
+  ): boolean {
+
+    const ring =
+      polygon.coordinates[0];
+
+    if (
+      !ring ||
+      ring.length < 3
+    ) {
+      return false;
+    }
+
+    if (
+      this.pontoNaBorda(
+        point,
+        ring
+      )
+    ) {
+      return true;
+    }
+
+    const x =
+      point[0];
+
+    const y =
+      point[1];
+
+    let inside = false;
+
+    for (
+      let i = 0,
+      j = ring.length - 1;
+      i < ring.length;
+      j = i++
+    ) {
+
+      const xi =
+        ring[i][0];
+
+      const yi =
+        ring[i][1];
+
+      const xj =
+        ring[j][0];
+
+      const yj =
+        ring[j][1];
+
+      const intersecta =
+        (
+          yi > y
+        ) !==
+          (
+            yj > y
+          ) &&
+        x <
+          (
+            (
+              xj - xi
+            ) *
+              (
+                y - yi
+              )
+          ) /
+            (
+              yj -
+                yi ||
+              Number.EPSILON
+            ) +
+            xi;
+
+      if (intersecta) {
+        inside = !inside;
+      }
+    }
+
+    return inside;
+  }
+
+
+  private pontoNaBorda(
+    point: number[],
+    ring: number[][]
+  ): boolean {
+
+    const tolerancia =
+      1e-10;
+
+    for (
+      let i = 0;
+      i < ring.length - 1;
+      i++
+    ) {
+
+      const a =
+        ring[i];
+
+      const b =
+        ring[i + 1];
+
+      const abX =
+        b[0] - a[0];
+
+      const abY =
+        b[1] - a[1];
+
+      const apX =
+        point[0] - a[0];
+
+      const apY =
+        point[1] - a[1];
+
+      const cross =
+        Math.abs(
+          abX * apY -
+          abY * apX
+        );
+
+      if (
+        cross >
+        tolerancia
+      ) {
+        continue;
+      }
+
+      const dot =
+        apX * abX +
+        apY * abY;
+
+      const lengthSquared =
+        abX * abX +
+        abY * abY;
+
+      if (
+        dot >=
+          -tolerancia &&
+        dot <=
+          lengthSquared +
+            tolerancia
+      ) {
+
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+
+  private pontoMaisProximoNoLimite(
+    point: number[],
+    polygon: GeoJsonPolygon
+  ): number[] | null {
+
+    if (!this.map) {
+      return null;
+    }
+
+    const alvo =
+      this.map.project({
+        lng: point[0],
+        lat: point[1]
+      });
+
+    let melhor:
+      number[] | null = null;
+
+    let melhorDistancia =
+      Number.POSITIVE_INFINITY;
+
+    for (
+      const ring of polygon.coordinates
+    ) {
+
+      for (
+        let i = 0;
+        i < ring.length - 1;
+        i++
+      ) {
+
+        const a =
+          this.map.project({
+            lng: ring[i][0],
+            lat: ring[i][1]
+          });
+
+        const b =
+          this.map.project({
+            lng: ring[i + 1][0],
+            lat: ring[i + 1][1]
+          });
+
+        const abX =
+          b.x - a.x;
+
+        const abY =
+          b.y - a.y;
+
+        const tamanho2 =
+          abX * abX +
+          abY * abY;
+
+        const t =
+          tamanho2 === 0
+            ? 0
+            : Math.max(
+                0,
+                Math.min(
+                  1,
+                  (
+                    (
+                      alvo.x - a.x
+                    ) * abX +
+                    (
+                      alvo.y - a.y
+                    ) * abY
+                  ) /
+                    tamanho2
+                )
+              );
+
+        const x =
+          a.x + abX * t;
+
+        const y =
+          a.y + abY * t;
+
+        const dx =
+          alvo.x - x;
+
+        const dy =
+          alvo.y - y;
+
+        const distancia =
+          Math.sqrt(
+            dx * dx +
+            dy * dy
+          );
+
+        if (
+          distancia <
+          melhorDistancia
+        ) {
+
+          const lngLat =
+            this.map.unproject([
+              x,
+              y
+            ]);
+
+          melhorDistancia =
+            distancia;
+
+          melhor = [
+            lngLat.lng,
+            lngLat.lat
+          ];
+        }
+      }
+    }
+
+    return melhor;
+  }
+
+
+  private distanciaPixels(
+    a: number[],
+    b: number[]
+  ): number {
+
+    if (!this.map) {
+      return Number.POSITIVE_INFINITY;
+    }
+
+    const pa =
+      this.map.project({
+        lng: a[0],
+        lat: a[1]
+      });
+
+    const pb =
+      this.map.project({
+        lng: b[0],
+        lat: b[1]
+      });
+
+    const dx =
+      pa.x - pb.x;
+
+    const dy =
+      pa.y - pb.y;
+
+    return Math.sqrt(
+      dx * dx +
+      dy * dy
+    );
+  }
+
+
+  private mesmoPonto(
+    a: number[],
+    b: number[]
+  ): boolean {
+
+    return (
+      Math.abs(
+        a[0] - b[0]
+      ) < 1e-12 &&
+      Math.abs(
+        a[1] - b[1]
+      ) < 1e-12
+    );
+  }
+
+
+  private normalizarPrecisaoGeometria(
+    geometry: GeoJsonPolygon
+  ): GeoJsonPolygon {
+
+    return {
+      type: 'Polygon',
+
+      coordinates:
+        geometry.coordinates
+          .map(ring =>
+            ring.map(point =>
+              this.arredondarPonto(
+                point
+              )
+            )
+          )
+    };
+  }
+
+
+  private arredondarPonto(
+    point: number[]
+  ): number[] {
+
+    return [
+      this.arredondarCoordenada(
+        point[0]
+      ),
+      this.arredondarCoordenada(
+        point[1]
+      )
+    ];
+  }
+
+
+  private arredondarCoordenada(
+    value: number
+  ): number {
+
+    if (!Number.isFinite(value)) {
+      return value;
+    }
+
+    return Number(
+      value.toFixed(
+        this.precisaoCoordenadas
+      )
+    );
+  }
+
+
+  private clonarGeometria(
+    geometry: GeoJsonPolygon
+  ): GeoJsonPolygon {
+
+    return this
+      .normalizarPrecisaoGeometria(
+        geometry
+      );
+  }
+
+
+  private corPorId(
+    id: string
+  ): string {
+
+    let hash = 0;
+
+    for (
+      let i = 0;
+      i < id.length;
+      i++
+    ) {
+
+      hash =
+        (
+          hash * 31 +
+          id.charCodeAt(i)
+        ) | 0;
+    }
+
+    let hue =
+      Math.abs(hash) % 360;
+
+    if (
+      hue >= 42 &&
+      hue <= 70
+    ) {
+
+      hue =
+        (
+          hue + 80
+        ) % 360;
+    }
+
+    return this.hslParaHex(
+      hue,
+      64,
+      42
+    );
+  }
+
+
+  private hslParaHex(
+    hue: number,
+    saturation: number,
+    lightness: number
+  ): string {
+
+    const s =
+      saturation / 100;
+
+    const l =
+      lightness / 100;
+
+    const chroma =
+      (
+        1 -
+        Math.abs(
+          2 * l - 1
+        )
+      ) * s;
+
+    const x =
+      chroma *
+      (
+        1 -
+        Math.abs(
+          (
+            hue / 60
+          ) %
+            2 -
+            1
+        )
+      );
+
+    const m =
+      l - chroma / 2;
+
+    let r = 0;
+    let g = 0;
+    let b = 0;
+
+    if (hue < 60) {
+      r = chroma;
+      g = x;
+    } else if (hue < 120) {
+      r = x;
+      g = chroma;
+    } else if (hue < 180) {
+      g = chroma;
+      b = x;
+    } else if (hue < 240) {
+      g = x;
+      b = chroma;
+    } else if (hue < 300) {
+      r = x;
+      b = chroma;
+    } else {
+      r = chroma;
+      b = x;
+    }
+
+    const channel = (
+      value: number
+    ): string =>
+      Math.round(
+        (
+          value + m
+        ) * 255
+      )
+        .toString(16)
+        .padStart(
+          2,
+          '0'
+        );
+
+    return (
+      '#' +
+      channel(r) +
+      channel(g) +
+      channel(b)
+    );
+  }
+
+
   private async localizarCidade(
     cidade: string,
     estado: string
@@ -1369,6 +3601,8 @@ export class GeopoligonoFazenda
       return;
     }
 
+    const mapa = this.map;
+    const fazendaId = this.loadedFazendaId;
     const termo =
       `${cidade}, ${estado}, Brasil`;
 
@@ -1403,7 +3637,11 @@ export class GeopoligonoFazenda
         return;
       }
 
-      this.map.flyTo({
+      if (this.map !== mapa || this.loadedFazendaId !== fazendaId) {
+        return;
+      }
+
+      mapa.flyTo({
         center: [
           Number(coordinates[0]),
           Number(coordinates[1])
