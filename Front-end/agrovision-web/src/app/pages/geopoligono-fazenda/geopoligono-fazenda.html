@@ -1036,6 +1036,313 @@
 
       </section>
 
+
+      @if (
+        modoGestao() === 'PIQUETES'
+      ) {
+
+        @if (
+          analisePiquetes();
+          as analise
+        ) {
+
+          <section class="paddock-analysis">
+
+            <div class="paddock-analysis-header">
+
+              <div>
+                <span class="eyebrow">
+                  ANÁLISE DE LOTAÇÃO
+                </span>
+
+                <h2>
+                  Leitura operacional dos piquetes
+                </h2>
+
+                <p>
+                  Comparação da lotação atual usando os rebanhos
+                  associados às áreas cadastradas. Para pastos,
+                  os valores representam ocupação observada e não
+                  capacidade de suporte agronômica.
+                </p>
+              </div>
+
+              <mat-icon>analytics</mat-icon>
+
+            </div>
+
+
+            <div class="paddock-analysis-grid">
+
+              <article>
+
+                <span>
+                  Lotação média dos pastos
+                </span>
+
+                <strong>
+                  @if (
+                    analise.mediaUaPorHa !== null
+                  ) {
+
+                    {{
+                      analise.mediaUaPorHa
+                        | number:'1.0-2':'pt-BR'
+                    }}
+                    <small>UA/ha</small>
+
+                  } @else {
+                    —
+                  }
+                </strong>
+
+                <p>
+                  @if (
+                    analise.mediaCabecasPorHa !== null
+                  ) {
+
+                    {{
+                      analise.mediaCabecasPorHa
+                        | number:'1.0-2':'pt-BR'
+                    }}
+                    cabeça(s)/ha na média atual.
+
+                  } @else {
+
+                    Associe rebanhos aos pastos para calcular.
+
+                  }
+                </p>
+
+              </article>
+
+
+              <article>
+
+                <span>
+                  Maior lotação observada
+                </span>
+
+                <strong>
+                  @if (analise.maiorLotacao) {
+
+                    {{
+                      analise.maiorLotacao
+                        .indicadores.uaPorHa
+                        | number:'1.0-2':'pt-BR'
+                    }}
+                    <small>UA/ha</small>
+
+                  } @else {
+                    —
+                  }
+                </strong>
+
+                <p>
+                  {{
+                    analise.maiorLotacao?.nome ??
+                    'Sem dados suficientes'
+                  }}
+                </p>
+
+              </article>
+
+
+              <article>
+
+                <span>
+                  Menor lotação observada
+                </span>
+
+                <strong>
+                  @if (analise.menorLotacao) {
+
+                    {{
+                      analise.menorLotacao
+                        .indicadores.uaPorHa
+                        | number:'1.0-2':'pt-BR'
+                    }}
+                    <small>UA/ha</small>
+
+                  } @else {
+                    —
+                  }
+                </strong>
+
+                <p>
+                  {{
+                    analise.menorLotacao?.nome ??
+                    'Sem dados suficientes'
+                  }}
+                </p>
+
+              </article>
+
+
+              <article
+                [class.attention]="
+                  analise
+                    .confinamentosAcimaCapacidade
+                    .length > 0
+                "
+              >
+
+                <span>
+                  Confinamentos em atenção
+                </span>
+
+                <strong>
+                  {{
+                    analise
+                      .confinamentosAcimaCapacidade
+                      .length
+                  }}
+                </strong>
+
+                <p>
+                  {{
+                    analise.confinamentosLotados.length
+                  }}
+                  lotado(s) e
+                  {{
+                    analise.rebanhosSemArea
+                  }}
+                  rebanho(s) sem área.
+                </p>
+
+              </article>
+
+            </div>
+
+
+            <div class="paddock-analysis-table-wrap">
+
+              <table class="paddock-analysis-table">
+
+                <thead>
+                  <tr>
+                    <th>Área</th>
+                    <th>Tipo</th>
+                    <th>Rebanho</th>
+                    <th class="numeric">Animais</th>
+                    <th class="numeric">Área</th>
+                    <th class="numeric">Indicador principal</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+
+                  @for (
+                    area of resumoAreas()?.areas ?? [];
+                    track area.id
+                  ) {
+
+                    <tr>
+
+                      <td>
+                        <strong>
+                          {{ area.nome }}
+                        </strong>
+                      </td>
+
+                      <td>
+                        {{ labelTipoPiquete(area.tipo) }}
+                      </td>
+
+                      <td>
+                        {{
+                          area.rebanhoNome ??
+                          'Sem rebanho'
+                        }}
+                      </td>
+
+                      <td class="numeric">
+                        {{
+                          area.indicadores
+                            .animaisAtivos
+                        }}
+                      </td>
+
+                      <td class="numeric">
+                        {{
+                          area.areaCalculadaHa
+                            | number:'1.0-2':'pt-BR'
+                        }}
+                        ha
+                      </td>
+
+                      <td class="numeric">
+
+                        @if (
+                          area.tipo === 'PASTO'
+                        ) {
+
+                          @if (
+                            area.indicadores.uaPorHa !== null
+                          ) {
+
+                            <strong>
+                              {{
+                                area.indicadores.uaPorHa
+                                  | number:'1.0-2':'pt-BR'
+                              }}
+                              UA/ha
+                            </strong>
+
+                          } @else {
+                            —
+                          }
+
+                        } @else {
+
+                          @if (
+                            area.indicadores
+                              .ocupacaoPercentual !== null
+                          ) {
+
+                            <strong>
+                              {{
+                                area.indicadores
+                                  .ocupacaoPercentual
+                                  | number:'1.0-1':'pt-BR'
+                              }}%
+                              ocupação
+                            </strong>
+
+                          } @else {
+
+                            Capacidade não informada
+
+                          }
+
+                        }
+
+                      </td>
+
+                    </tr>
+
+                  } @empty {
+
+                    <tr>
+                      <td colspan="6">
+                        Nenhum piquete cadastrado.
+                      </td>
+                    </tr>
+
+                  }
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </section>
+
+        }
+
+      }
+
     }
 
 
