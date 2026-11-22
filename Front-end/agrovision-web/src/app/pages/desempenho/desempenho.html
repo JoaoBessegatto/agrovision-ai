@@ -5,7 +5,7 @@
     <div class="page-heading">
 
       <span class="eyebrow">
-        INTELIGÊNCIA PRODUTIVA
+        ANÁLISE PRODUTIVA
       </span>
 
       <h1>
@@ -351,6 +351,305 @@
         </div>
 
       </article>
+
+    </section>
+
+
+    <!-- ========================================
+         PROJEÇÃO DE PESO
+    ========================================= -->
+
+    <section class="panel projection-panel">
+
+      <div class="panel-header">
+
+        <div>
+
+          <span class="eyebrow">
+            ESTIMATIVA DE PESO
+          </span>
+
+          <h2>
+            Projeção mantendo o GMD atual
+          </h2>
+
+          <p>
+            Estimativa matemática baseada no peso médio atual
+            e no GMD médio calculado pelas pesagens recentes.
+            Não representa garantia de ganho futuro.
+          </p>
+
+        </div>
+
+        <mat-icon>
+          timeline
+        </mat-icon>
+
+      </div>
+
+
+      @if (
+        desempenho.pesoMedioAtualKg !== null &&
+        desempenho.gmdMedioKgDia !== null
+      ) {
+
+        <div class="projection-grid">
+
+          <article class="projection-card current">
+
+            <span>
+              Peso médio atual
+            </span>
+
+            <strong>
+              {{
+                desempenho.pesoMedioAtualKg
+                  | number:'1.0-1':'pt-BR'
+              }}
+              <small>kg</small>
+            </strong>
+
+            <p>
+              Base usada para a estimativa.
+            </p>
+
+          </article>
+
+
+          <article class="projection-card">
+
+            <span>
+              Em 30 dias
+            </span>
+
+            <strong>
+              {{
+                desempenho.pesoProjetado30DiasKg
+                  | number:'1.0-1':'pt-BR'
+              }}
+              <small>kg</small>
+            </strong>
+
+            <p>
+              Mantendo
+              {{
+                desempenho.gmdMedioKgDia
+                  | number:'1.0-2':'pt-BR'
+              }}
+              kg/dia.
+            </p>
+
+          </article>
+
+
+          <article class="projection-card">
+
+            <span>
+              Em 60 dias
+            </span>
+
+            <strong>
+              {{
+                desempenho.pesoProjetado60DiasKg
+                  | number:'1.0-1':'pt-BR'
+              }}
+              <small>kg</small>
+            </strong>
+
+            <p>
+              Extrapolação linear do GMD atual.
+            </p>
+
+          </article>
+
+
+          <article class="projection-card">
+
+            <span>
+              Em 90 dias
+            </span>
+
+            <strong>
+              {{
+                desempenho.pesoProjetado90DiasKg
+                  | number:'1.0-1':'pt-BR'
+              }}
+              <small>kg</small>
+            </strong>
+
+            <p>
+              Horizonte mais longo da estimativa.
+            </p>
+
+          </article>
+
+        </div>
+
+
+        <div class="projection-table-wrap">
+
+          <table class="projection-table">
+
+            <thead>
+              <tr>
+                <th>Rebanho</th>
+                <th class="numeric">Peso atual</th>
+                <th class="numeric">GMD médio</th>
+                <th class="numeric">30 dias</th>
+                <th class="numeric">60 dias</th>
+                <th class="numeric">90 dias</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              @for (
+                rebanho of desempenho.rebanhos;
+                track rebanho.rebanhoId
+              ) {
+
+                <tr>
+
+                  <td>
+                    <strong class="herd-name">
+                      {{ rebanho.nome }}
+                    </strong>
+                  </td>
+
+                  <td class="numeric">
+                    @if (
+                      rebanho.pesoMedioAtualKg !== null
+                    ) {
+
+                      {{
+                        rebanho.pesoMedioAtualKg
+                          | number:'1.0-1':'pt-BR'
+                      }}
+                      kg
+
+                    } @else {
+                      —
+                    }
+                  </td>
+
+                  <td class="numeric gmd-cell">
+                    @if (
+                      rebanho.gmdMedioKgDia !== null
+                    ) {
+
+                      <strong
+                        [class.negative]="
+                          rebanho.gmdMedioKgDia < 0
+                        "
+                      >
+                        {{
+                          rebanho.gmdMedioKgDia
+                            | number:'1.0-2':'pt-BR'
+                        }}
+                      </strong>
+                      kg/d
+
+                    } @else {
+                      —
+                    }
+                  </td>
+
+                  <td class="numeric">
+                    @if (
+                      rebanho.pesoProjetado30DiasKg !== null
+                    ) {
+
+                      <strong class="projected-weight">
+                        {{
+                          rebanho.pesoProjetado30DiasKg
+                            | number:'1.0-1':'pt-BR'
+                        }}
+                        kg
+                      </strong>
+
+                    } @else {
+                      —
+                    }
+                  </td>
+
+                  <td class="numeric">
+                    @if (
+                      rebanho.pesoProjetado60DiasKg !== null
+                    ) {
+
+                      <strong class="projected-weight">
+                        {{
+                          rebanho.pesoProjetado60DiasKg
+                            | number:'1.0-1':'pt-BR'
+                        }}
+                        kg
+                      </strong>
+
+                    } @else {
+                      —
+                    }
+                  </td>
+
+                  <td class="numeric">
+                    @if (
+                      rebanho.pesoProjetado90DiasKg !== null
+                    ) {
+
+                      <strong class="projected-weight">
+                        {{
+                          rebanho.pesoProjetado90DiasKg
+                            | number:'1.0-1':'pt-BR'
+                        }}
+                        kg
+                      </strong>
+
+                    } @else {
+                      —
+                    }
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+
+        <div class="projection-note">
+
+          <mat-icon>info_outline</mat-icon>
+
+          <p>
+            A estimativa considera que o GMD médio atual
+            permanecerá constante. Mudanças de dieta, manejo,
+            clima, sanidade e fase produtiva podem alterar
+            o resultado real.
+          </p>
+
+        </div>
+
+      } @else {
+
+        <div class="panel-empty large">
+
+          <mat-icon>monitor_weight</mat-icon>
+
+          <h3>
+            Ainda não é possível projetar o peso
+          </h3>
+
+          <p>
+            São necessárias ao menos duas pesagens válidas
+            para calcular GMD e gerar uma estimativa futura.
+          </p>
+
+        </div>
+
+      }
 
     </section>
 
