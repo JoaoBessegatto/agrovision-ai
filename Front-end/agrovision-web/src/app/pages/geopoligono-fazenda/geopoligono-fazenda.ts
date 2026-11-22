@@ -5,6 +5,7 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
+  computed,
   effect,
   inject,
   signal
@@ -267,6 +268,174 @@ export class GeopoligonoFazenda
     signal<ResumoAreasManejo | null>(
       null
     );
+
+
+  readonly analisePiquetes =
+    computed(() => {
+
+      const resumo =
+        this.resumoAreas();
+
+      if (!resumo) {
+        return null;
+      }
+
+      const pastos =
+        resumo.areas
+          .filter(area =>
+            area.tipo === 'PASTO' &&
+            area.rebanhoId !== null
+          );
+
+      const pastosComLotacao =
+        pastos
+          .filter(area =>
+            area.indicadores
+              .uaPorHa !== null
+          );
+
+      const areaPastosComRebanhoHa =
+        pastos
+          .reduce(
+            (
+              total,
+              area
+            ) =>
+              total +
+              area.areaCalculadaHa,
+            0
+          );
+
+      const totalUaPastos =
+        pastos
+          .reduce(
+            (
+              total,
+              area
+            ) =>
+              total +
+              (
+                area.indicadores
+                  .unidadesAnimais ??
+                0
+              ),
+            0
+          );
+
+      const totalAnimaisPastos =
+        pastos
+          .reduce(
+            (
+              total,
+              area
+            ) =>
+              total +
+              area.indicadores
+                .animaisAtivos,
+            0
+          );
+
+      const mediaUaPorHa =
+        areaPastosComRebanhoHa > 0
+          ? totalUaPastos /
+              areaPastosComRebanhoHa
+          : null;
+
+      const mediaCabecasPorHa =
+        areaPastosComRebanhoHa > 0
+          ? totalAnimaisPastos /
+              areaPastosComRebanhoHa
+          : null;
+
+      const maiorLotacao =
+        pastosComLotacao
+          .reduce<AreaManejo | null>(
+            (
+              maior,
+              area
+            ) => {
+
+              if (!maior) {
+                return area;
+              }
+
+              return (
+                area.indicadores
+                  .uaPorHa ?? 0
+              ) >
+                (
+                  maior.indicadores
+                    .uaPorHa ?? 0
+                )
+                  ? area
+                  : maior;
+            },
+            null
+          );
+
+      const menorLotacao =
+        pastosComLotacao
+          .reduce<AreaManejo | null>(
+            (
+              menor,
+              area
+            ) => {
+
+              if (!menor) {
+                return area;
+              }
+
+              return (
+                area.indicadores
+                  .uaPorHa ??
+                Number.POSITIVE_INFINITY
+              ) <
+                (
+                  menor.indicadores
+                    .uaPorHa ??
+                  Number.POSITIVE_INFINITY
+                )
+                  ? area
+                  : menor;
+            },
+            null
+          );
+
+      const confinamentosAcimaCapacidade =
+        resumo.areas
+          .filter(area =>
+            area.tipo ===
+              'CONFINAMENTO' &&
+            area.indicadores
+              .statusConfinamento ===
+              'ACIMA_CAPACIDADE'
+          );
+
+      const confinamentosLotados =
+        resumo.areas
+          .filter(area =>
+            area.tipo ===
+              'CONFINAMENTO' &&
+            area.indicadores
+              .statusConfinamento ===
+              'LOTADO'
+          );
+
+      return {
+        mediaUaPorHa,
+        mediaCabecasPorHa,
+        maiorLotacao,
+        menorLotacao,
+        confinamentosAcimaCapacidade,
+        confinamentosLotados,
+        rebanhosSemArea:
+          resumo.rebanhosSemArea,
+        animaisAtivosEmAreas:
+          resumo.animaisAtivosEmAreas,
+        percentualAreaMapeada:
+          resumo.percentualAreaMapeada
+      };
+    });
 
   readonly rebanhos =
     signal<RebanhoResponse[]>([]);
