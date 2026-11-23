@@ -40,6 +40,12 @@ public class Rebanho {
     )
     private List<Animal> animais = new ArrayList<>();
 
+    @OneToOne(
+            mappedBy = "rebanho",
+            fetch = FetchType.LAZY
+    )
+    private AreaManejo areaManejoAtual;
+
 
     public Rebanho(
             String nome,

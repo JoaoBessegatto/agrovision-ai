@@ -256,6 +256,13 @@ export const routes: Routes = [
             .then(
               m => m.GeopoligonoFazenda
             )
+      },
+
+
+      {
+        path: 'fazenda/piquetes',
+        redirectTo: 'fazenda/area',
+        pathMatch: 'full'
       }
 
     ]

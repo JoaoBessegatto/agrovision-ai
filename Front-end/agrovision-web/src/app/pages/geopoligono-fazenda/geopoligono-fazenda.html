@@ -220,6 +220,59 @@
     </section>
 
 
+    @if (
+      !onboarding &&
+      geopoligonoSalvo()?.configurado
+    ) {
+
+      <div class="territory-tabs">
+
+        <button
+          type="button"
+          [class.active]="
+            modoGestao() === 'LIMITE'
+          "
+          (click)="abrirLimiteFazenda()"
+        >
+          <mat-icon>polyline</mat-icon>
+
+          <span>
+            <strong>
+              Limite da Fazenda
+            </strong>
+
+            <small>
+              Área oficial da propriedade
+            </small>
+          </span>
+        </button>
+
+
+        <button
+          type="button"
+          [class.active]="
+            modoGestao() === 'PIQUETES'
+          "
+          (click)="abrirPiquetes()"
+        >
+          <mat-icon>grid_view</mat-icon>
+
+          <span>
+            <strong>
+              Piquetes
+            </strong>
+
+            <small>
+              Divisões internas e rebanhos
+            </small>
+          </span>
+        </button>
+
+      </div>
+
+    }
+
+
     @if (!mapaConfigurado()) {
 
       <section class="token-state">
@@ -256,63 +309,93 @@
 
         <div class="map-toolbar">
 
-          <div class="search-box">
+          @if (
+            modoGestao() === 'LIMITE'
+          ) {
 
-            <mat-icon>
-              search
-            </mat-icon>
+            <div class="search-box">
 
-            <input
-              type="search"
-              [value]="buscaLocal()"
-              placeholder="Cidade, endereço ou referência próxima"
-              (input)="atualizarBusca($event)"
-              (keydown.enter)="buscarNoMapa()"
-            >
+              <mat-icon>
+                search
+              </mat-icon>
 
-            <button
-              type="button"
-              [disabled]="buscandoLocal()"
-              (click)="buscarNoMapa()"
-            >
-              @if (buscandoLocal()) {
-                Buscando...
-              } @else {
-                Localizar
-              }
-            </button>
+              <input
+                type="search"
+                [value]="buscaLocal()"
+                placeholder="Cidade, endereço ou referência próxima"
+                (input)="atualizarBusca($event)"
+                (keydown.enter)="buscarNoMapa()"
+              >
 
-          </div>
+              <button
+                type="button"
+                [disabled]="buscandoLocal()"
+                (click)="buscarNoMapa()"
+              >
+                @if (buscandoLocal()) {
+                  Buscando...
+                } @else {
+                  Localizar
+                }
+              </button>
+
+            </div>
 
 
-          <div class="map-style-toggle">
+            <div class="map-style-toggle">
 
-            <button
-              type="button"
-              [class.active]="
-                modoMapa() === 'SATELITE'
-              "
-              (click)="alterarMapa('SATELITE')"
-            >
-              <mat-icon>satellite_alt</mat-icon>
-              Satélite
-            </button>
+              <button
+                type="button"
+                [class.active]="
+                  modoMapa() === 'SATELITE'
+                "
+                (click)="alterarMapa('SATELITE')"
+              >
+                <mat-icon>satellite_alt</mat-icon>
+                Satélite
+              </button>
 
-            <button
-              type="button"
-              [class.active]="
-                modoMapa() === 'MAPA'
-              "
-              (click)="alterarMapa('MAPA')"
-            >
-              <mat-icon>map</mat-icon>
-              Mapa
-            </button>
+              <button
+                type="button"
+                [class.active]="
+                  modoMapa() === 'MAPA'
+                "
+                (click)="alterarMapa('MAPA')"
+              >
+                <mat-icon>map</mat-icon>
+                Mapa
+              </button>
 
-          </div>
+            </div>
+
+          } @else {
+
+            <div class="paddock-toolbar-info">
+
+              <div>
+                <mat-icon>satellite_alt</mat-icon>
+
+                <span>
+                  <strong>
+                    Piquetes sobre o limite oficial
+                  </strong>
+
+                  <small>
+                    O amarelo é a divisa da Fazenda.
+                    As demais cores são áreas internas.
+                  </small>
+                </span>
+              </div>
+
+              <span class="satellite-only-badge">
+                Satélite
+              </span>
+
+            </div>
+
+          }
 
         </div>
-
 
         <div class="map-layout">
 
@@ -350,7 +433,381 @@
 
           <aside class="map-panel">
 
-            <div class="panel-heading">
+            @if (
+              modoGestao() === 'PIQUETES'
+            ) {
+
+              <div class="panel-heading">
+
+                <span class="eyebrow">
+                  PIQUETES
+                </span>
+
+                <h2>
+                  Divisões da propriedade
+                </h2>
+
+                <p>
+                  O limite amarelo é fixo e representa
+                  a área oficial da Fazenda. Desenhe
+                  somente dentro dele.
+                </p>
+
+              </div>
+
+
+              @if (piquetesLoading()) {
+
+                <div class="panel-loading">
+                  <div class="loader"></div>
+                  <span>Carregando piquetes...</span>
+                </div>
+
+              } @else if (
+                modoEdicao() === 'DESENHAR' ||
+                modoEdicao() === 'EDITAR'
+              ) {
+
+                <form
+                  class="paddock-form"
+                  [formGroup]="piqueteForm"
+                  (ngSubmit)="salvarPiquete()"
+                >
+
+                  <label class="field">
+                    <span>
+                      Nome do piquete
+                    </span>
+
+                    <input
+                      type="text"
+                      formControlName="nome"
+                      placeholder="Ex.: Pasto Norte"
+                    >
+                  </label>
+
+
+                  <label class="field">
+                    <span>
+                      Tipo de área
+                    </span>
+
+                    <select
+                      formControlName="tipo"
+                      (change)="alterarTipoPiquete()"
+                    >
+                      <option value="PASTO">
+                        Pasto
+                      </option>
+
+                      <option value="CONFINAMENTO">
+                        Confinamento
+                      </option>
+                    </select>
+                  </label>
+
+
+                  <label class="field">
+                    <span>
+                      Rebanho atual
+                    </span>
+
+                    <select
+                      formControlName="rebanhoId"
+                    >
+                      <option value="">
+                        Nenhum rebanho
+                      </option>
+
+                      @for (
+                        rebanho of rebanhosDisponiveisPiquete();
+                        track rebanho.id
+                      ) {
+
+                        <option
+                          [value]="rebanho.id"
+                        >
+                          {{ rebanho.nome }}
+                          ·
+                          {{ rebanho.quantidadeAnimais }}
+                          animal(is)
+                        </option>
+
+                      }
+
+                    </select>
+                  </label>
+
+
+                  @if (
+                    piqueteForm.controls
+                      .tipo.value === 'CONFINAMENTO'
+                  ) {
+
+                    <label class="field">
+                      <span>
+                        Capacidade máxima
+                      </span>
+
+                      <input
+                        type="number"
+                        min="1"
+                        formControlName="capacidadeMaximaCabecas"
+                        placeholder="Ex.: 80"
+                      >
+                    </label>
+
+                  }
+
+
+                  <label class="field">
+                    <span>
+                      Observações
+                    </span>
+
+                    <textarea
+                      rows="3"
+                      formControlName="descricao"
+                      placeholder="Uso, manejo, observações..."
+                    ></textarea>
+                  </label>
+
+
+                  <div class="paddock-draw-state">
+
+                    @if (
+                      piqueteGeometria()
+                    ) {
+
+                      <mat-icon>check_circle</mat-icon>
+
+                      <div>
+                        <strong>
+                          Piquete delimitado
+                        </strong>
+
+                        <span>
+                          Arraste os vértices para ajustar.
+                          Pontos próximos à borda são
+                          normalizados para a divisa ao salvar.
+                        </span>
+                      </div>
+
+                    } @else {
+
+                      <mat-icon>touch_app</mat-icon>
+
+                      <div>
+                        <strong>
+                          Desenhe no mapa
+                        </strong>
+
+                        <span>
+                          Clique dentro do limite amarelo
+                          para criar os vértices do piquete.
+                        </span>
+                      </div>
+
+                    }
+
+                  </div>
+
+
+                  <div class="paddock-area-preview">
+
+                    <span>
+                      Área do piquete
+                    </span>
+
+                    <strong>
+                      @if (
+                        piqueteAreaPreviewHa() !== null
+                      ) {
+
+                        {{
+                          piqueteAreaPreviewHa()
+                            | number:'1.0-4':'pt-BR'
+                        }}
+                        ha
+
+                      } @else {
+
+                        Aguardando desenho
+
+                      }
+                    </strong>
+
+                  </div>
+
+
+                  <div class="paddock-form-actions">
+
+                    <button
+                      type="button"
+                      class="secondary-action"
+                      (click)="cancelarNovoPiquete()"
+                    >
+                      Cancelar
+                    </button>
+
+                    <button
+                      type="submit"
+                      class="save-button"
+                      [disabled]="
+                        piqueteSaving() ||
+                        !piqueteGeometria() ||
+                        !piqueteFinalizado()
+                      "
+                    >
+                      @if (piqueteSaving()) {
+                        Salvando...
+                      } @else {
+                        <mat-icon>save</mat-icon>
+                        Salvar piquete
+                      }
+                    </button>
+
+                  </div>
+
+                </form>
+
+              } @else {
+
+                @if (podeEditar()) {
+
+                  <button
+                    type="button"
+                    class="tool-button primary paddock-create-button"
+                    [disabled]="!mapaPronto()"
+                    (click)="iniciarNovoPiquete()"
+                  >
+                    <mat-icon>add_location_alt</mat-icon>
+
+                    <span>
+                      <strong>
+                        Novo piquete
+                      </strong>
+
+                      <small>
+                        Desenhar uma nova divisão dentro
+                        da área oficial da Fazenda.
+                      </small>
+                    </span>
+                  </button>
+
+                }
+
+
+                <div class="paddock-list">
+
+                  @for (
+                    area of resumoAreas()?.areas ?? [];
+                    track area.id
+                  ) {
+
+                    <article
+                      class="paddock-list-card"
+                      role="button"
+                      tabindex="0"
+                      [class.selected]="
+                        piqueteSelecionado()?.id ===
+                          area.id
+                      "
+                      [style.border-left-color]="
+                        corPiquete(area)
+                      "
+                      (click)="selecionarPiquete(area)"
+                      (keydown.enter)="selecionarPiquete(area)"
+                    >
+
+                      <div class="paddock-list-main">
+
+                        <i
+                          class="paddock-color"
+                          [style.background]="
+                            corPiquete(area)
+                          "
+                        ></i>
+
+                        <div>
+                          <strong>
+                            {{ area.nome }}
+                          </strong>
+
+                          <span>
+                            {{ labelTipoPiquete(area.tipo) }}
+                            ·
+                            {{
+                              area.areaCalculadaHa
+                                | number:'1.0-2':'pt-BR'
+                            }}
+                            ha
+                          </span>
+                        </div>
+
+                      </div>
+
+
+                      <div class="paddock-list-meta">
+
+                        <span>
+                          <mat-icon>groups</mat-icon>
+
+                          {{
+                            area.rebanhoNome ??
+                            'Sem rebanho'
+                          }}
+                        </span>
+
+                        @if (podeEditar()) {
+
+                          <button
+                            type="button"
+                            class="paddock-delete"
+                            [disabled]="piqueteDeleting()"
+                            (click)="
+                              $event.stopPropagation();
+                              excluirPiquete(area)
+                            "
+                          >
+                            <mat-icon>
+                              delete_outline
+                            </mat-icon>
+                          </button>
+
+                        }
+
+                      </div>
+
+                    </article>
+
+                  } @empty {
+
+                    <div class="paddock-empty">
+
+                      <mat-icon>landscape</mat-icon>
+
+                      <strong>
+                        Nenhum piquete cadastrado
+                      </strong>
+
+                      <span>
+                        Crie a primeira divisão usando
+                        o limite da Fazenda que já está
+                        carregado neste mapa.
+                      </span>
+
+                    </div>
+
+                  }
+
+                </div>
+
+              }
+
+            } @else {
+
+              <div class="panel-heading">
 
               <span class="eyebrow">
                 DELIMITAÇÃO
@@ -571,11 +1028,320 @@
 
             </div>
 
+            }
+
           </aside>
 
         </div>
 
       </section>
+
+
+      @if (
+        modoGestao() === 'PIQUETES'
+      ) {
+
+        @if (
+          analisePiquetes();
+          as analise
+        ) {
+
+          <section class="paddock-analysis">
+
+            <div class="paddock-analysis-header">
+
+              <div>
+                <span class="eyebrow">
+                  ANÁLISE DE LOTAÇÃO
+                </span>
+
+                <h2>
+                  Leitura operacional dos piquetes
+                </h2>
+
+                <p>
+                  Comparação da lotação atual usando os rebanhos
+                  associados às áreas cadastradas. Para pastos,
+                  os valores representam ocupação observada e não
+                  capacidade de suporte agronômica.
+                </p>
+              </div>
+
+              <mat-icon>analytics</mat-icon>
+
+            </div>
+
+
+            <div class="paddock-analysis-grid">
+
+              <article>
+
+                <span>
+                  Lotação média dos pastos
+                </span>
+
+                <strong>
+                  @if (
+                    analise.mediaUaPorHa !== null
+                  ) {
+
+                    {{
+                      analise.mediaUaPorHa
+                        | number:'1.0-2':'pt-BR'
+                    }}
+                    <small>UA/ha</small>
+
+                  } @else {
+                    —
+                  }
+                </strong>
+
+                <p>
+                  @if (
+                    analise.mediaCabecasPorHa !== null
+                  ) {
+
+                    {{
+                      analise.mediaCabecasPorHa
+                        | number:'1.0-2':'pt-BR'
+                    }}
+                    cabeça(s)/ha na média atual.
+
+                  } @else {
+
+                    Associe rebanhos aos pastos para calcular.
+
+                  }
+                </p>
+
+              </article>
+
+
+              <article>
+
+                <span>
+                  Maior lotação observada
+                </span>
+
+                <strong>
+                  @if (analise.maiorLotacao) {
+
+                    {{
+                      analise.maiorLotacao
+                        .indicadores.uaPorHa
+                        | number:'1.0-2':'pt-BR'
+                    }}
+                    <small>UA/ha</small>
+
+                  } @else {
+                    —
+                  }
+                </strong>
+
+                <p>
+                  {{
+                    analise.maiorLotacao?.nome ??
+                    'Sem dados suficientes'
+                  }}
+                </p>
+
+              </article>
+
+
+              <article>
+
+                <span>
+                  Menor lotação observada
+                </span>
+
+                <strong>
+                  @if (analise.menorLotacao) {
+
+                    {{
+                      analise.menorLotacao
+                        .indicadores.uaPorHa
+                        | number:'1.0-2':'pt-BR'
+                    }}
+                    <small>UA/ha</small>
+
+                  } @else {
+                    —
+                  }
+                </strong>
+
+                <p>
+                  {{
+                    analise.menorLotacao?.nome ??
+                    'Sem dados suficientes'
+                  }}
+                </p>
+
+              </article>
+
+
+              <article
+                [class.attention]="
+                  analise
+                    .confinamentosAcimaCapacidade
+                    .length > 0
+                "
+              >
+
+                <span>
+                  Confinamentos em atenção
+                </span>
+
+                <strong>
+                  {{
+                    analise
+                      .confinamentosAcimaCapacidade
+                      .length
+                  }}
+                </strong>
+
+                <p>
+                  {{
+                    analise.confinamentosLotados.length
+                  }}
+                  lotado(s) e
+                  {{
+                    analise.rebanhosSemArea
+                  }}
+                  rebanho(s) sem área.
+                </p>
+
+              </article>
+
+            </div>
+
+
+            <div class="paddock-analysis-table-wrap">
+
+              <table class="paddock-analysis-table">
+
+                <thead>
+                  <tr>
+                    <th>Área</th>
+                    <th>Tipo</th>
+                    <th>Rebanho</th>
+                    <th class="numeric">Animais</th>
+                    <th class="numeric">Área</th>
+                    <th class="numeric">Indicador principal</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+
+                  @for (
+                    area of resumoAreas()?.areas ?? [];
+                    track area.id
+                  ) {
+
+                    <tr>
+
+                      <td>
+                        <strong>
+                          {{ area.nome }}
+                        </strong>
+                      </td>
+
+                      <td>
+                        {{ labelTipoPiquete(area.tipo) }}
+                      </td>
+
+                      <td>
+                        {{
+                          area.rebanhoNome ??
+                          'Sem rebanho'
+                        }}
+                      </td>
+
+                      <td class="numeric">
+                        {{
+                          area.indicadores
+                            .animaisAtivos
+                        }}
+                      </td>
+
+                      <td class="numeric">
+                        {{
+                          area.areaCalculadaHa
+                            | number:'1.0-2':'pt-BR'
+                        }}
+                        ha
+                      </td>
+
+                      <td class="numeric">
+
+                        @if (
+                          area.tipo === 'PASTO'
+                        ) {
+
+                          @if (
+                            area.indicadores.uaPorHa !== null
+                          ) {
+
+                            <strong>
+                              {{
+                                area.indicadores.uaPorHa
+                                  | number:'1.0-2':'pt-BR'
+                              }}
+                              UA/ha
+                            </strong>
+
+                          } @else {
+                            —
+                          }
+
+                        } @else {
+
+                          @if (
+                            area.indicadores
+                              .ocupacaoPercentual !== null
+                          ) {
+
+                            <strong>
+                              {{
+                                area.indicadores
+                                  .ocupacaoPercentual
+                                  | number:'1.0-1':'pt-BR'
+                              }}%
+                              ocupação
+                            </strong>
+
+                          } @else {
+
+                            Capacidade não informada
+
+                          }
+
+                        }
+
+                      </td>
+
+                    </tr>
+
+                  } @empty {
+
+                    <tr>
+                      <td colspan="6">
+                        Nenhum piquete cadastrado.
+                      </td>
+                    </tr>
+
+                  }
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </section>
+
+        }
+
+      }
 
     }
 

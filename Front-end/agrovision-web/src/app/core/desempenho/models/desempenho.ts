@@ -54,6 +54,9 @@ export interface DesempenhoRebanho {
   coberturaGmdPercentual: number;
   pesoMedioAtualKg: number | null;
   gmdMedioKgDia: number | null;
+  pesoProjetado30DiasKg: number | null;
+  pesoProjetado60DiasKg: number | null;
+  pesoProjetado90DiasKg: number | null;
   melhorGmdKgDia: number | null;
   piorGmdKgDia: number | null;
   animaisEmPerda: number;
@@ -70,6 +73,10 @@ export interface DesempenhoFazenda {
   animaisEstaveis: number;
   animaisEmPerda: number;
   gmdMedioKgDia: number | null;
+  pesoMedioAtualKg: number | null;
+  pesoProjetado30DiasKg: number | null;
+  pesoProjetado60DiasKg: number | null;
+  pesoProjetado90DiasKg: number | null;
   coberturaGmdPercentual: number;
   totalAlertas: number;
   alertasCriticos: number;

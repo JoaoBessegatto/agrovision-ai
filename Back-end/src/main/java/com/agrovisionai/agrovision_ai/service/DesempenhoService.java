@@ -131,6 +131,36 @@ public class DesempenhoService {
                                 .toList()
                 );
 
+        Double pesoMedioAtual =
+                media(
+                        desempenhos
+                                .stream()
+                                .map(DesempenhoAnimalResponseDTO::pesoAtualKg)
+                                .filter(Objects::nonNull)
+                                .toList()
+                );
+
+        Double pesoProjetado30Dias =
+                projetarPeso(
+                        pesoMedioAtual,
+                        gmdMedio,
+                        30
+                );
+
+        Double pesoProjetado60Dias =
+                projetarPeso(
+                        pesoMedioAtual,
+                        gmdMedio,
+                        60
+                );
+
+        Double pesoProjetado90Dias =
+                projetarPeso(
+                        pesoMedioAtual,
+                        gmdMedio,
+                        90
+                );
+
         double cobertura =
                 desempenhos.isEmpty()
                         ? 0.0
@@ -216,6 +246,10 @@ public class DesempenhoService {
                 animaisEstaveis,
                 animaisEmPerda,
                 gmdMedio,
+                pesoMedioAtual,
+                pesoProjetado30Dias,
+                pesoProjetado60Dias,
+                pesoProjetado90Dias,
                 cobertura,
                 alertas.size(),
                 alertasCriticos,
@@ -618,14 +652,44 @@ public class DesempenhoService {
                         .map(this::arredondar)
                         .orElse(null);
 
+        Double pesoMedioAtual =
+                media(pesos);
+
+        Double gmdMedio =
+                media(gmds);
+
+        Double pesoProjetado30Dias =
+                projetarPeso(
+                        pesoMedioAtual,
+                        gmdMedio,
+                        30
+                );
+
+        Double pesoProjetado60Dias =
+                projetarPeso(
+                        pesoMedioAtual,
+                        gmdMedio,
+                        60
+                );
+
+        Double pesoProjetado90Dias =
+                projetarPeso(
+                        pesoMedioAtual,
+                        gmdMedio,
+                        90
+                );
+
         return new DesempenhoRebanhoResponseDTO(
                 rebanho.getId(),
                 rebanho.getNome(),
                 desempenhos.size(),
                 animaisComGmd,
                 cobertura,
-                media(pesos),
-                media(gmds),
+                pesoMedioAtual,
+                gmdMedio,
+                pesoProjetado30Dias,
+                pesoProjetado60Dias,
+                pesoProjetado90Dias,
                 melhorGmd,
                 piorGmd,
                 animaisEmPerda,
@@ -677,6 +741,32 @@ public class DesempenhoService {
 
         return TendenciaDesempenho.ESTAVEL;
     }
+
+    private Double projetarPeso(
+            Double pesoAtual,
+            Double gmd,
+            int dias
+    ) {
+
+        if (
+                pesoAtual == null ||
+                gmd == null
+        ) {
+            return null;
+        }
+
+        return arredondar(
+                Math.max(
+                        0.0,
+                        pesoAtual +
+                                (
+                                        gmd *
+                                        dias
+                                )
+                )
+        );
+    }
+
 
     private Double media(List<Double> valores) {
 
