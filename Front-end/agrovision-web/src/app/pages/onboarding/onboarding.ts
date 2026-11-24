@@ -85,7 +85,16 @@ export class Onboarding implements OnInit {
     signal('');
 
 
-  /** As 3 etapas, já com o estado de cada uma. */
+  readonly nomeUsuario = computed(() => {
+
+    const nome =
+      this.contexto()?.name?.trim() ?? '';
+
+    return nome.includes('@') ? '' : nome;
+
+  });
+
+
   readonly etapas =
     computed<EtapaOnboarding[]>(() => {
 
@@ -106,7 +115,7 @@ export class Onboarding implements OnInit {
           chave: 'conta',
           titulo: 'Conta criada',
           descricao:
-            'Seu acesso ao AgroVision AI está pronto.',
+            'Seu acesso ao AgroVision está pronto.',
           icone: 'person',
           detalhe: contexto.email
         },

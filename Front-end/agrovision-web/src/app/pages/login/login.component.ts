@@ -145,10 +145,7 @@ export class LoginComponent {
 
           loginRealizado = true;
 
-          /*
-           * Garante que o contexto de fazenda
-           * da sessão anterior não seja reutilizado.
-           */
+      
           this.fazendaContext.limpar();
         }),
 
@@ -167,11 +164,7 @@ export class LoginComponent {
 
         next: contexto => {
 
-          /*
-           * Convite de conta existente:
-           * após autenticar, volta para a tela
-           * do convite para efetuar o aceite.
-           */
+      
           const returnUrl =
             this.route.snapshot.queryParamMap
               .get('returnUrl');
@@ -201,12 +194,7 @@ export class LoginComponent {
           }
 
 
-          /*
-           * Funcionário com algum vínculo,
-           * porém sem vínculo ativo.
-           * Não deve cair no onboarding
-           * de produtor/fazenda.
-           */
+     
           if (
             contexto.possuiVinculoFuncionario &&
             !contexto.possuiAcessoFazenda
@@ -220,11 +208,7 @@ export class LoginComponent {
           }
 
 
-          /*
-           * Produtor ou funcionário com
-           * acesso ativo a pelo menos uma
-           * propriedade.
-           */
+     
           if (
             contexto.possuiAcessoFazenda
           ) {
@@ -237,11 +221,7 @@ export class LoginComponent {
           }
 
 
-          /*
-           * Usuário comum sem perfil nem
-           * vínculo de funcionário inicia
-           * onboarding como produtor.
-           */
+     
           this.router.navigate([
             '/onboarding'
           ]);

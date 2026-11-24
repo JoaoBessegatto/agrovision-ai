@@ -37,11 +37,7 @@ export const routes: Routes = [
   },
 
 
-  /*
-   * O convite precisa ser público para
-   * que o destinatário consiga validar
-   * o link antes de possuir uma conta.
-   */
+
   {
     path: 'convite-funcionario',
 

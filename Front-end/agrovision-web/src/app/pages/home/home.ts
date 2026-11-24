@@ -110,12 +110,7 @@ export class Home {
         next: rebanhos => this.totalRebanhos.set(rebanhos.length),
         error: () => falha('Não foi possível carregar os rebanhos.')
       }));
-      /*
-       * O endpoint de funcionários é exclusivo
-       * do proprietário. Funcionários não devem
-       * disparar esta requisição apenas para
-       * montar a Home.
-       */
+  
       if (
         this.fazendaContext
           .podeGerenciarFuncionarios()
@@ -149,7 +144,6 @@ export class Home {
       subscriptions.add(this.animalService.listarPorFazenda(fazendaId).subscribe({
         next: animais => {
           this.totalAnimais.set(animais.length);
-          // A API oferece histórico por animal; limita as consultas simultâneas.
           subscriptions.add(from(animais).pipe(
             mergeMap(animal => this.registroPesoService.listarHistorico(animal.id), 5),
             toArray()

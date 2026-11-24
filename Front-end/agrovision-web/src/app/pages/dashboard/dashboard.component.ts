@@ -84,9 +84,6 @@ export class Dashboard {
     inject(FazendaContextService);
 
 
-  // ==========================================
-  // ESTADO
-  // ==========================================
 
   readonly dashboard =
     signal<DashboardResponse | null>(
@@ -106,10 +103,6 @@ export class Dashboard {
   readonly errorMessage =
     signal('');
 
-
-  // ==========================================
-  // GRÁFICO - SITUAÇÃO DO PLANTEL
-  // ==========================================
 
   readonly graficoSituacao =
     computed<EChartsCoreOption>(() => {
@@ -243,10 +236,6 @@ export class Dashboard {
     });
 
 
-  // ==========================================
-  // GRÁFICO - REBANHOS
-  // ==========================================
-
   readonly graficoRebanhos =
     computed<EChartsCoreOption>(() => {
 
@@ -263,12 +252,6 @@ export class Dashboard {
 
       }
 
-
-      /*
-       * Ordenamos apenas uma cópia para
-       * não alterar a resposta original
-       * utilizada pela tabela.
-       */
       const rebanhos =
         [...dados.rebanhos]
           .sort(
@@ -451,10 +434,6 @@ export class Dashboard {
 
     });
 
-
-  // ==========================================
-  // GRÁFICO - EVOLUÇÃO DE PESO
-  // ==========================================
 
   readonly graficoEvolucaoPeso =
     computed<EChartsCoreOption>(() => {
@@ -664,16 +643,10 @@ export class Dashboard {
     });
 
 
-  // ==========================================
-  // CONSTRUTOR
-  // ==========================================
 
   constructor() {
 
-    /*
-     * Sempre que a fazenda ativa mudar,
-     * carregamos o dashboard correspondente.
-     */
+
     effect(onCleanup => {
 
       const fazendaId =
@@ -813,10 +786,6 @@ export class Dashboard {
           });
 
 
-      /*
-       * Cancela a requisição anterior
-       * quando a fazenda selecionada muda.
-       */
       onCleanup(() => {
 
         subscription.unsubscribe();
@@ -841,10 +810,6 @@ export class Dashboard {
       ?.gmdMedioKgDia ?? null;
   }
 
-
-  // ==========================================
-  // PERCENTUAL DE SITUAÇÃO
-  // ==========================================
 
   percentualSituacao(
     quantidade: number
@@ -872,10 +837,6 @@ export class Dashboard {
 
   }
 
-
-  // ==========================================
-  // FORMATAR PERÍODO
-  // ==========================================
 
   formatarPeriodo(
     periodo: string
@@ -935,9 +896,6 @@ export class Dashboard {
   }
 
 
-  // ==========================================
-  // FORMATAR NÚMERO
-  // ==========================================
 
   private formatarNumero(
     valor: number
@@ -955,9 +913,6 @@ export class Dashboard {
   }
 
 
-  // ==========================================
-  // ERRO
-  // ==========================================
 
   limparErro(): void {
 

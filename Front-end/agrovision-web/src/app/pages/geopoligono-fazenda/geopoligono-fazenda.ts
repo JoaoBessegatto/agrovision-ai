@@ -520,20 +520,12 @@ export class GeopoligonoFazenda
   private featureId:
     string | number | null = null;
 
-  /*
-   * Evita tratar clear/addFeatures usados para
-   * carregar geometria salva como edição manual.
-   */
   private sincronizandoMapa = false;
 
   private readonly toleranciaSnapPiquetePx =
     8;
 
-  /*
-   * Terra Draw valida a precisão das coordenadas.
-   * O renderer pode devolver 12-15 casas via unproject(),
-   * então normalizamos antes de armazenar/salvar.
-   */
+
   private readonly precisaoCoordenadas =
     8;
 
@@ -608,7 +600,6 @@ export class GeopoligonoFazenda
     try {
       this.draw?.stop();
     } catch {
-      // O mapa pode ter sido destruído antes do Terra Draw.
     }
 
     this.draw = null;
@@ -1464,7 +1455,6 @@ export class GeopoligonoFazenda
     try {
       this.draw?.stop();
     } catch {
-      // A troca de estilo recria as camadas do Terra Draw.
     }
 
     this.draw = null;
@@ -1773,10 +1763,7 @@ export class GeopoligonoFazenda
 
         zoom: 4,
 
-        /*
-         * O controle territorial funciona em planta:
-         * norte para cima e visão perpendicular ao solo.
-         */
+    
         bearing: 0,
         pitch: 0,
         minPitch: 0,
@@ -1798,10 +1785,7 @@ export class GeopoligonoFazenda
       'top-right'
     );
 
-    /*
-     * Mantém pinch-to-zoom em telas touch,
-     * mas bloqueia qualquer rotação.
-     */
+  
     this.map.touchZoomRotate
       .disableRotation();
 
@@ -2229,10 +2213,7 @@ export class GeopoligonoFazenda
     }
 
 
-    /*
-     * A Etapa 1 trabalha com um único
-     * limite para a fazenda.
-     */
+   
     if (polygons.length > 1) {
 
       const extras =
@@ -2462,15 +2443,6 @@ export class GeopoligonoFazenda
       return;
     }
 
-    /*
-     * IMPORTANTE:
-     * não chamamos updateFeatureGeometry/removeFeatures
-     * dentro do evento change do Terra Draw.
-     *
-     * Fazer isso reentra no store interno da biblioteca
-     * enquanto ela ainda está processando a mesma feature,
-     * causando "No feature with this id" e loops de change.
-     */
     const geometry =
       this.normalizarPrecisaoGeometria({
 
@@ -2615,8 +2587,6 @@ export class GeopoligonoFazenda
 
   private renderizarCamadasPiquetes(): void {
 
-    // clear()/setData() do Terra Draw deixam as fontes carregando. O estilo
-    // já inicializado permite desenhar o limite mesmo sem piquetes.
     if (
       !this.map ||
       !this.mapLoaded ||
@@ -2994,8 +2964,6 @@ export class GeopoligonoFazenda
       return;
     }
 
-    // O Mapbox aceita null em runtime para remover os limites, mas a
-    // declaração de setMaxBounds da versão instalada não inclui esse valor.
     const setMaxBounds = this.map.setMaxBounds as (
       bounds: mapboxgl.LngLatBoundsLike | null
     ) => mapboxgl.Map;
@@ -3136,12 +3104,7 @@ export class GeopoligonoFazenda
         const fim =
           ring[i + 1];
 
-        /*
-         * Em uma Fazenda côncava, dois vértices podem
-         * estar dentro enquanto o segmento entre eles
-         * atravessa uma região externa. Amostramos a
-         * linha para bloquear esse caso antes do POST.
-         */
+   
         for (
           let passo = 1;
           passo < 20;
@@ -3821,10 +3784,7 @@ export class GeopoligonoFazenda
 
     } catch {
 
-      /*
-       * Geocoding é apenas auxílio visual.
-       * A falha não bloqueia o desenho.
-       */
+ 
     }
   }
 
@@ -3837,12 +3797,6 @@ export class GeopoligonoFazenda
       return 'mapbox://styles/mapbox/standard';
     }
 
-    /*
-     * O Mapbox permanece como renderer e para o mapa
-     * vetorial/geocoding. A fotografia de satélite vem
-     * do MapTiler para não depender do Raster Tiles API
-     * do plano de avaliação do Mapbox.
-     */
     return {
       version: 8,
 

@@ -1148,11 +1148,7 @@ confirmarRegistroMorte(): void {
 
         next: () => {
 
-          /*
-           * Alteramos imediatamente no
-           * frontend sem precisar mostrar
-           * loading da página inteira.
-           */
+        
           this.animal.update(
             atual => {
 
@@ -1199,11 +1195,6 @@ confirmarRegistroMorte(): void {
 
   }
 
-
-  // =========================================================
-  // TRANSFERÊNCIA - ABRIR
-  // =========================================================
-
   abrirTransferencia(): void {
 
   const animal =
@@ -1236,10 +1227,6 @@ confirmarRegistroMorte(): void {
 }
 
 
-  // =========================================================
-  // TRANSFERÊNCIA - FECHAR
-  // =========================================================
-
   fecharTransferencia(): void {
 
     if (this.transferindo()) {
@@ -1257,9 +1244,6 @@ confirmarRegistroMorte(): void {
   }
 
 
-  // =========================================================
-  // TRANSFERÊNCIA - ALTERAR SELECT
-  // =========================================================
 
   alterarNovoRebanho(
     event: Event
@@ -1275,10 +1259,6 @@ confirmarRegistroMorte(): void {
 
   }
 
-
-  // =========================================================
-  // TRANSFERÊNCIA - CONFIRMAR
-  // =========================================================
 
   confirmarTransferencia(): void {
 
@@ -1299,10 +1279,7 @@ confirmarRegistroMorte(): void {
     }
 
 
-    /*
-     * Não faz requisição caso o
-     * rebanho continue o mesmo.
-     */
+   
     if (
       rebanhoId ===
       animal.rebanhoId
@@ -1314,11 +1291,6 @@ confirmarRegistroMorte(): void {
     }
 
 
-    /*
-     * Procura o rebanho selecionado
-     * para conseguirmos atualizar
-     * nome e ID localmente.
-     */
     const novoRebanho =
       this.rebanhos()
         .find(
@@ -1367,9 +1339,7 @@ confirmarRegistroMorte(): void {
 
         next: () => {
 
-          /*
-           * Fecha modal.
-           */
+        
           this.modalTransferencia.set(
             false
           );
@@ -1378,10 +1348,7 @@ confirmarRegistroMorte(): void {
           this.novoRebanhoId.set('');
 
 
-          /*
-           * Atualiza o animal na tela
-           * imediatamente.
-           */
+        
           this.animal.update(
             atual => {
 
@@ -1406,10 +1373,7 @@ confirmarRegistroMorte(): void {
           );
 
 
-          /*
-           * Atualiza silenciosamente com
-           * os dados oficiais do backend.
-           */
+        
           this.atualizarAnimalSilenciosamente();
 
         },
@@ -1437,10 +1401,6 @@ confirmarRegistroMorte(): void {
   }
 
 
-  // =========================================================
-  // FORMATAR SEXO
-  // =========================================================
-
   formatarSexo(
     sexo: string
   ): string {
@@ -1461,10 +1421,7 @@ confirmarRegistroMorte(): void {
   }
 
 
-  // =========================================================
-  // FORMATAR SITUAÇÃO
-  // =========================================================
-
+ 
   formatarSituacao(
     situacao: string
   ): string {
@@ -1490,10 +1447,6 @@ confirmarRegistroMorte(): void {
 
   }
 
-
-  // =========================================================
-  // FORMATAR IDADE
-  // =========================================================
 
   formatarIdade(
     meses: number
@@ -1557,10 +1510,6 @@ confirmarRegistroMorte(): void {
   }
 
 
-  // =========================================================
-  // ERRO
-  // =========================================================
-
   limparErro(): void {
 
     this.errorMessage.set('');
@@ -1568,9 +1517,6 @@ confirmarRegistroMorte(): void {
   }
 
 
-  // =========================================================
-  // EXTRAIR MENSAGEM DO BACKEND
-  // =========================================================
 
   private extrairMensagemErro(
     error: any,
@@ -1590,13 +1536,7 @@ confirmarRegistroMorte(): void {
     }
 
 
-    /*
-     * Backend retornando:
-     *
-     * {
-     *   "message": "..."
-     * }
-     */
+    
     if (
       error?.error?.message
     ) {
@@ -1606,13 +1546,7 @@ confirmarRegistroMorte(): void {
     }
 
 
-    /*
-     * Alguns handlers usam:
-     *
-     * {
-     *   "mensagem": "..."
-     * }
-     */
+    
     if (
       error?.error?.mensagem
     ) {
@@ -1622,9 +1556,6 @@ confirmarRegistroMorte(): void {
     }
 
 
-    /*
-     * Servidor indisponível.
-     */
     if (
       error?.status === 0
     ) {
@@ -1634,9 +1565,6 @@ confirmarRegistroMorte(): void {
     }
 
 
-    /*
-     * Não autenticado.
-     */
     if (
       error?.status === 401
     ) {
@@ -1646,9 +1574,6 @@ confirmarRegistroMorte(): void {
     }
 
 
-    /*
-     * Sem autorização.
-     */
     if (
       error?.status === 403
     ) {
@@ -1658,9 +1583,6 @@ confirmarRegistroMorte(): void {
     }
 
 
-    /*
-     * Recurso inexistente.
-     */
     if (
       error?.status === 404
     ) {

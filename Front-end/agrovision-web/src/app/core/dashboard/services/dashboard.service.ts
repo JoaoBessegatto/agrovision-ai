@@ -28,11 +28,6 @@ export class DashboardService {
   private readonly API_URL =
     'http://localhost:8080/api/dashboard';
 
-
-  // ==========================================
-  // DASHBOARD DA FAZENDA
-  // ==========================================
-
   buscarPorFazenda(
     fazendaId: string
   ): Observable<DashboardResponse> {

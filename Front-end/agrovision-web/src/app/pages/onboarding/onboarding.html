@@ -5,13 +5,12 @@
     <a
       routerLink="/"
       class="logo"
-      aria-label="AgroVision AI, ir para a página inicial"
+      aria-label="AgroVision, ir para a página inicial"
     >
       <span class="logo-mark" aria-hidden="true">
         <mat-icon>grass</mat-icon>
       </span>
       <span class="logo-text">AgroVision</span>
-      <span class="logo-badge">AI</span>
     </a>
 
     <button type="button" class="logout-button" (click)="sair()">
@@ -52,12 +51,12 @@
 
       </div>
 
-    } @else if (contexto(); as user) {
+    } @else if (contexto()) {
 
       <section class="hero" aria-labelledby="onb-title">
 
         <h1 id="onb-title">
-          Bem-vindo ao AgroVision, {{ user.name }}
+          Bem-vindo ao AgroVision@if (nomeUsuario()) {, {{ nomeUsuario() }}}
         </h1>
 
         <p>

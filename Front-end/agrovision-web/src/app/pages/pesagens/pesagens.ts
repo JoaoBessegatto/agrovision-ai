@@ -92,10 +92,6 @@ export class Pesagens {
     inject(FazendaContextService);
 
 
-  // =========================================================
-  // DADOS
-  // =========================================================
-
   pesagens =
     signal<RegistroPesoResponse[]>([]);
 
@@ -105,10 +101,6 @@ export class Pesagens {
   rebanhos =
     signal<RebanhoResponse[]>([]);
 
-
-  // =========================================================
-  // ESTADO
-  // =========================================================
 
   loading =
     signal(false);
@@ -123,9 +115,6 @@ export class Pesagens {
     signal('');
 
 
-  // =========================================================
-  // FILTROS
-  // =========================================================
 
   busca =
     signal('');
@@ -140,9 +129,6 @@ export class Pesagens {
     signal('');
 
 
-  // =========================================================
-  // FORMULÁRIO
-  // =========================================================
 
   pesagemForm =
     this.formBuilder.group({
@@ -164,10 +150,6 @@ export class Pesagens {
     });
 
 
-  // =========================================================
-  // ANIMAIS ATIVOS
-  // =========================================================
-
   readonly animaisAtivos =
     computed(() => {
 
@@ -179,10 +161,6 @@ export class Pesagens {
 
     });
 
-
-  // =========================================================
-  // PESAGENS FILTRADAS
-  // =========================================================
 
   readonly pesagensFiltradas =
     computed(() => {
@@ -205,7 +183,6 @@ export class Pesagens {
       return this.pesagens()
         .filter(registro => {
 
-          // BUSCA
 
           const correspondeBusca =
             !busca ||
@@ -219,7 +196,6 @@ export class Pesagens {
               .includes(busca);
 
 
-          // REBANHO
 
           const correspondeRebanho =
             !rebanhoId ||
@@ -227,7 +203,7 @@ export class Pesagens {
             rebanhoId;
 
 
-          // DATA
+        
 
           const dataRegistro =
             registro.dataRegistro
@@ -255,10 +231,6 @@ export class Pesagens {
 
     });
 
-
-  // =========================================================
-  // INDICADORES
-  // =========================================================
 
   readonly pesagensUltimos30Dias =
     computed(() => {
@@ -361,19 +333,13 @@ export class Pesagens {
       }
 
 
-      /*
-       * Backend já entrega em ordem
-       * decrescente.
-       */
+    
       return registros[0];
 
     });
 
 
-  // =========================================================
-  // CONSTRUTOR
-  // =========================================================
-
+  
   constructor() {
 
     effect(() => {
@@ -404,10 +370,6 @@ export class Pesagens {
 
   }
 
-
-  // =========================================================
-  // CARREGAR DADOS
-  // =========================================================
 
   carregarDados(
     fazendaId: string
@@ -454,11 +416,7 @@ export class Pesagens {
 
         next: response => {
 
-          /*
-           * Protege contra resposta antiga
-           * caso o usuário troque rapidamente
-           * de fazenda.
-           */
+      
           if (
             this.fazendaContext
               .fazendaAtivaId() !==
@@ -518,10 +476,6 @@ export class Pesagens {
 
   }
 
-
-  // =========================================================
-  // FILTROS
-  // =========================================================
 
   atualizarBusca(
     event: Event
@@ -595,11 +549,6 @@ export class Pesagens {
 
   }
 
-
-  // =========================================================
-  // ABRIR MODAL
-  // =========================================================
-
   abrirNovaPesagem(): void {
 
     this.errorMessage.set('');
@@ -652,10 +601,7 @@ export class Pesagens {
   }
 
 
-  // =========================================================
-  // FECHAR MODAL
-  // =========================================================
-
+  
   fecharModal(): void {
 
     if (
@@ -682,10 +628,6 @@ export class Pesagens {
 
   }
 
-
-  // =========================================================
-  // REGISTRAR PESAGEM
-  // =========================================================
 
   registrarPesagem(): void {
 
@@ -767,10 +709,7 @@ export class Pesagens {
 
         next: registro => {
 
-          /*
-           * Insere a pesagem no topo
-           * da tabela imediatamente.
-           */
+         
           this.pesagens.update(
             registros => [
               registro,
@@ -779,10 +718,7 @@ export class Pesagens {
           );
 
 
-          /*
-           * Atualiza o peso atual
-           * do animal localmente.
-           */
+      
           this.animais.update(
             animais =>
               animais.map(
@@ -850,10 +786,6 @@ export class Pesagens {
   }
 
 
-  // =========================================================
-  // ANIMAL SELECIONADO
-  // =========================================================
-
   obterAnimalSelecionado():
     AnimalResponse | null {
 
@@ -882,10 +814,6 @@ export class Pesagens {
 
   }
 
-
-  // =========================================================
-  // ERROS
-  // =========================================================
 
   limparErro(): void {
 

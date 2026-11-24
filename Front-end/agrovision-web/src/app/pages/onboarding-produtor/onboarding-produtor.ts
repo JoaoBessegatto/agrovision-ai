@@ -43,7 +43,6 @@ import {
 } from '../../core/user/models/produtor-request';
 
 
-/** CPF (11 dígitos) ou CNPJ (14 dígitos) completos. */
 function cpfCnpjValidator(): ValidatorFn {
 
   return (
@@ -68,7 +67,6 @@ function cpfCnpjValidator(): ValidatorFn {
 }
 
 
-/** Telefone com DDD: 10 ou 11 dígitos. */
 function telefoneValidator(): ValidatorFn {
 
   return (
@@ -233,15 +231,7 @@ export class OnboardingProdutor {
 
         next: () => {
 
-          /*
-           * Voltamos para o onboarding.
-           *
-           * Ao carregar novamente,
-           * /api/me/context já deverá
-           * retornar:
-           *
-           * possuiPerfilProdutor = true
-           */
+       
           this.router.navigate([
             '/onboarding'
           ]);

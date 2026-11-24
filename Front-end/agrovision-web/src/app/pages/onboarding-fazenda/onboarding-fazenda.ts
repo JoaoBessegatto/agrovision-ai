@@ -169,7 +169,6 @@ export class OnboardingFazenda
 
   pageLoading = signal(true);
 
-  /** Bloco opcional de localização (começa recolhido). */
   localizacaoAberta = signal(false);
 
   errorMessage = signal('');
@@ -336,10 +335,6 @@ export class OnboardingFazenda
 
         next: contexto => {
 
-          /*
-           * O usuário não pode cadastrar
-           * fazenda sem possuir Produtor.
-           */
           if (
             !contexto.possuiPerfilProdutor
           ) {
@@ -352,13 +347,7 @@ export class OnboardingFazenda
           }
 
 
-          /*
-           * Esta página é especificamente
-           * para a PRIMEIRA fazenda.
-           *
-           * Se já possui uma, vai para
-           * dashboard.
-           */
+    
           if (
             contexto.possuiFazenda
           ) {
@@ -454,11 +443,7 @@ export class OnboardingFazenda
           form.longitude
         ),
 
-      /*
-       * O limite da fazenda é configurado
-       * na etapa visual seguinte. Mantemos
-       * o campo legado da API vazio.
-       */
+     
       geopoligono: null
 
     };

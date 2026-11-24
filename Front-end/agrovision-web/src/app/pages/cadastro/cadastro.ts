@@ -301,7 +301,6 @@ export class CadastroComponent {
   }
 
 
-  // O erro fica na tela até o usuário fechar ou tentar de novo.
   private showErrorMessage(
     message: string
   ): void {

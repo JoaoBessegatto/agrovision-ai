@@ -56,7 +56,6 @@ export class Alertas {
       this.limparFiltros();
       if (!fazendaId) return;
 
-      // Uma requisição por vez; a troca de fazenda e a saída da tela cancelam o fluxo anterior.
       const subscription = merge(timer(0, 60_000), this.atualizar$,
         fromEvent(this.document, 'visibilitychange'))
         .pipe(

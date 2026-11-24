@@ -37,10 +37,6 @@ export class RegistroPesoService {
     'http://localhost:8080/api/pesagens';
 
 
-  // =========================================================
-  // REGISTRAR PESAGEM
-  // =========================================================
-
   registrar(
     animalId: string,
     request: RegistroPesoRequest
@@ -53,12 +49,7 @@ export class RegistroPesoService {
       );
 
   }
-
-
-  // =========================================================
-  // HISTÓRICO DE UM ANIMAL
-  // =========================================================
-
+ 
   listarHistorico(
     animalId: string
   ): Observable<RegistroPesoResponse[]> {
@@ -70,11 +61,6 @@ export class RegistroPesoService {
 
   }
 
-
-  // =========================================================
-  // ÚLTIMA PESAGEM DE UM ANIMAL
-  // =========================================================
-
   buscarUltima(
     animalId: string
   ): Observable<RegistroPesoResponse> {
@@ -85,11 +71,6 @@ export class RegistroPesoService {
       );
 
   }
-
-
-  // =========================================================
-  // PESAGENS DE UMA FAZENDA
-  // =========================================================
 
   listarPorFazenda(
     fazendaId: string

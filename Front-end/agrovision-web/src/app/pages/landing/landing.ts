@@ -20,11 +20,9 @@ export class Landing {
   readonly anoAtual =
     new Date().getFullYear();
 
-  /** Barra de navegação ganha fundo depois que a página rola. */
   readonly scrolled =
     signal(false);
 
-  /** Menu suspenso no celular. */
   readonly menuOpen =
     signal(false);
 

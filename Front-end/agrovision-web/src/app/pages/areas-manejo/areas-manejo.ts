@@ -328,7 +328,6 @@ export class AreasManejo
     try {
       this.draw?.stop();
     } catch {
-      // O mapa pode já ter sido destruído.
     }
 
     this.draw = null;
@@ -899,12 +898,7 @@ export class AreasManejo
             base.limite.configurado
           ) {
 
-            /*
-             * Libera a tela imediatamente com o limite
-             * oficial da Fazenda. A listagem real de
-             * piquetes chega logo depois e apenas atualiza
-             * as camadas já existentes.
-             */
+        
             this.resumo.set(
               this.criarResumoInicial(
                 fazendaId,
@@ -1479,11 +1473,7 @@ export class AreasManejo
 
     if (!normalizada.valida) {
 
-      /*
-       * Edição fora da propriedade: volta para o
-       * último estado válido. Dessa forma o usuário
-       * não consegue arrastar um vértice para fora.
-       */
+    
       if (
         this.ultimaGeometriaValida &&
         feature.id !== undefined
@@ -1529,11 +1519,7 @@ export class AreasManejo
       feature.id !== undefined
     ) {
 
-      /*
-       * Se o vértice caiu poucos pixels para fora
-       * ou muito próximo da cerca, ele é encaixado
-       * exatamente na linha oficial da Fazenda.
-       */
+    
       this.sincronizandoMapa =
         true;
 
@@ -1803,13 +1789,6 @@ export class AreasManejo
         geometry
       );
 
-    /*
-     * O mapa de piquetes é operacional, não um
-     * mapa de navegação geral. O usuário consegue
-     * trabalhar dentro da propriedade e em uma
-     * pequena margem ao redor dela, sem se perder
-     * em outras regiões.
-     */
     const margem =
       this.expandirBounds(
         bounds,
@@ -1947,12 +1926,6 @@ export class AreasManejo
       return;
     }
 
-    /*
-     * Máscara visual: a imagem de satélite continua
-     * existindo, mas tudo que está fora da propriedade
-     * fica escurecido. O interior da Fazenda permanece
-     * totalmente legível para desenhar os piquetes.
-     */
     const worldRing = [
       [-180, -85],
       [180, -85],
@@ -2291,12 +2264,7 @@ export class AreasManejo
         limite
       );
 
-    /*
-     * Também encaixa pontos que estão por dentro,
-     * porém visualmente muito próximos da cerca.
-     * Isso facilita dividir piquetes usando a própria
-     * divisa oficial como lado do novo polígono.
-     */
+ 
     if (
       maisProximo &&
       distanciaPx <=
@@ -2346,13 +2314,7 @@ export class AreasManejo
         const fim =
           ring[i + 1];
 
-        /*
-         * Vértices dentro não garantem que a linha
-         * inteira esteja dentro quando a Fazenda tem
-         * formato côncavo. Amostramos o segmento para
-         * bloquear esse atalho visual; o backend JTS
-         * continua sendo a validação geométrica final.
-         */
+      
         for (
           let passo = 1;
           passo < 16;
@@ -2811,11 +2773,6 @@ export class AreasManejo
     let hue =
       Math.abs(hash) % 360;
 
-    /*
-     * Evita tons amarelos próximos ao contorno
-     * oficial da Fazenda, preservando a leitura
-     * visual do limite principal.
-     */
     if (
       hue >= 42 &&
       hue <= 70

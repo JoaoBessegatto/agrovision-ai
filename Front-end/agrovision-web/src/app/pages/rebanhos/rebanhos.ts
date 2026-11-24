@@ -69,10 +69,7 @@ export class Rebanhos {
     inject(FazendaContextService);
 
 
-  // ========================================
-  // ESTADO
-  // ========================================
-
+ 
   rebanhos =
     signal<RebanhoResponse[]>([]);
 
@@ -89,9 +86,6 @@ export class Rebanhos {
     signal('');
 
 
-  // ========================================
-  // MODAL CADASTRO / EDIÇÃO
-  // ========================================
 
   modalAberto =
     signal(false);
@@ -114,18 +108,12 @@ export class Rebanhos {
   resultadoVenda =
     signal<VendaRebanhoResponse | null>(null);
 
-  // ========================================
-  // MODAL EXCLUSÃO
-  // ========================================
-
+  
   rebanhoParaExcluir =
     signal<RebanhoResponse | null>(null);
 
 
-  // ========================================
-  // FORM
-  // ========================================
-
+ 
   rebanhoForm =
     this.formBuilder.nonNullable.group({
 
@@ -160,10 +148,7 @@ export class Rebanhos {
 
   constructor() {
 
-    /*
-     * Toda vez que a fazenda ativa mudar,
-     * os rebanhos são carregados novamente.
-     */
+  
     effect(() => {
 
       const fazendaId =
@@ -186,9 +171,6 @@ export class Rebanhos {
   }
 
 
-  // ========================================
-  // CARREGAR
-  // ========================================
 
   carregarRebanhos(
     fazendaId: string
@@ -216,11 +198,7 @@ export class Rebanhos {
 
         next: rebanhos => {
 
-          /*
-           * Evita colocar na tela uma resposta
-           * antiga se o usuário trocou rapidamente
-           * de fazenda.
-           */
+     
           if (
             this.fazendaContext
               .fazendaAtivaId() !== fazendaId
@@ -255,10 +233,7 @@ export class Rebanhos {
   }
 
 
-  // ========================================
-  // NOVO REBANHO
-  // ========================================
-
+ 
   abrirNovoRebanho(): void {
 
     if (
@@ -292,10 +267,7 @@ export class Rebanhos {
   }
 
 
-  // ========================================
-  // EDITAR
-  // ========================================
-
+  
   abrirEdicao(
     rebanho: RebanhoResponse
   ): void {
@@ -325,10 +297,7 @@ export class Rebanhos {
   }
 
 
-  // ========================================
-  // FECHAR MODAL
-  // ========================================
-
+  
   fecharModal(): void {
 
     if (this.salvando()) {
@@ -350,10 +319,6 @@ export class Rebanhos {
 
   }
 
-
-  // ========================================
-  // SALVAR
-  // ========================================
 
   salvar(): void {
 
@@ -496,18 +461,11 @@ export class Rebanhos {
   }
 
 
-  // ========================================
-  // EXCLUSÃO
-  // ========================================
-
   solicitarExclusao(
     rebanho: RebanhoResponse
   ): void {
 
-    /*
-     * Já conseguimos bloquear visualmente
-     * antes de fazer a requisição.
-     */
+  
     if (
       rebanho.quantidadeAnimais > 0
     ) {
@@ -577,9 +535,6 @@ export class Rebanhos {
             .set(null);
 
 
-          /*
-           * Atualização instantânea da UI.
-           */
           this.rebanhos.update(
             lista =>
               lista.filter(
@@ -706,11 +661,6 @@ export class Rebanhos {
   }
 
 
-  // ========================================
-  // ERRO
-  // ========================================
-
-  // Esc fecha o modal aberto
   @HostListener('document:keydown.escape')
   onEscape(): void {
 
@@ -727,7 +677,6 @@ export class Rebanhos {
   }
 
 
-  // Percentual do rebanho dentro do plantel da fazenda
   participacao(
     rebanho: RebanhoResponse
   ): number {

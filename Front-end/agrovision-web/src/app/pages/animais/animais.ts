@@ -94,18 +94,11 @@ export class Animais {
   private readonly route =
     inject(ActivatedRoute);
 
-  /*
-   * Vindo de "Ver animais" na tela de Rebanhos:
-   * /app/animais?rebanho=<id>
-   */
+
   private rebanhoInicial: string | null =
     this.route.snapshot.queryParamMap
       .get('rebanho');
 
-
-  // ========================================
-  // ESTADO
-  // ========================================
 
   animais =
     signal<AnimalResponse[]>([]);
@@ -125,10 +118,6 @@ export class Animais {
   errorMessage =
     signal('');
 
-
-  // ========================================
-  // FILTROS
-  // ========================================
 
   busca =
     signal('');
@@ -289,9 +278,6 @@ export class Animais {
     });
 
 
-  // ========================================
-  // MODAL
-  // ========================================
 
   modalAberto =
     signal(false);
@@ -305,10 +291,6 @@ export class Animais {
       .toISOString()
       .split('T')[0];
 
-
-  // ========================================
-  // FORM
-  // ========================================
 
   animalForm =
     this.formBuilder.group({
@@ -358,11 +340,7 @@ export class Animais {
 
   constructor() {
 
-    /*
-     * Sempre que a fazenda ativa mudar,
-     * os animais e os rebanhos disponíveis
-     * são recarregados.
-     */
+    
     effect(() => {
 
       const fazendaId =
@@ -388,10 +366,6 @@ export class Animais {
 
   }
 
-
-  // ========================================
-  // CARREGAR DADOS
-  // ========================================
 
   carregarDados(
     fazendaId: string
@@ -428,11 +402,7 @@ export class Animais {
 
         next: response => {
 
-          /*
-           * Impede resposta antiga caso
-           * o usuário troque rapidamente
-           * de fazenda.
-           */
+         
           if (
             this.fazendaContext
               .fazendaAtivaId() !== fazendaId
@@ -453,9 +423,7 @@ export class Animais {
           );
 
 
-          /*
-           * Os filtros são zerados quando
-           * mudamos de propriedade. */
+       
           this.busca.set('');
 
           const rebanhoDaUrl =
@@ -501,10 +469,6 @@ export class Animais {
 
   }
 
-
-  // ========================================
-  // FILTROS
-  // ========================================
 
   atualizarBusca(
     event: Event
@@ -559,10 +523,7 @@ export class Animais {
   }
 
 
-  // ========================================
-  // NOVO ANIMAL
-  // ========================================
-
+ 
   abrirNovoAnimal(): void {
 
     this.errorMessage.set('');
@@ -651,10 +612,7 @@ export class Animais {
   }
 
 
-  // ========================================
-  // CADASTRAR
-  // ========================================
-
+ 
   salvar(): void {
 
     this.errorMessage.set('');
@@ -727,10 +685,6 @@ export class Animais {
           this.modalAberto.set(false);
 
 
-          /*
-           * Atualização direta da lista.
-           * Não precisamos refazer a requisição.
-           */
           this.animais.update(
             lista => [
               ...lista,
@@ -779,10 +733,6 @@ export class Animais {
 
   }
 
-
-  // ========================================
-  // ATIVAR / INATIVAR
-  // ========================================
 
   alterarStatus(
     animal: AnimalResponse
@@ -885,10 +835,6 @@ export class Animais {
   }
 
 
-  // ========================================
-  // HELPERS VISUAIS
-  // ========================================
-
   formatarSexo(
     sexo: string
   ): string {
@@ -974,10 +920,6 @@ export class Animais {
 
   }
 
-
-  // ========================================
-  // ORDENAÇÃO E CHIPS
-  // ========================================
 
   ordenar(
     campo: CampoOrdenacao
