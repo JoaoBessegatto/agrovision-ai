@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:alertas": "ng test --watch=false --ts-config=tsconfig.alertas.spec.json --include=src/app/pages/alertas/alertas.spec.ts"
   },
   "private": true,
   "packageManager": "npm@10.9.8",

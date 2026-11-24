@@ -1,6 +1,7 @@
 package com.agrovisionai.agrovision_ai.service;
 
 import com.agrovisionai.agrovision_ai.domain.dto.response.AlertaDesempenhoResponseDTO;
+import com.agrovisionai.agrovision_ai.domain.dto.response.CentralAlertasResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.DesempenhoAnimalResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.DesempenhoFazendaResponseDTO;
 import com.agrovisionai.agrovision_ai.domain.dto.response.DesempenhoRebanhoResponseDTO;
@@ -68,36 +69,7 @@ public class DesempenhoService {
 
     public DesempenhoFazendaResponseDTO buscarPorFazenda(UUID fazendaId) {
 
-        fazendaAccessService.exigirVisualizacao(fazendaId);
-
-        List<Animal> animaisAtivos = animalRepository
-                .findByRebanhoFazendaId(fazendaId)
-                .stream()
-                .filter(animal -> animal.getSituacao() == SituacaoAnimal.ATIVO)
-                .toList();
-
-        Map<UUID, List<RegistroPeso>> historicos =
-                agruparHistoricosPorAnimal(
-                        registroPesoRepository
-                                .findByAnimalRebanhoFazendaIdOrderByDataRegistroDesc(
-                                        fazendaId
-                                )
-                );
-
-        List<DesempenhoAnimalResponseDTO> desempenhos =
-                animaisAtivos
-                        .stream()
-                        .map(animal ->
-                                calcularAnimal(
-                                        animal,
-                                        historicos.getOrDefault(
-                                                animal.getId(),
-                                                List.of()
-                                        ),
-                                        true
-                                )
-                        )
-                        .toList();
+        List<DesempenhoAnimalResponseDTO> desempenhos = consultarAnimaisAtivos(fazendaId);
 
         long animaisComGmd = desempenhos
                 .stream()
@@ -264,6 +236,53 @@ public class DesempenhoService {
         );
     }
 
+    public CentralAlertasResponseDTO buscarAlertasPorFazenda(UUID fazendaId) {
+        List<DesempenhoAnimalResponseDTO> desempenhos = consultarAnimaisAtivos(fazendaId);
+        List<AlertaDesempenhoResponseDTO> alertas = desempenhos.stream()
+                .flatMap(item -> item.alertas().stream())
+                .sorted(Comparator.comparingInt((AlertaDesempenhoResponseDTO a) -> a.severidade().ordinal())
+                        .reversed().thenComparing(AlertaDesempenhoResponseDTO::identificacaoAnimal)
+                        .thenComparing(a -> a.tipo().name()))
+                .toList();
+        return new CentralAlertasResponseDTO(fazendaId, desempenhos.size(), LocalDateTime.now(),
+                gmdMinimoAlerta, diasSemPesagemAlerta, alertas);
+    }
+
+    private List<DesempenhoAnimalResponseDTO> consultarAnimaisAtivos(UUID fazendaId) {
+        fazendaAccessService.exigirVisualizacao(fazendaId);
+
+        List<Animal> animaisAtivos = animalRepository
+                .findByRebanhoFazendaId(fazendaId)
+                .stream()
+                .filter(animal -> animal.getSituacao() == SituacaoAnimal.ATIVO)
+                .toList();
+
+        Map<UUID, List<RegistroPeso>> historicos =
+                agruparHistoricosPorAnimal(
+                        registroPesoRepository
+                                .findByAnimalRebanhoFazendaIdOrderByDataRegistroDesc(
+                                        fazendaId
+                                )
+                );
+
+        List<DesempenhoAnimalResponseDTO> desempenhos =
+                animaisAtivos
+                        .stream()
+                        .map(animal ->
+                                calcularAnimal(
+                                        animal,
+                                        historicos.getOrDefault(
+                                                animal.getId(),
+                                                List.of()
+                                        ),
+                                        true
+                                )
+                        )
+                        .toList();
+
+        return desempenhos;
+    }
+
     public DesempenhoAnimalResponseDTO buscarPorAnimal(UUID animalId) {
 
         Animal animal = animalRepository
@@ -363,6 +382,7 @@ public class DesempenhoService {
         Double ganhoPeso = null;
         Double intervaloDias = null;
         Double gmd = null;
+        Double gmdCalculado = null;
         Double projecao = null;
 
         TendenciaDesempenho tendencia =
@@ -391,24 +411,17 @@ public class DesempenhoService {
              */
             if (dias > 0.0) {
 
-                ganhoPeso =
-                        arredondar(
-                                atual.getPesoKg() -
-                                        anterior.getPesoKg()
-                        );
-
-                intervaloDias =
-                        arredondar(dias);
-
-                gmd =
-                        arredondar(
-                                ganhoPeso / dias
-                        );
+                double variacaoPeso = atual.getPesoKg() - anterior.getPesoKg();
+                ganhoPeso = arredondar(variacaoPeso);
+                intervaloDias = arredondar(dias);
+                // Classificar com precisão total; arredondar apenas para apresentação.
+                gmdCalculado = variacaoPeso / dias;
+                gmd = arredondar(gmdCalculado);
 
                 dadosSuficientes = true;
 
                 tendencia =
-                        classificarTendencia(gmd);
+                        classificarTendencia(gmdCalculado);
 
                 projecao =
                         arredondar(
@@ -436,7 +449,7 @@ public class DesempenhoService {
                 gerarAlertas(
                         animal,
                         historico,
-                        gmd,
+                        gmdCalculado,
                         diasSemPesagem,
                         gerarAlertasOperacionais
                 );
@@ -485,7 +498,7 @@ public class DesempenhoService {
         List<AlertaDesempenhoResponseDTO> alertas =
                 new ArrayList<>();
 
-        if (historico.size() < 2) {
+        if (gmd == null) {
 
             alertas.add(
                     novoAlerta(
@@ -518,16 +531,17 @@ public class DesempenhoService {
 
         if (gmd != null) {
 
-            if (gmd < -gmdEstavelLimite) {
+            if (gmd < 0.0) {
 
                 alertas.add(
                         novoAlerta(
                                 TipoAlertaDesempenho.PERDA_PESO,
                                 SeveridadeAlertaDesempenho.CRITICO,
                                 "Perda de peso",
-                                "O GMD atual é " +
-                                        formatar(gmd) +
-                                        " kg/dia, indicando perda de peso entre as duas últimas pesagens.",
+                                "O animal perdeu " + formatar(historico.get(1).getPesoKg() - historico.get(0).getPesoKg()) +
+                                        " kg entre as duas últimas pesagens (de " + formatar(historico.get(1).getPesoKg()) +
+                                        " para " + formatar(historico.get(0).getPesoKg()) +
+                                        " kg). Confira os registros e avalie o manejo do animal.",
                                 animal
                         )
                 );
@@ -735,7 +749,7 @@ public class DesempenhoService {
             return TendenciaDesempenho.GANHO;
         }
 
-        if (gmd < -gmdEstavelLimite) {
+        if (gmd < 0.0) {
             return TendenciaDesempenho.PERDA;
         }
 
@@ -789,7 +803,7 @@ public class DesempenhoService {
 
     private String formatar(double valor) {
         return String.format(
-                java.util.Locale.US,
+                java.util.Locale.forLanguageTag("pt-BR"),
                 "%.2f",
                 valor
         );

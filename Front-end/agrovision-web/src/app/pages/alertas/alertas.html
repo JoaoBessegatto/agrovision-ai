@@ -1,0 +1,100 @@
+<div class="alertas-page">
+  <header class="page-heading">
+    <div>
+      <span class="eyebrow">ACOMPANHAMENTO DO REBANHO</span>
+      <h1>Central de alertas</h1>
+      <p>Priorize o que precisa de atenção em <strong>{{ fazendaContext.fazendaAtiva()?.nome ?? 'sua fazenda' }}</strong>.</p>
+    </div>
+    <button type="button" class="button" (click)="atualizar()" [disabled]="carregando() || !fazendaContext.fazendaAtivaId()">
+      <mat-icon>refresh</mat-icon> {{ carregando() ? 'Atualizando…' : 'Atualizar' }}
+    </button>
+  </header>
+
+  @if (!fazendaContext.fazendaAtivaId()) {
+    <section class="empty" role="status">
+      <mat-icon>agriculture</mat-icon><h2>Selecione uma fazenda</h2>
+      <p>Use o seletor de fazenda para consultar os alertas dos seus animais.</p>
+    </section>
+  } @else {
+    @if (erro()) {
+      <div class="error" role="alert">
+        <mat-icon>cloud_off</mat-icon>
+        <div><strong>{{ erro() }}</strong>
+          @if (dados()) { <p>Os dados abaixo são da última consulta bem-sucedida e podem estar desatualizados.</p> }
+        </div>
+      </div>
+    }
+    @if (carregando() && !dados()) {
+      <section class="empty" role="status"><p>Consultando as pesagens e verificando os alertas…</p></section>
+    }
+    @if (dados(); as resumo) {
+      <section class="summary" aria-label="Resumo dos alertas ativos">
+        <button type="button" (click)="severidade.set('')" [class.selected]="severidade() === ''" [attr.aria-pressed]="severidade() === ''">
+          <span>Alertas ativos</span><strong>{{ alertas().length }}</strong><small>{{ resumo.animaisAtivos }} animais acompanhados</small>
+        </button>
+        <button type="button" class="grave" (click)="severidade.set('CRITICO')" [class.selected]="severidade() === 'CRITICO'" [attr.aria-pressed]="severidade() === 'CRITICO'">
+          <span>Graves</span><strong>{{ graves() }}</strong><small>Perda de peso</small>
+        </button>
+        <button type="button" class="medio" (click)="severidade.set('ATENCAO')" [class.selected]="severidade() === 'ATENCAO'" [attr.aria-pressed]="severidade() === 'ATENCAO'">
+          <span>Médios</span><strong>{{ medios() }}</strong><small>Ganho baixo ou pesagem atrasada</small>
+        </button>
+        <button type="button" class="informativo" (click)="severidade.set('INFO')" [class.selected]="severidade() === 'INFO'" [attr.aria-pressed]="severidade() === 'INFO'">
+          <span>Informativos</span><strong>{{ informativos() }}</strong><small>Histórico insuficiente</small>
+        </button>
+      </section>
+
+      <div class="update-info" role="status">
+        <span>Última verificação: {{ resumo.calculadoEm | date:'dd/MM/yyyy HH:mm:ss' }}</span>
+        <span>Atualização automática a cada minuto enquanto esta aba estiver visível.</span>
+      </div>
+
+      <section class="inbox" [attr.aria-busy]="carregando()">
+        <div class="filters">
+          <label class="search">Buscar<input type="search" placeholder="Animal, rebanho ou mensagem" [ngModel]="busca()" (ngModelChange)="busca.set($event)"></label>
+          <label>Gravidade<select [ngModel]="severidade()" (ngModelChange)="severidade.set($event)">
+            <option value="">Todas</option><option value="CRITICO">Grave</option><option value="ATENCAO">Médio</option><option value="INFO">Informativo</option>
+          </select></label>
+          <label>Rebanho<select [ngModel]="rebanhoId()" (ngModelChange)="rebanhoId.set($event)">
+            <option value="">Todos os rebanhos</option>
+            @for (rebanho of rebanhos(); track rebanho.id) { <option [value]="rebanho.id">{{ rebanho.nome }}</option> }
+          </select></label>
+        </div>
+        <div class="list-heading"><h2>Mensagens ativas</h2><span>{{ filtrados().length }} de {{ alertas().length }}</span></div>
+        @for (alerta of filtrados(); track alerta.animalId + ':' + alerta.tipo) {
+          <article class="message" [class.grave]="alerta.severidade === 'CRITICO'" [class.medio]="alerta.severidade === 'ATENCAO'" [class.informativo]="alerta.severidade === 'INFO'">
+            <div class="message-icon"><mat-icon>{{ icones[alerta.severidade] }}</mat-icon></div>
+            <div class="message-content">
+              <div class="message-meta"><span class="severity">{{ rotulos[alerta.severidade] }}</span><span>{{ alerta.rebanhoNome }}</span></div>
+              <h3>{{ alerta.titulo }} <span>· {{ alerta.identificacaoAnimal }}</span></h3>
+              <p>{{ alerta.mensagem }}</p>
+              <a [routerLink]="['/app/animais', alerta.animalId]">Ver animal e histórico de pesagens</a>
+            </div>
+          </article>
+        } @empty {
+          <div class="empty">
+            @if (alertas().length) {
+              <mat-icon>search_off</mat-icon><h3>Nenhum alerta corresponde aos filtros</h3>
+              <button type="button" class="button" (click)="limparFiltros()">Limpar filtros</button>
+            } @else if (resumo.animaisAtivos === 0) {
+              <mat-icon>pets</mat-icon><h3>Nenhum animal ativo nesta fazenda</h3>
+              <p>Os alertas acompanham os animais ativos e suas pesagens.</p>
+            } @else {
+              <mat-icon>task_alt</mat-icon><h3>Nenhum alerta ativo</h3>
+              <p>Não foram encontradas ocorrências pelas regras de acompanhamento nesta consulta.</p>
+            }
+          </div>
+        }
+      </section>
+
+      <details class="rules">
+        <summary>Como os alertas são calculados</summary>
+        <ul>
+          <li><strong>Grave:</strong> perda de peso entre as duas últimas pesagens com intervalo de tempo válido.</li>
+          <li><strong>Médio:</strong> ganho médio diário abaixo da referência configurada de {{ resumo.gmdMinimoAlertaKgDia | number:'1.2-2':'pt-BR' }} kg/dia, ou {{ resumo.diasSemPesagemAlerta }} dias ou mais sem pesagem.</li>
+          <li><strong>Informativo:</strong> ainda não há duas pesagens em momentos diferentes para calcular o ganho médio diário (GMD).</li>
+        </ul>
+        <p>A referência de ganho é um parâmetro do sistema, não um valor ideal universal. Os alertas refletem os dados atuais e desaparecem quando a condição deixa de existir.</p>
+      </details>
+    }
+  }
+</div>

@@ -194,6 +194,11 @@ export const routes: Routes = [
 
 
       {
+        path: 'alertas',
+        loadComponent: () => import('./pages/alertas/alertas').then(m => m.Alertas)
+      },
+
+      {
         path: 'rebanhos',
 
         loadComponent: () =>
