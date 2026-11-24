@@ -25,11 +25,6 @@ public class RegistroPesoController {
                 registroPesoService;
     }
 
-
-    // =========================================================
-    // REGISTRAR PESAGEM
-    // =========================================================
-
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<RegistroPesoResponseDTO> registrar(
@@ -49,11 +44,6 @@ public class RegistroPesoController {
                 .body(response);
     }
 
-
-    // =========================================================
-    // HISTÓRICO DO ANIMAL
-    // =========================================================
-
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<RegistroPesoResponseDTO>> listarHistorico(
@@ -67,11 +57,6 @@ public class RegistroPesoController {
                         )
         );
     }
-
-
-    // =========================================================
-    // ÚLTIMA PESAGEM DO ANIMAL
-    // =========================================================
 
     @GetMapping("/ultima")
     @PreAuthorize("isAuthenticated()")

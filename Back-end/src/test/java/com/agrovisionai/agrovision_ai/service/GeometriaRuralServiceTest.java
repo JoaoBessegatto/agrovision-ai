@@ -119,11 +119,7 @@ class GeometriaRuralServiceTest {
                         "Fazenda"
                 );
 
-        /*
-         * Aproximadamente meio metro além da borda
-         * leste. Deve ser absorvido pela tolerância
-         * exclusivamente técnica da validação.
-         */
+
         Polygon piquete =
                 service.converterParaPolygon(
                         polygon(

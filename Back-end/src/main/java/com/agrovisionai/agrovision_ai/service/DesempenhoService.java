@@ -404,17 +404,11 @@ public class DesempenhoService {
             double dias =
                     segundos / 86_400.0;
 
-            /*
-             * Duas pesagens com o mesmo instante (ou ordem
-             * temporal inválida) não formam um intervalo
-             * válido para GMD.
-             */
             if (dias > 0.0) {
 
                 double variacaoPeso = atual.getPesoKg() - anterior.getPesoKg();
                 ganhoPeso = arredondar(variacaoPeso);
                 intervaloDias = arredondar(dias);
-                // Classificar com precisão total; arredondar apenas para apresentação.
                 gmdCalculado = variacaoPeso / dias;
                 gmd = arredondar(gmdCalculado);
 

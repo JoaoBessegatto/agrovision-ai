@@ -137,12 +137,6 @@ public class FazendaGeopoligonoService {
                 LocalDateTime.now()
         );
 
-        /*
-         * Latitude e longitude antigas são opcionais.
-         * Quando não foram informadas no onboarding,
-         * o centroide do limite passa a oferecer um
-         * ponto de referência útil para a propriedade.
-         */
         if (fazenda.getLatitude() == null) {
             fazenda.setLatitude(
                     registro.getCentroideLatitude()
@@ -395,11 +389,6 @@ public class FazendaGeopoligonoService {
         );
     }
 
-    /*
-     * Fórmula esférica de Chamberlain-Duquette,
-     * adequada para polígonos em longitude/latitude
-     * e suficiente para a escala de propriedades rurais.
-     */
     private double calcularAreaAnel(
             List<List<Double>> pontos
     ) {

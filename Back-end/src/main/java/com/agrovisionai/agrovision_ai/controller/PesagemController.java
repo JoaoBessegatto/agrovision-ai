@@ -22,11 +22,6 @@ public class PesagemController {
                 registroPesoService;
     }
 
-
-    // =========================================================
-    // PESAGENS DA FAZENDA
-    // =========================================================
-
     @GetMapping("/fazenda/{fazendaId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<RegistroPesoResponseDTO>> listarPorFazenda(

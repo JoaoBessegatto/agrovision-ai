@@ -54,28 +54,14 @@ public class DashboardService {
                 fazendaAccessService;
     }
 
-
-    // =========================================================
-    // DASHBOARD DA FAZENDA
-    // =========================================================
-
     public DashboardResponseDTO buscarPorFazenda(
             UUID fazendaId
     ) {
 
-        /*
-         * Antes de qualquer cálculo,
-         * garante que a fazenda existe
-         * e pertence ao usuário atual.
-         */
         fazendaAccessService.exigirVisualizacao(
                 fazendaId
         );
 
-
-        // =====================================================
-        // ANIMAIS
-        // =====================================================
 
         long totalAnimais =
                 animalRepository
@@ -115,21 +101,12 @@ public class DashboardService {
                                 SituacaoAnimal.MORTO
                         );
 
-
-        // =====================================================
-        // REBANHOS
-        // =====================================================
-
         long totalRebanhos =
                 rebanhoRepository
                         .countByFazendaId(
                                 fazendaId
                         );
 
-
-        // =====================================================
-        // PESAGENS
-        // =====================================================
 
         long totalPesagens =
                 registroPesoRepository
@@ -161,29 +138,17 @@ public class DashboardService {
                         );
 
 
-        // =====================================================
-        // DISTRIBUIÇÃO POR REBANHO
-        // =====================================================
-
         List<DashboardRebanhoDTO> rebanhos =
                 buscarResumoRebanhos(
                         fazendaId
                 );
 
 
-        // =====================================================
-        // EVOLUÇÃO DE PESO
-        // =====================================================
-
         List<DashboardEvolucaoPesoDTO> evolucaoPeso =
                 buscarEvolucaoPeso(
                         fazendaId
                 );
 
-
-        // =====================================================
-        // RESPONSE
-        // =====================================================
 
         return new DashboardResponseDTO(
 
@@ -213,10 +178,6 @@ public class DashboardService {
         );
     }
 
-
-    // =========================================================
-    // RESUMO DOS REBANHOS
-    // =========================================================
 
     private List<DashboardRebanhoDTO> buscarResumoRebanhos(
             UUID fazendaId
@@ -285,18 +246,10 @@ public class DashboardService {
     }
 
 
-    // =========================================================
-    // EVOLUÇÃO DO PESO
-    // =========================================================
-
     private List<DashboardEvolucaoPesoDTO> buscarEvolucaoPeso(
             UUID fazendaId
     ) {
 
-        /*
-         * Inclui o mês atual + cinco
-         * meses anteriores.
-         */
         LocalDateTime inicio =
                 YearMonth
                         .now()
@@ -358,10 +311,6 @@ public class DashboardService {
                 .toList();
     }
 
-
-    // =========================================================
-    // ARREDONDAMENTO
-    // =========================================================
 
     private double arredondar(
             double valor

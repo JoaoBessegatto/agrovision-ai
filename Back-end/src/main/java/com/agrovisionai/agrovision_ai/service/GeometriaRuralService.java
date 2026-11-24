@@ -13,13 +13,6 @@ public class GeometriaRuralService {
 
     private static final int SRID_WGS84 = 4326;
     private static final double RAIO_TERRA_METROS = 6_378_137.0;
-
-    /*
-     * Margem exclusivamente técnica para absorver
-     * diferenças de precisão entre desenho no browser,
-     * GeoJSON e operações JTS. Não representa uma
-     * expansão de negócio da propriedade.
-     */
     private static final double TOLERANCIA_LIMITE_METROS = 1.5;
     private static final double METROS_POR_GRAU_LATITUDE = 111_320.0;
 
@@ -193,15 +186,6 @@ public class GeometriaRuralService {
             return true;
         }
 
-        /*
-         * Quando um vértice está visualmente sobre a
-         * cerca, diferenças mínimas de coordenadas podem
-         * colocá-lo alguns centímetros para fora.
-         *
-         * Aplicamos uma tolerância pequena (1,5 m) apenas
-         * na validação. A geometria oficial da Fazenda não
-         * é alterada nem aumentada no banco.
-         */
         double latitude =
                 limite
                         .getCentroid()
@@ -252,10 +236,6 @@ public class GeometriaRuralService {
             return false;
         }
 
-        /*
-         * Piquetes podem compartilhar somente a linha
-         * de cerca. Encostar na borda não é sobreposição.
-         */
         return !primeira.touches(
                 segunda
         );

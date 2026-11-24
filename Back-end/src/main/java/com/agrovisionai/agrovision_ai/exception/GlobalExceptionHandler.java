@@ -43,7 +43,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGenericException(Exception ex){
-
         ApiError error = new ApiError(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "Erro interno no servidor.",

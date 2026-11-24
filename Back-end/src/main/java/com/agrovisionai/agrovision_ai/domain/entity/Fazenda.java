@@ -43,11 +43,6 @@ public class Fazenda {
     @Column(nullable = false)
     private TipoExploracao exploracao;
 
-    /*
-     * Campo legado mantido temporariamente por compatibilidade
-     * com versões anteriores do DTO. A delimitação oficial
-     * passa a ser FazendaGeopoligono.geometria.
-     */
     @Deprecated
     @Column(columnDefinition = "TEXT")
     private String geopoligono;

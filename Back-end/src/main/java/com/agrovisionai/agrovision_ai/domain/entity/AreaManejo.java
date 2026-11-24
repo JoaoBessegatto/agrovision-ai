@@ -86,12 +86,6 @@ public class AreaManejo {
     )
     private Double areaCalculadaHa;
 
-    /*
-     * Para confinamento, a capacidade física do espaço
-     * é mais útil do que "cabeças por hectare".
-     * É opcional porque pode não estar definida no
-     * momento em que a área é desenhada.
-     */
     @Column(name = "capacidade_maxima_cabecas")
     private Integer capacidadeMaximaCabecas;
 
