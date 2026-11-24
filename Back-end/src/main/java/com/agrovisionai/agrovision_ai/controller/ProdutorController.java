@@ -20,21 +20,21 @@ public class ProdutorController {
         this.produtorService = produtorService;
     }
 
-    @PreAuthorize("hasRole('PRODUTOR')")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping
     public ResponseEntity<ProdutorResponseDTO> cadastrar(@RequestBody @Valid ProdutorRequestDTO dto){
         ProdutorResponseDTO produtorCadastrado = produtorService.cadastrar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(produtorCadastrado);
     }
 
-    @PreAuthorize("hasRole('PRODUTOR')")
+    @PreAuthorize("isAuthenticated()")
     @PutMapping
     public ResponseEntity<ProdutorResponseDTO> atualizar(@RequestBody @Valid ProdutorRequestDTO dto){
         ProdutorResponseDTO produtorAtualizado = produtorService.atualizar(dto);
         return ResponseEntity.status(HttpStatus.OK).body(produtorAtualizado);
     }
 
-    @PreAuthorize("hasRole('PRODUTOR')")
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping
     public ResponseEntity<Void> deletar(){
         boolean deletado = produtorService.deletar();
@@ -49,7 +49,7 @@ public class ProdutorController {
       return ResponseEntity.ok().body(produtores);
     }
 
-    @PreAuthorize("hasRole('PRODUTOR')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/me")
     public ResponseEntity<ProdutorResponseDTO> findMe(){
         return ResponseEntity.ok().body(produtorService.findMe());
