@@ -1,0 +1,77 @@
+# AgroVision AI - ambiente completo em containers
+# Uso (na raiz do repositório):  docker compose up --build
+#
+#   Front-end (Angular)  -> http://localhost:4200
+#   Back-end  (Spring)   -> http://localhost:8080
+#   Mailpit (e-mails)    -> http://localhost:8025
+#   MySQL                -> localhost:3307 (opcional, para DBeaver/Workbench)
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: agrovision-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-rootroot}
+      MYSQL_DATABASE: ${DB_NAME:-AgroVision}
+      TZ: America/Sao_Paulo
+    ports:
+      # 3307 no host para não conflitar com um MySQL local na 3306
+      - "127.0.0.1:3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: agrovision-mailpit
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8025:8025"   # interface web (convites de funcionário caem aqui)
+
+  backend:
+    build:
+      context: ./Back-end
+    container_name: agrovision-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_NAME:-AgroVision}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo&createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-rootroot}
+      JWT_SECRET: ${JWT_SECRET:-VGhpc0lzQVNlY3VyZUFjdHVhbGx5QmFzZTY0U2VjcmV0S2V5MTIzNDU2Nzg=}
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
+      APP_FRONTEND_URL: ${APP_FRONTEND_URL:-http://localhost:4200}
+      # o pom.xml tem spring-boot-docker-compose; dentro do container não faz sentido
+      SPRING_DOCKER_COMPOSE_ENABLED: "false"
+      TZ: America/Sao_Paulo
+    ports:
+      # O front chama http://localhost:8080 direto do navegador, então esta porta precisa ser publicada
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./Front-end/agrovision-web
+      args:
+        # Opcional: o código tem essas chaves vazias em core/config/*.config.ts
+        MAPTILER_API_KEY: ${MAPTILER_API_KEY:-}
+        MAPBOX_ACCESS_TOKEN: ${MAPBOX_ACCESS_TOKEN:-}
+    container_name: agrovision-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
+
+volumes:
+  mysql_data:
