@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config/api.config';
 import {
   inject,
   Injectable
@@ -30,11 +31,11 @@ export class RegistroPesoService {
 
 
   private readonly ANIMAIS_API =
-    'http://localhost:8080/api/animais';
+    `${API_BASE_URL}/animais`;
 
 
   private readonly PESAGENS_API =
-    'http://localhost:8080/api/pesagens';
+    `${API_BASE_URL}/pesagens`;
 
 
   registrar(

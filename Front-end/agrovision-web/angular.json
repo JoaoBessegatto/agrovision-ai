@@ -58,6 +58,33 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "docker": {
+              "optimization": {
+                "scripts": true,
+                "styles": true,
+                "fonts": false
+              },
+              "sourceMap": false,
+              "outputHashing": "all",
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2MB",
+                  "maximumError": "5MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "32kB",
+                  "maximumError": "64kB"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/app/core/config/api.config.ts",
+                  "with": "src/app/core/config/api.config.docker.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"

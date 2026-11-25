@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config/api.config';
 import {
   inject,
   Injectable
@@ -25,7 +26,7 @@ export class FazendaGeopoligonoService {
     inject(HttpClient);
 
   private readonly API_URL =
-    'http://localhost:8080/api/fazenda';
+    `${API_BASE_URL}/fazenda`;
 
 
   buscar(

@@ -1,0 +1,10 @@
+# Configuracao e dados locais de demonstracao (nao publicar no GitHub).
+.env
+.env.*
+!.env.example
+docker/mysql/seed/*
+!docker/mysql/seed/README.md
+*.sql
+*.sql.gz
+*.dump
+*.zip

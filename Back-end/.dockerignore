@@ -1,0 +1,8 @@
+target
+.git
+.idea
+*.iml
+.env*
+*.sql
+*.sql.gz
+compose.yaml
