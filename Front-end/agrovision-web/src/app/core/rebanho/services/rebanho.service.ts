@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config/api.config';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -14,7 +15,7 @@ export class RebanhoService {
   private readonly http = inject(HttpClient);
 
   private readonly API_URL =
-    'http://localhost:8080/api/rebanhos';
+    `${API_BASE_URL}/rebanhos`;
 
 
   listarPorFazenda(

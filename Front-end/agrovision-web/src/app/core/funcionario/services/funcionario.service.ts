@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config/api.config';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -23,10 +24,10 @@ export class FuncionarioService {
     inject(HttpClient);
 
   private readonly API_URL =
-    'http://localhost:8080/api/funcionarios';
+    `${API_BASE_URL}/funcionarios`;
 
   private readonly CONVITE_PUBLICO_URL =
-    'http://localhost:8080/api/convites/funcionarios';
+    `${API_BASE_URL}/convites/funcionarios`;
 
 
   listarPorFazenda(

@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config/api.config';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
@@ -13,7 +14,7 @@ export class AuthService {
 
   private readonly http = inject(HttpClient);
 
-  private readonly API_URL = 'http://localhost:8080/api/auth';
+  private readonly API_URL = `${API_BASE_URL}/auth`;
 
   private readonly TOKEN_KEY = 'token';
   private readonly USER_KEY = 'user';

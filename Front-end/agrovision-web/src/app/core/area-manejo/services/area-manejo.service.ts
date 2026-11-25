@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config/api.config';
 import {
   inject,
   Injectable
@@ -26,7 +27,7 @@ export class AreaManejoService {
     inject(HttpClient);
 
   private readonly API_URL =
-    'http://localhost:8080/api/areas-manejo';
+    `${API_BASE_URL}/areas-manejo`;
 
 
   listarResumo(
