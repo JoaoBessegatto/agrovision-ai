@@ -19,6 +19,7 @@ services:
       # 3307 no host para não conflitar com um MySQL local na 3306
       - "127.0.0.1:3307:3306"
     volumes:
+      - ./docker/mysql-init:/docker-entrypoint-initdb.d:ro  
       - mysql_data:/var/lib/mysql
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
