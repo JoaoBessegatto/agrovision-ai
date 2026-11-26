@@ -6,3 +6,8 @@ compose.yaml
 .idea
 .git
 *.iml
+
+.env*
+*.sql
+*.sq
+*.sql.gz

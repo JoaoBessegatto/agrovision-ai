@@ -1,0 +1,4 @@
+globalThis.AGROVISION_CONFIG = {
+  mapboxAccessToken: "${MAPBOX_ACCESS_TOKEN}",
+  maptilerApiKey: "${MAPTILER_API_KEY}"
+};

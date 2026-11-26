@@ -4,3 +4,8 @@ dist
 .vscode
 .git
 *.md
+
+.env*
+*.sql
+*.sq
+*.sql.gz

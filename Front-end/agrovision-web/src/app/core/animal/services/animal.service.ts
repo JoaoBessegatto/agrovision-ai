@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config/api.config';
 import {
   inject,
   Injectable
@@ -29,7 +30,7 @@ export class AnimalService {
     inject(HttpClient);
 
   private readonly API_URL =
-    'http://localhost:8080/api/animais';
+    `${API_BASE_URL}/animais`;
 
 
   cadastrar(

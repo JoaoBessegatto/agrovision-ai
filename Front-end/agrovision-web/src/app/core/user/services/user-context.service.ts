@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config/api.config';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -15,7 +16,7 @@ export class UsuarioContextService {
     inject(HttpClient);
 
   private readonly API_URL =
-    'http://localhost:8080/api/me';
+    `${API_BASE_URL}/me`;
 
   getContexto():
     Observable<UsuarioContext> {
