@@ -38,6 +38,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import mapboxgl from 'mapbox-gl';
+import { configureMapboxWorker } from '../../core/config/mapbox-worker.config';
 
 import {
   TerraDraw,
@@ -1741,6 +1742,8 @@ export class GeopoligonoFazenda
       return;
     }
 
+    configureMapboxWorker();
+
     this.map =
       new mapboxgl.Map({
 
@@ -1822,23 +1825,15 @@ export class GeopoligonoFazenda
         const mensagem =
           event.error?.message ?? '';
 
-        if (
-          this.modoMapa() ===
-            'SATELITE' &&
-          mensagem
-        ) {
+        if (mensagem) {
 
           console.error(
-            'Erro no mapa de satélite:',
+            'Erro ao carregar o mapa:',
             event.error
           );
 
-          this.mapaPronto.set(
-            true
-          );
-
           this.errorMessage.set(
-            'A imagem de satélite não pôde ser carregada. Verifique a chave do MapTiler e tente novamente.'
+            'Não foi possível carregar o mapa. Atualize a página e tente novamente. Se o erro continuar, entre em contato com o responsável pela plataforma.'
           );
         }
       }

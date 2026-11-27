@@ -33,6 +33,7 @@ import {
 } from 'rxjs';
 
 import mapboxgl from 'mapbox-gl';
+import { configureMapboxWorker } from '../../core/config/mapbox-worker.config';
 
 import {
   TerraDraw,
@@ -1086,6 +1087,8 @@ export class AreasManejo
     ) {
       return;
     }
+
+    configureMapboxWorker();
 
     this.map =
       new mapboxgl.Map({

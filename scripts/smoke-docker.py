@@ -42,6 +42,9 @@ for route in ['/', '/app/fazenda/area']:
 config, headers = request('/runtime-config.js')
 assert 'AGROVISION_CONFIG' in config and '${MAP' not in config
 assert 'no-store' in headers.get('Cache-Control', '')
+worker, headers = request('/assets/mapbox/mapbox-gl-csp-worker.js')
+assert len(worker) > 100_000 and '<app-root' not in worker, 'Worker do Mapbox ausente'
+assert 'no-cache' in headers.get('Cache-Control', ''), 'Worker deve revalidar apos atualizacao'
 request('/api/me/context', expected=(401, 403))
 request('/api/auth/login', data={'email': 'inexistente@example.invalid', 'password': 'invalid'}, expected=(401,))
 request('/readyz', base=args.mailpit)
